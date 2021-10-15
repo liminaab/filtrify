@@ -16,42 +16,13 @@ import (
 	"limina.com/dyntransformer/types"
 )
 
-func main() {
-	// let's prepare dummy operations here
-	// load CSV files
-	walletHeaders, wallets, err := loadCSVFileFromDataDir("wallet_csv")
-	if err != nil {
-		panic(err)
+func buildTestFilterSteps() []*types.TransformationStep {
+	filterStep1 := &types.TransformationStep{
+		Step:     0,
+		Enabled:  true,
+		Operator: types.Filter,
 	}
-	wallets = append([][]string{walletHeaders}, wallets...)
-	input := &types.InputData{
-		RawData:                  wallets,
-		RawDataFirstLineIsHeader: true,
-	}
-
-	ds, err := dyntransformer.ConvertToTypedData(wallets, true, true)
-	if err != nil {
-		panic(err.Error())
-	}
-	fmt.Println(ds)
-
-	// we will have a single step of filter
-
-	filterStep := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
-		Operator:      types.Filter,
-		Configuration: "json string",
-	}
-	// type TransformationStep struct {
-	// 	Step          int
-	// 	Enabled       bool
-	// 	Operator      TransformationOperatorType
-	// 	Configuration string
-	// }
-	steps := make([]*types.TransformationStep, 0)
-	steps = append(steps, filterStep)
-	conf := operator.FilterConfiguration{
+	conf1 := operator.FilterConfiguration{
 		Statement: &operator.FilterStatement{
 			Criteria: &operator.Criteria{
 				FieldName: "balance",
@@ -60,14 +31,67 @@ func main() {
 			},
 		},
 	}
-	b, err := json.Marshal(conf)
+	b1, err := json.Marshal(conf1)
 	if err != nil {
 		panic(err.Error())
 	}
-	filterStep.Configuration = string(b)
-	dyntransformer.Transform(input, steps)
+	filterStep1.Configuration = string(b1)
 
-	dyntransformer.Transform(input, steps)
+	filterStep2 := &types.TransformationStep{
+		Step:     1,
+		Enabled:  true,
+		Operator: types.Filter,
+	}
+	createdAtStatement := &operator.FilterStatement{
+		Criteria: &operator.Criteria{
+			FieldName: "created_at",
+			Operator:  ">",
+			Value:     "2008-06-02T15:04:05",
+		},
+	}
+	activeStatement := &operator.FilterStatement{
+		Criteria: &operator.Criteria{
+			FieldName: "is_active",
+			Operator:  "=",
+			Value:     "TRUE",
+		},
+	}
+	conf2 := operator.FilterConfiguration{
+		Statement: &operator.FilterStatement{
+			Statements: []*operator.FilterStatement{createdAtStatement, activeStatement},
+			Conditions: []string{"AND"},
+		},
+	}
+	b2, err := json.Marshal(conf2)
+	if err != nil {
+		panic(err.Error())
+	}
+	filterStep2.Configuration = string(b2)
+
+	steps := make([]*types.TransformationStep, 0)
+	steps = append(steps, filterStep2)
+	steps = append(steps, filterStep1)
+	return steps
+}
+
+func main() {
+	// let's prepare dummy operations here
+	// load CSV files
+	walletHeaders, wallets, err := loadCSVFileFromDataDir("wallet_csv")
+	if err != nil {
+		panic(err)
+	}
+	wallets = append([][]string{walletHeaders}, wallets...)
+	ds, err := dyntransformer.ConvertToTypedData(wallets, true, true)
+	if err != nil {
+		panic(err.Error())
+	}
+	steps := buildTestFilterSteps()
+	newData, err := dyntransformer.Transform(ds, steps)
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Println(newData)
 }
 
 func loadCSVFile(filePath string) (headers []string, dataset [][]string, err error) {

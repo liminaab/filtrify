@@ -2,7 +2,6 @@ package dyntransformer
 
 import (
 	"errors"
-	"fmt"
 
 	"limina.com/dyntransformer/operator"
 	"limina.com/dyntransformer/types"
@@ -35,35 +34,18 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	}
 
 	return transformedData, nil
-
 }
 
-// func TransformOld(data *types.InputData, transformations []*types.TransformationStep) error {
-// 	newData := data
-// 	var err error
-// 	for _, ts := range transformations {
-// 		newData, err = processTransformation(newData, ts)
-// 		if err != nil {
-// 			// wow we failed
-// 			return err
-// 		}
-// 		fmt.Println(newData)
-// 	}
-
-// 	return nil
-// }
-
-func Transform(dataset *types.DataSet, transformations []*types.TransformationStep) error {
+func Transform(dataset *types.DataSet, transformations []*types.TransformationStep) (*types.DataSet, error) {
 	newData := dataset
 	var err error
 	for _, ts := range transformations {
 		newData, err = processTransformation(newData, ts)
 		if err != nil {
 			// wow we failed
-			return err
+			return nil, err
 		}
-		fmt.Println(newData)
 	}
 
-	return nil
+	return newData, nil
 }

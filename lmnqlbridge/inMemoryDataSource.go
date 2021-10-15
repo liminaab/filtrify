@@ -126,12 +126,12 @@ func (m *LmnInMemDataSource) Open(connInfo string) (schema.Conn, error) {
 }
 
 func (m *LmnInMemDataSource) Close() error {
-	// TODO handle this
+	m.tables = make(map[string]*LmnInMemTable)
 	return nil
 }
 
 func (m *LmnInMemTable) Close() error {
-	// TODO close file
+	m.rowCount = 0
 	return nil
 }
 

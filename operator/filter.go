@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/araddon/qlbridge/lex"
 	_ "github.com/araddon/qlbridge/qlbdriver"
 	"github.com/araddon/qlbridge/schema"
 	"limina.com/dyntransformer/lmnqlbridge"
@@ -13,8 +15,6 @@ import (
 )
 
 const defaultTableName string = "ext"
-const defaultColumnName string = "Column"
-const defaultDBName string = "limina_db"
 
 type FilterOperator struct {
 }
@@ -35,8 +35,77 @@ type Criteria struct {
 	Value     string `json:"value"`
 }
 
+func (t *FilterOperator) buildComparisonQuery(c *Criteria, colType types.CellDataType) (string, error) {
+	switch colType {
+	case types.IntType, types.LongType:
+		i, err := strconv.ParseInt(c.Value, 10, 64)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s %s %d", c.FieldName, c.Operator, i), nil
+	case types.DoubleType:
+		i, err := strconv.ParseFloat(c.Value, 64)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s %s %f", c.FieldName, c.Operator, i), nil
+	case types.TimestampType:
+		// TODO define format smartly - think about this
+		return fmt.Sprintf("%s %s todate('2006-01-02T15:04:05', '%s')", c.FieldName, c.Operator, c.Value), nil
+	default:
+		return "", errors.New("invalid comparison on filter query")
+	}
+}
+
+func (t *FilterOperator) buildContainsQuery(c *Criteria, colType types.CellDataType) (string, error) {
+	switch colType {
+	case types.StringType:
+		return fmt.Sprintf("%s %s '%s'", c.FieldName, c.Operator, c.Value), nil
+	default:
+		return "", errors.New("invalid comparison on filter query")
+	}
+}
+
+func (t *FilterOperator) buildEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
+	return fmt.Sprintf("%s IS NULL", c.FieldName), nil
+}
+
+func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataType) (string, error) {
+
+	switch colType {
+	case types.IntType, types.LongType:
+		i, err := strconv.ParseInt(c.Value, 10, 64)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s %s %d", c.FieldName, c.Operator, i), nil
+	case types.TimestampType:
+		// TODO define format smartly - think about this
+		return fmt.Sprintf("%s %s todate('2006-01-02T15:04:05', '%s')", c.FieldName, c.Operator, c.Value), nil
+	case types.StringType:
+		return fmt.Sprintf("%s %s '%s'", c.FieldName, c.Operator, c.Value), nil
+	case types.DoubleType:
+		i, err := strconv.ParseFloat(c.Value, 64)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s %s %f", c.FieldName, c.Operator, i), nil
+	case types.BoolType:
+		data := strings.ToLower(c.Value)
+		if data == "true" {
+			return fmt.Sprintf("%s %s %s", c.FieldName, c.Operator, data), nil
+		} else if data == "false" {
+			return fmt.Sprintf("%s %s %s", c.FieldName, c.Operator, data), nil
+		} else {
+			return "", errors.New("invalid boolean value")
+		}
+	default:
+		return "", errors.New("unknown column type in where clause")
+	}
+}
+
 // TODO think about lists
-func (t *FilterOperator) buildCriteriaText(c *Criteria) (string, error) {
+func (t *FilterOperator) buildCriteriaText(c *Criteria, columnTypeMap map[string]types.CellDataType) (string, error) {
 	// <
 	// <=
 	// >
@@ -49,35 +118,51 @@ func (t *FilterOperator) buildCriteriaText(c *Criteria) (string, error) {
 	// NOT CONTAINS
 	// IS EMPTY
 
-	switch c.Operator {
-	case "<", "<=", ">", "=", "!=":
-		return fmt.Sprintf("%s %s %s", c.FieldName, c.Operator, c.Value), nil
-	case "CONTAINS", "NOT CONTAINS":
-		return fmt.Sprintf("%s %s %s", c.FieldName, c.Operator, c.Value), nil
-	case "IS EMPTY":
-		return fmt.Sprintf("%s %s %s", c.FieldName, c.Operator, c.Value), nil
-	default:
-		return "", errors.New("unknown operator")
+	// TODO make sure value is compatible with column type
+	// we need to find out criteria's column type to be able to do this comparison
+	colType, exists := columnTypeMap[c.FieldName]
+	if !exists {
+		return "", errors.New("column doesn't exist")
+	}
 
+	switch c.Operator {
+	case "<", "<=", ">", ">=":
+		// valid for numerical and timestamp
+		return t.buildComparisonQuery(c, colType)
+	case "=", "!=":
+		// valid for all data types
+		return t.buildEqualsQuery(c, colType)
+	case "CONTAINS", "NOT CONTAINS":
+		// valid for string
+		return t.buildContainsQuery(c, colType)
+	case "IS EMPTY":
+		// valid for all
+		return t.buildEmptyQuery(c, colType)
+	default:
+		return "", errors.New("unknown comparison operator in filter")
 	}
 }
 
 // this should be a recursive function
-func (t *FilterOperator) buildWhereClause(statement *FilterStatement) (string, error) {
+func (t *FilterOperator) buildWhereClause(statement *FilterStatement, columnTypeMap map[string]types.CellDataType) (string, error) {
 	if statement.Criteria != nil {
 		// this is a simple query
-		return t.buildCriteriaText(statement.Criteria)
+		return t.buildCriteriaText(statement.Criteria, columnTypeMap)
 	}
 	var query strings.Builder
 	var err error
-	for _, stmt := range statement.Statements {
+	if len(statement.Statements)-1 != len(statement.Conditions) {
+		return "", errors.New("invalid where clause configuration")
+	}
+
+	for i, stmt := range statement.Statements {
 
 		var q string
 		if stmt.Criteria != nil {
 			// this is a simple statement
-			q, err = t.buildCriteriaText(stmt.Criteria)
+			q, err = t.buildCriteriaText(stmt.Criteria, columnTypeMap)
 		} else {
-			q, err = t.buildWhereClause(stmt)
+			q, err = t.buildWhereClause(stmt, columnTypeMap)
 		}
 
 		if err != nil {
@@ -97,22 +182,28 @@ func (t *FilterOperator) buildWhereClause(statement *FilterStatement) (string, e
 		if err != nil {
 			return "", err
 		}
+
+		if i != len(statement.Statements)-1 {
+			query.WriteString(statement.Conditions[i])
+			query.WriteString(" ")
+		}
 	}
 
 	return query.String(), err
 }
 
-func extractHeaders(dataset *types.DataSet) []string {
+func extractHeadersAndTypeMap(dataset *types.DataSet) ([]string, map[string]types.CellDataType) {
+	columnTypeMap := make(map[string]types.CellDataType)
 	columnLength := len(dataset.Rows[0].Columns)
 	cols := make([]string, columnLength)
 	for i := 0; i < columnLength; i++ {
 		cols[i] = *dataset.Rows[0].Columns[i].ColumnName
+		columnTypeMap[*dataset.Rows[0].Columns[i].ColumnName] = dataset.Rows[0].Columns[i].CellValue.DataType
 	}
 
-	return cols
+	return cols, columnTypeMap
 }
 
-// TODO think about rawinput vs converted input
 func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*types.DataSet, error) {
 
 	typedConfig, err := buildConfiguration(config)
@@ -120,7 +211,7 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*type
 		return nil, err
 	}
 
-	headers := extractHeaders(dataset)
+	headers, colTypeMap := extractHeadersAndTypeMap(dataset)
 
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
@@ -128,7 +219,7 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*type
 	sb.WriteString(" FROM ")
 	sb.WriteString(defaultTableName)
 	sb.WriteString(" WHERE ")
-	whereClause, err := t.buildWhereClause(typedConfig.Statement)
+	whereClause, err := t.buildWhereClause(typedConfig.Statement, colTypeMap)
 	if err != nil {
 		return nil, err
 	}
@@ -141,20 +232,21 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*type
 	inMemoryDataSource := lmnqlbridge.NewLmnInMemDataSource(exit)
 
 	inMemoryDataSource.AddTable(defaultTableName, dataset)
+	schemaName := RandStringBytesMaskImprSrcUnsafe(15)
 
-	schema.RegisterSourceAsSchema(defaultDBName, inMemoryDataSource)
-	result, columns, err := lmnqlbridge.RunQLQuery(defaultDBName, fullQuery)
+	err = schema.RegisterSourceAsSchema(schemaName, inMemoryDataSource)
 	if err != nil {
 		return nil, err
 	}
-	// so here we have our new data
-
-	// TODO convert this to a common format
-	result = append([][]string{columns}, result...)
-	return &types.InputData{
-		RawData:                  result,
-		RawDataFirstLineIsHeader: true,
-	}, nil
+	defer func() {
+		schema.DefaultRegistry().SchemaDrop(schemaName, schemaName, lex.TokenSchema)
+	}()
+	result, columns, err := lmnqlbridge.RunQLQuery(schemaName, fullQuery)
+	if err != nil {
+		return nil, err
+	}
+	ds := convertToDataSet(result, columns)
+	return ds, nil
 }
 
 func buildConfiguration(config string) (*FilterConfiguration, error) {
