@@ -68,9 +68,32 @@ func buildTestFilterSteps() []*types.TransformationStep {
 	}
 	filterStep2.Configuration = string(b2)
 
+	s1 := "ifel(balance < 300, abs(-250.23), ifel(5 > 3, round(2.5666, 3), 5)) AS wealth, " +
+		"floorx(4.688, 2) as flr, " +
+		"minx(balance, 700) as minb, " +
+		"maxx(balance, 700) as maxb"
+
+	newColStep1 := &types.TransformationStep{
+		Step:          3,
+		Enabled:       true,
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	s2 := "avg(balance) as b"
+
+	newColStep2 := &types.TransformationStep{
+		Step:          4,
+		Enabled:       true,
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s2 + "\", \"groupby\": \"is_active\"}",
+	}
+
 	steps := make([]*types.TransformationStep, 0)
-	steps = append(steps, filterStep2)
-	steps = append(steps, filterStep1)
+	// steps = append(steps, filterStep2)
+	// steps = append(steps, filterStep1)
+	steps = append(steps, newColStep1)
+	steps = append(steps, newColStep2)
 	return steps
 }
 

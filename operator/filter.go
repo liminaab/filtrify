@@ -14,8 +14,6 @@ import (
 	"limina.com/dyntransformer/types"
 )
 
-const defaultTableName string = "ext"
-
 type FilterOperator struct {
 }
 
@@ -192,21 +190,9 @@ func (t *FilterOperator) buildWhereClause(statement *FilterStatement, columnType
 	return query.String(), err
 }
 
-func extractHeadersAndTypeMap(dataset *types.DataSet) ([]string, map[string]types.CellDataType) {
-	columnTypeMap := make(map[string]types.CellDataType)
-	columnLength := len(dataset.Rows[0].Columns)
-	cols := make([]string, columnLength)
-	for i := 0; i < columnLength; i++ {
-		cols[i] = *dataset.Rows[0].Columns[i].ColumnName
-		columnTypeMap[*dataset.Rows[0].Columns[i].ColumnName] = dataset.Rows[0].Columns[i].CellValue.DataType
-	}
-
-	return cols, columnTypeMap
-}
-
 func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*types.DataSet, error) {
 
-	typedConfig, err := buildConfiguration(config)
+	typedConfig, err := t.buildConfiguration(config)
 	if err != nil {
 		return nil, err
 	}
@@ -249,13 +235,16 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*type
 	return ds, nil
 }
 
-func buildConfiguration(config string) (*FilterConfiguration, error) {
+func (t *FilterOperator) buildConfiguration(config string) (*FilterConfiguration, error) {
 	if len(config) < 1 {
 		return nil, errors.New("invalid configuration")
 	}
 	// config is a json declaration of our field configuration
 	typedConfig := FilterConfiguration{}
-	json.Unmarshal([]byte(config), &typedConfig)
+	err := json.Unmarshal([]byte(config), &typedConfig)
+	if err != nil {
+		return nil, err
+	}
 
 	if typedConfig.Statement == nil {
 		return nil, errors.New("invalid configuration")
@@ -265,6 +254,6 @@ func buildConfiguration(config string) (*FilterConfiguration, error) {
 }
 
 func (t *FilterOperator) ValidateConfiguration(config string) (bool, error) {
-	typedConfig, err := buildConfiguration(config)
+	typedConfig, err := t.buildConfiguration(config)
 	return typedConfig != nil, err
 }

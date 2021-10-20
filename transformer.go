@@ -14,6 +14,9 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	case types.Filter:
 		op = &operator.FilterOperator{}
 		break
+	case types.NewColumn:
+		op = &operator.NewColumnOperator{}
+		break
 	default:
 		return nil, errors.New("unknown operator")
 	}
