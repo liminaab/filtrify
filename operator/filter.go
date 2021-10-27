@@ -201,7 +201,12 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*type
 
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
-	sb.WriteString(strings.Join(headers, ","))
+	for i, h := range headers {
+		sb.WriteString(fmt.Sprintf("%s", h))
+		if i != len(headers)-1 {
+			sb.WriteString(",")
+		}
+	}
 	sb.WriteString(" FROM ")
 	sb.WriteString(defaultTableName)
 	sb.WriteString(" WHERE ")

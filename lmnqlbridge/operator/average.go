@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/araddon/qlbridge/aggr"
 	"github.com/araddon/qlbridge/expr"
 	"github.com/araddon/qlbridge/value"
 )
@@ -57,4 +58,35 @@ func averageEval(ctx expr.EvalContext, vals []value.Value) (value.Value, bool) {
 		return value.NewNumberValue(avg / float64(ct)), true
 	}
 	return value.NumberNaNValue, false
+}
+
+func (m *Average) GetAggregator() aggr.AggregatorFactory {
+	return NewAverage
+}
+
+type average struct {
+	ct int64
+	n  float64
+}
+
+func (m *average) Do(v value.Value) {
+	m.ct++
+	switch vt := v.(type) {
+	case value.IntValue:
+		m.n += vt.Float()
+	case value.NumberValue:
+		m.n += vt.Val()
+	}
+}
+func (m *average) Result() interface{} {
+	return m.n / float64(m.ct)
+}
+func (m *average) Merge(a *aggr.AggPartial) {
+	m.ct += a.Ct
+	m.n += a.N
+}
+func (m *average) Reset() { m.n = 0; m.ct = 0 }
+
+func NewAverage() aggr.Aggregator {
+	return &average{}
 }

@@ -25,6 +25,7 @@ var dateTimeFormats []string = []string{
 	"2 Jan 2006 15:04:05",
 	"2 Jan 2006 15:04",
 	"Mon, 2 Jan 2006 15:04:05 MST",
+	"2006-01-02 15:04:05",
 	// date
 	"2006-01-02",
 	"20060102",
@@ -32,11 +33,12 @@ var dateTimeFormats []string = []string{
 	"02 January 2006",
 	"02-Jan-2006",
 	"01/02/06",
-	"01/02/2006",
+	"01/01/2006",
+	"13/01/2006",
 	"010206",
 	"Jan-02-06",
 	"Jan-02-2006",
-	"06",
+	// "06",
 	"Mon",
 	"Monday	",
 	"Jan-06",
@@ -176,6 +178,10 @@ func estimateColumnType(rawData [][]string, colIndex int) types.CellDataType {
 	currentType := types.TimestampType
 	for i := 0; i < len(rawData); i++ {
 		cellData := rawData[i][colIndex]
+		// no need to try this cell
+		if len(cellData) == 0 {
+			continue
+		}
 		_, err := parseToCell(cellData, currentType)
 		if err != nil {
 			currentType = getNextTypeToParse(currentType)
@@ -213,7 +219,14 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 		}
 		for ci, _ := range headers {
 			typedCols[ci].ColumnName = &headers[ci]
-			cell, err := parseToCell(row[ci], cellTypes[ci])
+			var cell *types.CellValue
+			if len(row[ci]) > 0 {
+				cell, err = parseToCell(row[ci], cellTypes[ci])
+			} else {
+				cell = &types.CellValue{
+					DataType: types.NilType,
+				}
+			}
 			if err != nil {
 				return nil, err
 			}

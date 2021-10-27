@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type TransformationOperatorType int64
 type CellDataType int64
@@ -22,6 +25,27 @@ const (
 	BoolType
 	NilType
 )
+
+func (e CellDataType) String() string {
+	switch e {
+	case IntType:
+		return "IntType"
+	case LongType:
+		return "LongType"
+	case TimestampType:
+		return "TimestampType"
+	case StringType:
+		return "StringType"
+	case DoubleType:
+		return "DoubleType"
+	case BoolType:
+		return "BoolType"
+	case NilType:
+		return "NilType"
+	default:
+		return fmt.Sprintf("%d", int(e))
+	}
+}
 
 const (
 	Filter TransformationOperatorType = iota

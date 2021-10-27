@@ -1,8 +1,8 @@
-user_id,balance,created_at,is_active
-9Ip1aKbeZe2njCDM,5000,2012-11-02T15:04:05,True
-Akp1aKbeZe2njCDM,7000,2015-11-02T15:04:05,False
-Akp1aKbeHe2njCDM,7800,2017-11-02T15:04:05,True
-hT2impsOPUREcVPc,286,2009-09-02T15:04:05,true
-hT2impsabc345c,9650,2008-06-02T15:04:05,false
-hT2impsafc355c,300,2005-03-02T15:04:05,False
-hT2empsafc355c,5200,1997-01-02T15:04:05,fAlsE
+user_id,balance,created_at,is_active,weight,name,ugly_data
+9Ip1aKbeZe2njCDM,5000,2012-11-02T15:04:05,True,0.08,bahadir,12;20
+Akp1aKbeZe2njCDM,7000,2015-11-02T15:04:05,False,0.1,nisan,12;20
+Akp1aKbeHe2njCDM,7800,2017-11-02T15:04:05,True,1.4,aras,12;20
+hT2impsOPUREcVPc,286,2009-09-02T15:04:05,true,1.2,osman,12;20
+hT2impsabc345c,9650,2008-06-02T15:04:05,false,2.5,hilmi,12;20
+hT2impsafc355c,300,2005-03-02T15:04:05,False,0.9,mahmut,12;20
+hT2empsafc355c,5200,1997-01-02T15:04:05,fAlsE,0.74,husamettin,12;20

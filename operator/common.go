@@ -32,7 +32,13 @@ func extractHeadersAndTypeMap(dataset *types.DataSet) ([]string, map[string]type
 	cols := make([]string, columnLength)
 	for i := 0; i < columnLength; i++ {
 		cols[i] = *dataset.Rows[0].Columns[i].ColumnName
-		columnTypeMap[*dataset.Rows[0].Columns[i].ColumnName] = dataset.Rows[0].Columns[i].CellValue.DataType
+		columnTypeMap[*dataset.Rows[0].Columns[i].ColumnName] = types.NilType
+		for j := 0; j < len(dataset.Rows); j++ {
+			if dataset.Rows[j].Columns[i].CellValue.DataType != types.NilType {
+				columnTypeMap[*dataset.Rows[0].Columns[i].ColumnName] = dataset.Rows[j].Columns[i].CellValue.DataType
+				break
+			}
+		}
 	}
 
 	return cols, columnTypeMap
