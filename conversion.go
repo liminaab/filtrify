@@ -33,8 +33,9 @@ var dateTimeFormats []string = []string{
 	"02 January 2006",
 	"02-Jan-2006",
 	"01/02/06",
+	"01/02/2006",
 	"01/01/2006",
-	"13/01/2006",
+	"02/01/2006",
 	"010206",
 	"Jan-02-06",
 	"Jan-02-2006",
@@ -74,6 +75,15 @@ func tryParseDateAndTime(data string) *time.Time {
 	}
 
 	return nil
+}
+
+func parsePercentage(data string) (float64, error) {
+	newData := strings.ReplaceAll(data, " ", "")
+	if strings.Contains(newData, "%") {
+		newData = strings.ReplaceAll(data, "%", "")
+		return strconv.ParseFloat(newData, 64)
+	}
+	return 0, errors.New("invalid percentage format")
 }
 
 func parseTimestamp(data string) (*time.Time, error) {
@@ -122,11 +132,17 @@ func parseToCell(data string, enforceType types.CellDataType) (*types.CellValue,
 		cellValue.StringValue = data
 		break
 	case types.DoubleType:
-		i, err := strconv.ParseFloat(data, 64)
-		if err != nil {
-			return nil, err
+		// how about we try to check if this is percentage?
+		i, err := parsePercentage(data)
+		if err == nil {
+			cellValue.DoubleValue = i
+		} else {
+			i, err = strconv.ParseFloat(data, 64)
+			if err != nil {
+				return nil, err
+			}
+			cellValue.DoubleValue = i
 		}
-		cellValue.DoubleValue = i
 		break
 	case types.BoolType:
 		data = strings.ToLower(data)
