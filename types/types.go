@@ -76,15 +76,15 @@ type TransformationOperator interface {
 // }
 
 type DataSet struct {
-	Rows []DataRow
+	Rows []*DataRow
 }
 
 type DataRow struct {
-	Columns []DataColumn
+	Columns []*DataColumn
 }
 type DataColumn struct {
-	ColumnName *string
-	CellValue  CellValue
+	ColumnName string
+	CellValue  *CellValue
 }
 type CellValue struct {
 	DataType            CellDataType

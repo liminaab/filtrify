@@ -72,7 +72,7 @@ func (m *Sum) GetAggregator() aggr.AggregatorFactory {
 }
 
 type sum struct {
-	ct int64
+	ct float64
 	n  float64
 }
 

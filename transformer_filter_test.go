@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"limina.com/dyntransformer"
 	"limina.com/dyntransformer/operator"
+	"limina.com/dyntransformer/test"
 	"limina.com/dyntransformer/types"
 )
 
@@ -54,7 +55,7 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 	assert.Len(t, newData.Rows, len(basicData)-3, "Basic filtering operation failed")
 	for _, r := range newData.Rows {
 		for _, c := range r.Columns {
-			if *c.ColumnName != "balance" {
+			if c.ColumnName != "balance" {
 				continue
 			}
 			assert.Greater(t, c.CellValue.LongValue, int64(300), "balance filtering has failed")
@@ -62,26 +63,8 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 	}
 }
 
-var uat1TestData [][]string = [][]string{
-	{"Instrument name", "Instrument Type", "Quantity", "Market Value (Base)", "Exposure %", "Maturity Date", "EU Sanction listed", "Active From"},
-	{"ERIC B SS Equity", "Equity", "175 000.00", "2 000 000.00", "8%", "", "true", "2020-01-01 12:00:00"},
-	{"AMZN US Equity", "Equity", "1 500.00", "6 000 000.00", "25%", "", "false", "2020-03-01 12:00:00"},
-	{"T 0 12/31/21", "Bill", "9 000 000.00", "8 750 000.00", "30%", "2021-12-31", "false", "2020-11-22 12:00:00"},
-	{"ESZ1", "Index Future", "-10.00", "-495 000.00", "17%", "2021-12-16", "false", "2021-04-06 12:00:00"},
-	{"USD Cash", "Cash Account", "5 000 000.00", "5 000 000.0", "20%", "", "", "2020-01-01 12:00:00"},
-}
-
-var uat1TestDataFormatted [][]string = [][]string{
-	{"Instrument name", "Instrument Type", "Quantity", "Market Value (Base)", "Exposure %", "Maturity Date", "EU Sanction listed", "Active From"},
-	{"ERIC B SS Equity", "Equity", "175000.00", "2000000.00", "8%", "", "true", "2020-01-01 12:00:00"},
-	{"AMZN US Equity", "Equity", "1500.00", "6000000.00", "25%", "", "false", "2020-03-01 12:00:00"},
-	{"T 0 12/31/21", "Bill", "9000000.00", "8750000.00", "30%", "2021-12-31", "false", "2020-11-22 12:00:00"},
-	{"ESZ1", "Index Future", "-10.00", "-495000.00", "17%", "2021-12-16", "false", "2021-04-06 12:00:00"},
-	{"USD Cash", "Cash Account", "5000000.00", "5000000.0", "20%", "", "", "2020-01-01 12:00:00"},
-}
-
 func TestHandleNegativeWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(uat1TestDataFormatted, true, true)
+	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -113,7 +96,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 	assert.Len(t, newData.Rows, 1, "Basic filtering operation failed. invalid number of columns")
 	for _, r := range newData.Rows {
 		for _, c := range r.Columns {
-			if *c.ColumnName != "Quantity" {
+			if c.ColumnName != "Quantity" {
 				continue
 			}
 			assert.Less(t, c.CellValue.DoubleValue, float64(0), "quantity filtering has failed")
@@ -122,7 +105,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 }
 
 func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(uat1TestDataFormatted, true, true)
+	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -154,7 +137,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 	assert.Len(t, newData.Rows, 3, "Basic filtering operation failed. invalid number of columns")
 	for _, r := range newData.Rows {
 		for _, c := range r.Columns {
-			if *c.ColumnName != "Market Value (Base)" {
+			if c.ColumnName != "Market Value (Base)" {
 				continue
 			}
 			assert.Greater(t, c.CellValue.DoubleValue, float64(2000000.00), "market value base filtering has failed")
@@ -163,7 +146,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 }
 
 func TestHandlePercentageWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(uat1TestDataFormatted, true, true)
+	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -196,7 +179,7 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(uat1TestDataFormatted, true, true)
+	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -228,7 +211,7 @@ func TestHandleListWhereCriteria(t *testing.T) {
 	assert.Len(t, newData.Rows, 3, "List filtering operation failed. invalid number of columns")
 	for _, r := range newData.Rows {
 		for _, c := range r.Columns {
-			if *c.ColumnName != "Instrument Type" {
+			if c.ColumnName != "Instrument Type" {
 				continue
 			}
 			assert.True(t, c.CellValue.StringValue == "Equity" || c.CellValue.StringValue == "Bill", "instrument type base filtering has failed")
@@ -237,7 +220,7 @@ func TestHandleListWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListAndNestedWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(uat1TestDataFormatted, true, true)
+	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -281,7 +264,7 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 	assert.Len(t, newData.Rows, 2, "List filtering operation failed. invalid number of columns")
 	for _, r := range newData.Rows {
 		for _, c := range r.Columns {
-			if *c.ColumnName != "Instrument Type" {
+			if c.ColumnName != "Instrument Type" {
 				continue
 			}
 			assert.True(t, c.CellValue.StringValue == "Equity" || c.CellValue.StringValue == "Bill", "instrument type base filtering has failed")
@@ -290,7 +273,7 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListAndNested2WhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(uat1TestDataFormatted, true, true)
+	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -358,7 +341,7 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 	assert.Len(t, newData.Rows, 2, "List filtering operation failed. invalid number of columns")
 	for _, r := range newData.Rows {
 		for _, c := range r.Columns {
-			if *c.ColumnName != "Instrument Type" {
+			if c.ColumnName != "Instrument Type" {
 				continue
 			}
 			assert.True(t, c.CellValue.StringValue == "Equity" || c.CellValue.StringValue == "Bill", "instrument type base filtering has failed")

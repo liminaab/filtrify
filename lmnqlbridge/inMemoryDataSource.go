@@ -84,14 +84,14 @@ func (m *LmnInMemDataSource) AddTable(name string, dataset *types.DataSet) {
 	inMemTable.headers = make([]string, len(sampleRow.Columns))
 	// let's calculate headers
 	for i, col := range sampleRow.Columns {
-		inMemTable.headers[i] = *col.ColumnName
+		inMemTable.headers[i] = col.ColumnName
 	}
 	colindex := make(map[string]int, len(sampleRow.Columns))
 	for i := range sampleRow.Columns {
-		colindex[*sampleRow.Columns[i].ColumnName] = i
+		colindex[sampleRow.Columns[i].ColumnName] = i
 		internalType := m.mapToInternalType(sampleRow.Columns[i].CellValue.DataType)
 		// TODO calculate length !!!!!!!!!!!!!!!!!!!
-		inMemTable.table.AddField(schema.NewFieldBase(*sampleRow.Columns[i].ColumnName, internalType, 64, *sampleRow.Columns[i].ColumnName))
+		inMemTable.table.AddField(schema.NewFieldBase(sampleRow.Columns[i].ColumnName, internalType, 64, sampleRow.Columns[i].ColumnName))
 	}
 	inMemTable.colindex = colindex
 	inMemTable.dataset = dataset
@@ -177,7 +177,7 @@ func (m *LmnInMemTable) Next() schema.Message {
 			}
 			vals := make([]driver.Value, len(row.Columns))
 			for i, val := range row.Columns {
-				vals[i] = m.getCellValue(&val)
+				vals[i] = m.getCellValue(val)
 			}
 			//u.Debugf("headers: %#v \n\trows:  %#v", m.headers, row)
 			// return datasource.NewSqlDriverMessageMap(m.rowCount, , m.colindex)

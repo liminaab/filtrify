@@ -9,27 +9,38 @@ import (
 
 var loadOnce sync.Once
 
+var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
+	"average":          &operator.Average{},
+	"weighted_average": &operator.WeightedAverage{},
+	"first":            &operator.First{},
+	"last":             &operator.Last{},
+	"mincol":           &operator.MinCol{},
+	"maxcol":           &operator.MaxCol{},
+	"sumx":             &operator.Sum{},
+	"ifel":             &operator.IF{},
+	"abs":              &operator.ABS{},
+	"round":            &operator.Round{},
+	"floorx":           &operator.Floor{},
+	"minx":             &operator.MIN{},
+	"maxx":             &operator.MAX{},
+	"left":             &operator.Left{},
+	"right":            &operator.Right{},
+	"split":            &operator.Split{},
+	"concat":           &operator.Concat{},
+	"containsx":        &operator.Contains{},
+	"notcontainsx":     &operator.NotContains{},
+	"today":            &operator.Today{},
+	"eval":             &operator.Eval{},
+}
+
+func GetOperators() map[string]expr.CustomFunc {
+	return operators
+}
+
 func LoadLiminaOperators() {
 	loadOnce.Do(func() {
-		expr.FuncAdd("average", &operator.Average{})
-		expr.FuncAdd("waverage", &operator.WeightedAverage{})
-		expr.FuncAdd("first", &operator.First{})
-		expr.FuncAdd("last", &operator.Last{})
-		expr.FuncAdd("mincol", &operator.MinCol{})
-		expr.FuncAdd("maxcol", &operator.MaxCol{})
-		expr.FuncAdd("sumx", &operator.Sum{})
-		expr.FuncAdd("ifel", &operator.IF{})
-		expr.FuncAdd("abs", &operator.ABS{})
-		expr.FuncAdd("round", &operator.Round{})
-		expr.FuncAdd("floorx", &operator.Floor{})
-		expr.FuncAdd("minx", &operator.MIN{})
-		expr.FuncAdd("maxx", &operator.MAX{})
-		expr.FuncAdd("left", &operator.Left{})
-		expr.FuncAdd("right", &operator.Right{})
-		expr.FuncAdd("split", &operator.Split{})
-
-		expr.FuncAdd("concat", &operator.Concat{})
-		expr.FuncAdd("containsx", &operator.Contains{})
-		expr.FuncAdd("notcontainsx", &operator.NotContains{})
+		for key, op := range operators {
+			expr.FuncAdd(key, op)
+		}
 	})
 }

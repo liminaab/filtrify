@@ -8,7 +8,7 @@ import (
 	"limina.com/dyntransformer/types"
 )
 
-func convertToCell(d interface{}) types.CellValue {
+func convertToCell(d interface{}) *types.CellValue {
 	cell := types.CellValue{}
 	isPtr := reflect.ValueOf(d).Type().Kind() == reflect.Ptr
 	if isPtr {
@@ -58,21 +58,22 @@ func convertToCell(d interface{}) types.CellValue {
 		cell.DataType = types.NilType
 		break
 	}
-	return cell
+	return &cell
 }
 
 func convertToDataSet(data [][]interface{}, headers []string) *types.DataSet {
 	dataSet := &types.DataSet{}
-	dataSet.Rows = make([]types.DataRow, len(data))
+	dataSet.Rows = make([]*types.DataRow, len(data))
 	for ri, r := range data {
 		dataRow := types.DataRow{}
-		dataRow.Columns = make([]types.DataColumn, len(headers))
+		dataRow.Columns = make([]*types.DataColumn, len(headers))
 		for i, c := range r {
-			dataRow.Columns[i].ColumnName = &headers[i]
+			dataRow.Columns[i] = &types.DataColumn{}
+			dataRow.Columns[i].ColumnName = headers[i]
 			dataRow.Columns[i].CellValue = convertToCell(c)
 		}
 
-		dataSet.Rows[ri] = dataRow
+		dataSet.Rows[ri] = &dataRow
 	}
 
 	return dataSet

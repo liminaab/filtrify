@@ -1,11 +1,15 @@
 package operator
 
 import (
+	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 	"unsafe"
 
 	"github.com/araddon/qlbridge/expr/builtins"
+	"github.com/araddon/qlbridge/lex"
+	"github.com/araddon/qlbridge/schema"
 	"limina.com/dyntransformer/lmnqlbridge"
 	"limina.com/dyntransformer/types"
 )
@@ -26,16 +30,38 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
+func executeSQLQuery(q string, dataset *types.DataSet) (*types.DataSet, error) {
+	exit := make(chan bool)
+	inMemoryDataSource := lmnqlbridge.NewLmnInMemDataSource(exit)
+
+	inMemoryDataSource.AddTable(defaultTableName, dataset)
+	schemaName := RandStringBytesMaskImprSrcUnsafe(15)
+
+	err := schema.RegisterSourceAsSchema(schemaName, inMemoryDataSource)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		schema.DefaultRegistry().SchemaDrop(schemaName, schemaName, lex.TokenSchema)
+	}()
+	result, columns, err := lmnqlbridge.RunQLQuery(schemaName, q)
+	if err != nil {
+		return nil, err
+	}
+	ds := convertToDataSet(result, columns)
+	return ds, nil
+}
+
 func extractHeadersAndTypeMap(dataset *types.DataSet) ([]string, map[string]types.CellDataType) {
 	columnTypeMap := make(map[string]types.CellDataType)
 	columnLength := len(dataset.Rows[0].Columns)
 	cols := make([]string, columnLength)
 	for i := 0; i < columnLength; i++ {
-		cols[i] = *dataset.Rows[0].Columns[i].ColumnName
-		columnTypeMap[*dataset.Rows[0].Columns[i].ColumnName] = types.NilType
+		cols[i] = dataset.Rows[0].Columns[i].ColumnName
+		columnTypeMap[dataset.Rows[0].Columns[i].ColumnName] = types.NilType
 		for j := 0; j < len(dataset.Rows); j++ {
 			if dataset.Rows[j].Columns[i].CellValue.DataType != types.NilType {
-				columnTypeMap[*dataset.Rows[0].Columns[i].ColumnName] = dataset.Rows[j].Columns[i].CellValue.DataType
+				columnTypeMap[dataset.Rows[0].Columns[i].ColumnName] = dataset.Rows[j].Columns[i].CellValue.DataType
 				break
 			}
 		}
@@ -60,4 +86,15 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 	}
 
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+func buildSelectStatement(selectFields []string) string {
+	var sb strings.Builder
+	for i, h := range selectFields {
+		sb.WriteString(fmt.Sprintf("`%s`", h))
+		if i != len(selectFields)-1 {
+			sb.WriteString(",")
+		}
+	}
+	return sb.String()
 }

@@ -45,6 +45,12 @@ func concatEval(ctx expr.EvalContext, vals []value.Value) (value.Value, bool) {
 				continue
 			}
 			args = append(args, val)
+		case value.BoolValue:
+			val := "false"
+			if valTyped.Val() {
+				val = "true"
+			}
+			args = append(args, val)
 		}
 	}
 	if len(args) == 0 {

@@ -49,8 +49,8 @@ func weightedAverageEval(ctx expr.EvalContext, vals []value.Value) (value.Value,
 			avg[i] += v.Float()
 		}
 	}
-
-	return value.NewNumberValue(avg[0] * avg[1]), true
+	v := []value.Value{value.NewNumberValue(avg[0] * avg[1]), value.NewNumberValue(avg[1])}
+	return value.NewSliceValues(v), true
 }
 
 func (m *WeightedAverage) GetAggregator() aggr.AggregatorFactory {
@@ -58,21 +58,31 @@ func (m *WeightedAverage) GetAggregator() aggr.AggregatorFactory {
 }
 
 type weightedAverage struct {
-	ct int64
+	ct float64
 	n  float64
 }
 
 func (m *weightedAverage) Do(v value.Value) {
-	m.ct++
-	switch vt := v.(type) {
-	case value.IntValue:
-		m.n += vt.Float()
+	if !v.Type().IsSlice() {
+		panic("invalid type")
+	}
+	sliceVal := v.Value().([]value.Value)
+	if len(sliceVal) != 2 {
+		panic("invalid type")
+	}
+	switch vt := sliceVal[0].(type) {
 	case value.NumberValue:
 		m.n += vt.Val()
 	}
+
+	switch vt := sliceVal[1].(type) {
+	case value.NumberValue:
+		m.ct += vt.Val()
+	}
 }
 func (m *weightedAverage) Result() interface{} {
-	return m.n / float64(m.ct)
+	val := m.n / float64(m.ct)
+	return math.Round(val*100) / 100
 }
 func (m *weightedAverage) Merge(a *aggr.AggPartial) {
 	m.ct += a.Ct

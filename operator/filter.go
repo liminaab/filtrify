@@ -7,10 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/araddon/qlbridge/lex"
 	_ "github.com/araddon/qlbridge/qlbdriver"
-	"github.com/araddon/qlbridge/schema"
-	"limina.com/dyntransformer/lmnqlbridge"
 	"limina.com/dyntransformer/types"
 )
 
@@ -260,12 +257,7 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*type
 
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
-	for i, h := range headers {
-		sb.WriteString(fmt.Sprintf("`%s`", h))
-		if i != len(headers)-1 {
-			sb.WriteString(",")
-		}
-	}
+	sb.WriteString(buildSelectStatement(headers))
 	sb.WriteString(" FROM ")
 	sb.WriteString(defaultTableName)
 	sb.WriteString(" WHERE ")
@@ -276,27 +268,7 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string) (*type
 	sb.WriteString(whereClause)
 	fullQuery := sb.String()
 
-	// now let's run it
-	// TODO wrap these on a common place
-	exit := make(chan bool)
-	inMemoryDataSource := lmnqlbridge.NewLmnInMemDataSource(exit)
-
-	inMemoryDataSource.AddTable(defaultTableName, dataset)
-	schemaName := RandStringBytesMaskImprSrcUnsafe(15)
-
-	err = schema.RegisterSourceAsSchema(schemaName, inMemoryDataSource)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		schema.DefaultRegistry().SchemaDrop(schemaName, schemaName, lex.TokenSchema)
-	}()
-	result, columns, err := lmnqlbridge.RunQLQuery(schemaName, fullQuery)
-	if err != nil {
-		return nil, err
-	}
-	ds := convertToDataSet(result, columns)
-	return ds, nil
+	return executeSQLQuery(fullQuery, dataset)
 }
 
 func (t *FilterOperator) buildConfiguration(config string) (*FilterConfiguration, error) {

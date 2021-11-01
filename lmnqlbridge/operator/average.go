@@ -65,7 +65,7 @@ func (m *Average) GetAggregator() aggr.AggregatorFactory {
 }
 
 type average struct {
-	ct int64
+	ct float64
 	n  float64
 }
 

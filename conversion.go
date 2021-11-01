@@ -81,7 +81,11 @@ func parsePercentage(data string) (float64, error) {
 	newData := strings.ReplaceAll(data, " ", "")
 	if strings.Contains(newData, "%") {
 		newData = strings.ReplaceAll(data, "%", "")
-		return strconv.ParseFloat(newData, 64)
+		val, err := strconv.ParseFloat(newData, 64)
+		if err != nil {
+			return 0, err
+		}
+		return val / 100, nil
 	}
 	return 0, errors.New("invalid percentage format")
 }
@@ -223,18 +227,19 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 		}
 	}
 
-	dataRows := make([]types.DataRow, len(data))
+	dataRows := make([]*types.DataRow, len(data))
 	dataSet := types.DataSet{
 		Rows: dataRows,
 	}
 	// now we need to iterate over these
 	for ri, row := range data {
-		typedCols := make([]types.DataColumn, len(headers))
-		typedRow := types.DataRow{
+		typedCols := make([]*types.DataColumn, len(headers))
+		typedRow := &types.DataRow{
 			Columns: typedCols,
 		}
 		for ci, _ := range headers {
-			typedCols[ci].ColumnName = &headers[ci]
+			typedCols[ci] = &types.DataColumn{}
+			typedCols[ci].ColumnName = headers[ci]
 			var cell *types.CellValue
 			if len(row[ci]) > 0 {
 				cell, err = parseToCell(row[ci], cellTypes[ci])
@@ -246,7 +251,7 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 			if err != nil {
 				return nil, err
 			}
-			typedCols[ci].CellValue = *cell
+			typedCols[ci].CellValue = cell
 		}
 
 		dataRows[ri] = typedRow
