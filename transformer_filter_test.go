@@ -28,8 +28,6 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
@@ -69,8 +67,6 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
@@ -110,8 +106,6 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
@@ -151,8 +145,6 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
@@ -184,8 +176,6 @@ func TestHandleListWhereCriteria(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
@@ -225,8 +215,6 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
@@ -278,8 +266,6 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{

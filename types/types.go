@@ -50,7 +50,7 @@ func (e CellDataType) String() string {
 const (
 	Filter TransformationOperatorType = iota
 	NewColumn
-	Sum
+	Aggregate
 )
 
 type InputData struct {
@@ -59,8 +59,6 @@ type InputData struct {
 }
 
 type TransformationStep struct {
-	Step          int
-	Enabled       bool
 	Operator      TransformationOperatorType
 	Configuration string
 }

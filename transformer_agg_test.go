@@ -16,8 +16,6 @@ func TestBasicAggNewColumn(t *testing.T) {
 	}
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"groupby\": \"EU Sanction listed\"}",
 	}

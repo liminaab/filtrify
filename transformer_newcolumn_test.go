@@ -20,8 +20,6 @@ func TestBasicNewColumn(t *testing.T) {
 	s1 := "`Instrument Type` AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -53,8 +51,6 @@ func TestMathematicalNewColumn(t *testing.T) {
 	s1 := "`Quantity`+1 AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -85,8 +81,6 @@ func TestCombiningNewColumn(t *testing.T) {
 	s1 := "`Quantity`*`Exposure %` AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -120,8 +114,6 @@ func TestAggSumNewColumn(t *testing.T) {
 	s1 := "SUMX(`Market Value (Base)`) AS `Test Column`,`Quantity`*2 AS q2"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -148,8 +140,6 @@ func TestAggAvgNewColumn(t *testing.T) {
 	s1 := "average(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -177,8 +167,6 @@ func TestAggWeightedAvgNewColumn(t *testing.T) {
 	s1 := "weighted_average(`Market Value (Base)`, `Quantity`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -206,8 +194,6 @@ func TestFirstNewColumn(t *testing.T) {
 	s1 := "first(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -235,8 +221,6 @@ func TestLastNewColumn(t *testing.T) {
 	s1 := "last(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -264,8 +248,6 @@ func TestMaxColNewColumn(t *testing.T) {
 	s1 := "MAXCOL(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -293,8 +275,6 @@ func TestMinColNewColumn(t *testing.T) {
 	s1 := "MINCOL(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -324,8 +304,6 @@ func TestManualStringConcatNewColumn(t *testing.T) {
 	s1 := "CONCAT(`Instrument name`, '<', `Instrument Type`, '>', '') AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -360,8 +338,6 @@ func TestManualStringNonTextConcatNewColumn(t *testing.T) {
 	s1 := "CONCAT(`Instrument name`, '<S=', `EU Sanction listed`, '>', '') AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -402,8 +378,6 @@ func TestLeftNewColumn(t *testing.T) {
 	s1 := "LEFT(`Instrument name`, 6) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -438,8 +412,6 @@ func TestRightNewColumn(t *testing.T) {
 	s1 := "RIGHT(`Instrument name`, 3) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -474,8 +446,6 @@ func TestLeftRightNestedNewColumn(t *testing.T) {
 	s1 := "RIGHT(LEFT(`Instrument name`, 6), 4) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -514,8 +484,6 @@ func TestSplitNewColumn(t *testing.T) {
 	s1 := "SPLIT(`Instrument name`, ' ', 1) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -546,8 +514,6 @@ func TestSimpleIFNewColumn(t *testing.T) {
 	s1 := "IFEL(`Instrument Type` == 'Equity', 'Yes', 'No') AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -581,8 +547,6 @@ func TestIFWithConditionNewColumn(t *testing.T) {
 	s1 := "IFEL(`Instrument Type` == 'Equity' && LEFT(`Instrument name`, 4) == 'ERIC', 'Yes', 'No') AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -621,11 +585,10 @@ func TestIFWithMultipleConditionsNewColumn(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	// TODO think about this eval thing
 	s1 := "IFEL(`Instrument Type` == 'Equity' || EVAL(`Active From` < '2021-01-01' && `EU Sanction listed` == false), 'Yes', 'No') AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -671,8 +634,6 @@ func TestIFContainsNewColumn(t *testing.T) {
 	s1 := "IFEL(CONTAINSX(`Instrument name`, 'ERIC'), 'Yes', 'No') AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -707,8 +668,6 @@ func TestIFNotContainsNewColumn(t *testing.T) {
 	s1 := "IFEL(NOTCONTAINSX(`Instrument name`, 'ERIC'), 'Yes', 'No') AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
@@ -743,8 +702,6 @@ func TestNestedIFNewColumn(t *testing.T) {
 	s1 := "IFEL(`Instrument Type` == 'Equity', 'Yes', IFEL(`Exposure %` > 0.25, 'Yes', 'No')) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
-		Step:          0,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}

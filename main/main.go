@@ -18,8 +18,6 @@ import (
 
 func buildTestFilterSteps() []*types.TransformationStep {
 	filterStep1 := &types.TransformationStep{
-		Step:     0,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
@@ -38,8 +36,6 @@ func buildTestFilterSteps() []*types.TransformationStep {
 	filterStep1.Configuration = string(b1)
 
 	filterStep2 := &types.TransformationStep{
-		Step:     1,
-		Enabled:  true,
 		Operator: types.Filter,
 	}
 	createdAtStatement := &operator.FilterStatement{
@@ -92,8 +88,6 @@ func buildTestFilterSteps() []*types.TransformationStep {
 
 	s3 := "left(name, 3) AS fn, right(name, 3) AS ln, split(ugly_data, ';', 2) AS sp"
 	newColStep3 := &types.TransformationStep{
-		Step:          4,
-		Enabled:       true,
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s3 + "\"}",
 	}

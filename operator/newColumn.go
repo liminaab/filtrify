@@ -15,6 +15,7 @@ import (
 type NewColumnOperator struct {
 }
 
+// TODO find better names for these variables
 type NewColumnConfiguration struct {
 	Statement string `json:"statement"`
 	GroupBy   string `json:"groupby"`
