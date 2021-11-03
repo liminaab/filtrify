@@ -18,6 +18,8 @@ type FilterConfiguration struct {
 	Statement *FilterStatement `json:"statement"`
 }
 
+// TODO find better names here
+// somehow show that Statements is some nested criteria
 type FilterStatement struct {
 	Statements []*FilterStatement `json:"statements"`
 	Conditions []string           `json:"conditions"`

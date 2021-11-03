@@ -17,6 +17,9 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	case types.NewColumn:
 		op = &operator.NewColumnOperator{}
 		break
+	case types.Aggregate:
+		op = &operator.AggregateOperator{}
+		break
 	default:
 		return nil, errors.New("unknown operator")
 	}
@@ -27,8 +30,7 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 		return nil, err
 	}
 	if !state {
-		// well?? what now
-		// TODO discuss this
+		return nil, errors.New("invalid configuration")
 	}
 
 	transformedData, err := op.Transform(dataset, step.Configuration)
