@@ -7,7 +7,7 @@ import (
 	"limina.com/dyntransformer/types"
 )
 
-func processTransformation(dataset *types.DataSet, step *types.TransformationStep) (*types.DataSet, error) {
+func processTransformation(dataset *types.DataSet, step *types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
 	var op types.TransformationOperator
 
 	switch step.Operator {
@@ -19,6 +19,9 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 		break
 	case types.Aggregate:
 		op = &operator.AggregateOperator{}
+		break
+	case types.Lookup:
+		op = &operator.LookupOperator{}
 		break
 	default:
 		return nil, errors.New("unknown operator")
@@ -33,7 +36,7 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 		return nil, errors.New("invalid configuration")
 	}
 
-	transformedData, err := op.Transform(dataset, step.Configuration)
+	transformedData, err := op.Transform(dataset, step.Configuration, otherSets)
 	if err != nil {
 		return nil, err
 	}
@@ -41,11 +44,11 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	return transformedData, nil
 }
 
-func Transform(dataset *types.DataSet, transformations []*types.TransformationStep) (*types.DataSet, error) {
+func Transform(dataset *types.DataSet, transformations []*types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
 	newData := dataset
 	var err error
 	for _, ts := range transformations {
-		newData, err = processTransformation(newData, ts)
+		newData, err = processTransformation(newData, ts, otherSets)
 		if err != nil {
 			// wow we failed
 			return nil, err

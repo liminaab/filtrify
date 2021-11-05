@@ -73,7 +73,7 @@ func buildLiminaAggSelectStatement(selectAgg *AggregateSelect, index int) (strin
 	return sb.String(), nil
 }
 
-func (t *AggregateOperator) Transform(dataset *types.DataSet, config string) (*types.DataSet, error) {
+func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
 	typedConfig, err := t.buildConfiguration(config)
 	if err != nil {
 		return nil, err

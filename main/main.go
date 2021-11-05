@@ -114,7 +114,7 @@ func main() {
 		panic(err.Error())
 	}
 	steps := buildTestFilterSteps()
-	newData, err := dyntransformer.Transform(ds, steps)
+	newData, err := dyntransformer.Transform(ds, steps, nil)
 	if err != nil {
 		panic(err.Error())
 	}

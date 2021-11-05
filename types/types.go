@@ -51,6 +51,7 @@ const (
 	Filter TransformationOperatorType = iota
 	NewColumn
 	Aggregate
+	Lookup
 )
 
 type InputData struct {
@@ -64,7 +65,7 @@ type TransformationStep struct {
 }
 
 type TransformationOperator interface {
-	Transform(dataset *DataSet, config string) (*DataSet, error)
+	Transform(dataset *DataSet, config string, otherSets map[string]*DataSet) (*DataSet, error)
 	ValidateConfiguration(config string) (bool, error)
 }
 

@@ -24,7 +24,7 @@ func TestBasicNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -55,7 +55,7 @@ func TestMathematicalNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -85,7 +85,7 @@ func TestCombiningNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -118,7 +118,7 @@ func TestAggSumNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -144,7 +144,7 @@ func TestAggAvgNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -171,7 +171,7 @@ func TestAggWeightedAvgNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -198,7 +198,7 @@ func TestFirstNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -225,7 +225,7 @@ func TestLastNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -252,7 +252,7 @@ func TestMaxColNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -279,7 +279,7 @@ func TestMinColNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -308,7 +308,7 @@ func TestManualStringConcatNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -342,7 +342,7 @@ func TestManualStringNonTextConcatNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -382,7 +382,7 @@ func TestLeftNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -416,7 +416,7 @@ func TestRightNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -450,7 +450,7 @@ func TestLeftRightNestedNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -488,7 +488,7 @@ func TestSplitNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -518,7 +518,7 @@ func TestSimpleIFNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -551,7 +551,7 @@ func TestIFWithConditionNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -593,7 +593,7 @@ func TestIFWithMultipleConditionsNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -638,7 +638,7 @@ func TestIFContainsNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -672,7 +672,7 @@ func TestIFNotContainsNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -706,7 +706,7 @@ func TestNestedIFNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

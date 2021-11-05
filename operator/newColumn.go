@@ -21,7 +21,7 @@ type NewColumnConfiguration struct {
 	GroupBy   string `json:"groupby"`
 }
 
-func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string) (*types.DataSet, error) {
+func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
 
 	typedConfig, err := t.buildConfiguration(config)
 	if err != nil {

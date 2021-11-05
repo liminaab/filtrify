@@ -45,7 +45,7 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -84,7 +84,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -123,7 +123,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -162,7 +162,7 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -193,7 +193,7 @@ func TestHandleListWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -244,7 +244,7 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -319,7 +319,7 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1})
+	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}

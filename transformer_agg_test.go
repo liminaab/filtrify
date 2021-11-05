@@ -222,7 +222,7 @@ func TestBasicAggregate(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step})
+	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -261,7 +261,7 @@ func TestAverageAggregate(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step})
+	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -309,7 +309,7 @@ func TestWeightedAverageAggregate(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step})
+	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -352,7 +352,7 @@ func TestMultipleGroupByColumns(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step})
+	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
