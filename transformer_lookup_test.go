@@ -32,6 +32,15 @@ func findFirstRowWithCriteria(dataset *types.DataSet, vals []*types.DataColumn) 
 	return nil
 }
 
+func isRightMatchColumn(colName string, config *operator.LookupConfiguration) bool {
+	for _, c := range config.Columns {
+		if colName == c.Right {
+			return true
+		}
+	}
+	return false
+}
+
 func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined *types.DataSet, config *operator.LookupConfiguration) {
 
 	leftRefRow := left.Rows[0]
@@ -42,30 +51,40 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 			col := test.GetColumn(jr, lc.ColumnName)
 			assert.NotNil(t, col, fmt.Sprintf("%s column was not found", lc.ColumnName))
 		}
-		// there should exist rows from right with a prefix
-		for _, rc := range rightRefRow.Columns {
-			expectedColName := fmt.Sprintf("%s.%s", config.TargetDataset, rc.ColumnName)
-			col := test.GetColumn(jr, expectedColName)
-			assert.NotNil(t, col, fmt.Sprintf("%s column was not found", expectedColName))
-		}
 
-		// now let's see if merged keys were correct
-		for _, col := range config.Columns {
-			lCol := test.GetColumn(jr, col.Left)
-			assert.NotNil(t, lCol, fmt.Sprintf("%s column was not found", col.Left))
-
-			expectedRightColName := fmt.Sprintf("%s.%s", config.TargetDataset, col.Right)
-			rCol := test.GetColumn(jr, expectedRightColName)
-			assert.NotNil(t, rCol, fmt.Sprintf("%s column was not found", expectedRightColName))
-
-			// now we need to make sure they are equal
-			if lCol == nil || lCol.CellValue.DataType == types.NilType ||
-				rCol == nil || rCol.CellValue.DataType == types.NilType {
-				continue
+		if !config.RemoveRightMatchColumn {
+			// there should exist rows from right with a prefix
+			for _, rc := range rightRefRow.Columns {
+				expectedColName := fmt.Sprintf("%s.%s", config.TargetDataset, rc.ColumnName)
+				if config.RemoveRightDatasetPrefix {
+					expectedColName = rc.ColumnName
+				}
+				col := test.GetColumn(jr, expectedColName)
+				assert.NotNil(t, col, fmt.Sprintf("%s column was not found", expectedColName))
 			}
 
-			if !test.HasSameValues(lCol.CellValue, rCol.CellValue) {
-				assert.Fail(t, "joined columns don't have same values")
+			// now let's see if merged keys were correct
+			for _, col := range config.Columns {
+				lCol := test.GetColumn(jr, col.Left)
+				assert.NotNil(t, lCol, fmt.Sprintf("%s column was not found", col.Left))
+
+				expectedRightColName := fmt.Sprintf("%s.%s", config.TargetDataset, col.Right)
+				if config.RemoveRightDatasetPrefix {
+					expectedRightColName = col.Right
+				}
+
+				rCol := test.GetColumn(jr, expectedRightColName)
+				assert.NotNil(t, rCol, fmt.Sprintf("%s column was not found", expectedRightColName))
+
+				// now we need to make sure they are equal
+				if lCol == nil || lCol.CellValue.DataType == types.NilType ||
+					rCol == nil || rCol.CellValue.DataType == types.NilType {
+					continue
+				}
+
+				if !test.HasSameValues(lCol.CellValue, rCol.CellValue) {
+					assert.Fail(t, "joined columns don't have same values")
+				}
 			}
 		}
 
@@ -84,12 +103,26 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 		}
 		// let's make sure that all values are same
 		// let's create a temporary copy row
-		copyRow := &types.DataRow{
-			Columns: make([]*types.DataColumn, len(matchedRowOnRight.Columns)),
+		targetLength := len(matchedRowOnRight.Columns)
+		if config.RemoveRightMatchColumn {
+			targetLength -= len(config.Columns)
 		}
-		for i, c := range matchedRowOnRight.Columns {
-			copyRow.Columns[i] = test.CopyColumn(c)
-			copyRow.Columns[i].ColumnName = fmt.Sprintf("%s.%s", config.TargetDataset, c.ColumnName)
+		copyRow := &types.DataRow{
+			Columns: make([]*types.DataColumn, targetLength),
+		}
+		colCounter := 0
+		for _, c := range matchedRowOnRight.Columns {
+			if config.RemoveRightMatchColumn && isRightMatchColumn(c.ColumnName, config) {
+				// let's skip this
+				continue
+			}
+			copyRow.Columns[colCounter] = test.CopyColumn(c)
+			expectedColName := fmt.Sprintf("%s.%s", config.TargetDataset, c.ColumnName)
+			if config.RemoveRightDatasetPrefix {
+				expectedColName = c.ColumnName
+			}
+			copyRow.Columns[colCounter].ColumnName = expectedColName
+			colCounter++
 		}
 
 		// now we have to make sure that joined row is exactly same as copy row in every value
@@ -125,6 +158,8 @@ func TestBasicLookup(t *testing.T) {
 				Right: "Instrument ID",
 			},
 		},
+		RemoveRightMatchColumn:   false,
+		RemoveRightDatasetPrefix: false,
 	}
 	b1, err := json.Marshal(conf)
 	if err != nil {
@@ -167,6 +202,8 @@ func TestMultiMatchLookup(t *testing.T) {
 				Right: "ISIN",
 			},
 		},
+		RemoveRightMatchColumn:   false,
+		RemoveRightDatasetPrefix: false,
 	}
 	b1, err := json.Marshal(conf)
 	if err != nil {
@@ -214,6 +251,8 @@ func TestMultiConditionsLookup(t *testing.T) {
 				Right: "Currency",
 			},
 		},
+		RemoveRightMatchColumn:   false,
+		RemoveRightDatasetPrefix: false,
 	}
 	b1, err := json.Marshal(conf)
 	if err != nil {

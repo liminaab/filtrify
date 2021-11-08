@@ -52,6 +52,7 @@ const (
 	NewColumn
 	Aggregate
 	Lookup
+	MappedValue
 )
 
 type InputData struct {

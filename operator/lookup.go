@@ -18,8 +18,10 @@ type JoinColumn struct {
 }
 
 type LookupConfiguration struct {
-	TargetDataset string        `json:"targetDataset"`
-	Columns       []*JoinColumn `json:"columns"`
+	TargetDataset            string        `json:"targetDataset"`
+	Columns                  []*JoinColumn `json:"columns"`
+	RemoveRightMatchColumn   bool          `json:"removeRightMatchColumn"`
+	RemoveRightDatasetPrefix bool          `json:"removeRightDatasetPrefix"`
 }
 
 func (t *LookupOperator) GetColumn(r *types.DataRow, col string) *types.DataColumn {
@@ -75,7 +77,7 @@ func (t *LookupOperator) isEqual(cell1 *types.CellValue, cell2 *types.CellValue)
 	return false
 }
 
-func (t *LookupOperator) copyColumn(col *types.DataColumn, namePrefix string) *types.DataColumn {
+func (t *LookupOperator) copyColumn(col *types.DataColumn, config *LookupConfiguration) *types.DataColumn {
 
 	cellVal := &types.CellValue{
 		DataType: col.CellValue.DataType,
@@ -102,45 +104,81 @@ func (t *LookupOperator) copyColumn(col *types.DataColumn, namePrefix string) *t
 	}
 
 	newCol := &types.DataColumn{
-		ColumnName: fmt.Sprintf("%s.%s", namePrefix, col.ColumnName),
+		ColumnName: t.getRightColumnName(col, config),
 		CellValue:  cellVal,
 	}
 
 	return newCol
 }
 
-func (t *LookupOperator) mergeRows(left *types.DataRow, right *types.DataRow, rightSetName string) *types.DataRow {
-	newRow := &types.DataRow{
-		Columns: make([]*types.DataColumn, len(left.Columns)+len(right.Columns)),
-	}
-	for i, c := range left.Columns {
-		newRow.Columns[i] = c
-	}
-	for i, c := range right.Columns {
-		newRow.Columns[len(left.Columns)+i] = t.copyColumn(c, rightSetName)
-	}
-
-	return newRow
-}
-
-func (t *LookupOperator) mergeNilRow(left *types.DataRow, rightTemplate *types.DataRow, rightSetName string) *types.DataRow {
-	newRow := &types.DataRow{
-		Columns: make([]*types.DataColumn, len(left.Columns)+len(rightTemplate.Columns)),
-	}
-	for i, c := range left.Columns {
-		newRow.Columns[i] = c
-	}
-	for i, c := range rightTemplate.Columns {
-		newRow.Columns[len(left.Columns)+i] = &types.DataColumn{
-			ColumnName: fmt.Sprintf("%s.%s", rightSetName, c.ColumnName),
-			CellValue:  &types.CellValue{DataType: types.NilType},
+func (t *LookupOperator) isRightMatchColumn(col *types.DataColumn, config *LookupConfiguration) bool {
+	for _, c := range config.Columns {
+		if col.ColumnName == c.Right {
+			return true
 		}
 	}
+	return false
+}
+
+func (t *LookupOperator) getRightColumnName(col *types.DataColumn, config *LookupConfiguration) string {
+	if config.RemoveRightDatasetPrefix {
+		return col.ColumnName
+	}
+	return fmt.Sprintf("%s.%s", config.TargetDataset, col.ColumnName)
+}
+
+func (t *LookupOperator) mergeRows(left *types.DataRow, right *types.DataRow, config *LookupConfiguration) *types.DataRow {
+	targetLength := len(left.Columns) + len(right.Columns)
+	if config.RemoveRightMatchColumn {
+		targetLength -= len(config.Columns)
+	}
+	newRow := &types.DataRow{
+		Columns: make([]*types.DataColumn, targetLength),
+	}
+	for i, c := range left.Columns {
+		newRow.Columns[i] = c
+	}
+	colCounter := 0
+	for _, c := range right.Columns {
+		if config.RemoveRightMatchColumn && t.isRightMatchColumn(c, config) {
+			// let's skip this
+			continue
+		}
+		newRow.Columns[len(left.Columns)+colCounter] = t.copyColumn(c, config)
+		colCounter++
+	}
 
 	return newRow
 }
 
-func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, rightSetName string, cols []*JoinColumn) *types.DataSet {
+func (t *LookupOperator) mergeNilRow(left *types.DataRow, rightTemplate *types.DataRow, config *LookupConfiguration) *types.DataRow {
+	targetLength := len(left.Columns) + len(rightTemplate.Columns)
+	if config.RemoveRightMatchColumn {
+		targetLength -= len(config.Columns)
+	}
+	newRow := &types.DataRow{
+		Columns: make([]*types.DataColumn, targetLength),
+	}
+	for i, c := range left.Columns {
+		newRow.Columns[i] = c
+	}
+	colCounter := 0
+	for _, c := range rightTemplate.Columns {
+		if config.RemoveRightMatchColumn && t.isRightMatchColumn(c, config) {
+			// let's skip this
+			continue
+		}
+		newRow.Columns[len(left.Columns)+colCounter] = &types.DataColumn{
+			ColumnName: t.getRightColumnName(c, config),
+			CellValue:  &types.CellValue{DataType: types.NilType},
+		}
+		colCounter++
+	}
+
+	return newRow
+}
+
+func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, config *LookupConfiguration) *types.DataSet {
 	mergedSet := &types.DataSet{
 		Rows: make([]*types.DataRow, len(left.Rows)),
 	}
@@ -149,14 +187,14 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, ri
 
 	refRow := right.Rows[0]
 	for li, lr := range left.Rows {
-		leftJoinColumns := make([]*types.DataColumn, len(cols))
-		for i, jc := range cols {
+		leftJoinColumns := make([]*types.DataColumn, len(config.Columns))
+		for i, jc := range config.Columns {
 			leftJoinColumns[i] = leftIndex[lr][jc.Left]
 		}
 		var matchRow *types.DataRow = nil
 		for _, rr := range right.Rows {
-			rightJoinColumns := make([]*types.DataColumn, len(cols))
-			for i, jc := range cols {
+			rightJoinColumns := make([]*types.DataColumn, len(config.Columns))
+			for i, jc := range config.Columns {
 				rightJoinColumns[i] = rightIndex[rr][jc.Right]
 			}
 			foundMatch := true
@@ -175,10 +213,10 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, ri
 		}
 		var newRow *types.DataRow = nil
 		if matchRow != nil {
-			newRow = t.mergeRows(lr, matchRow, rightSetName)
+			newRow = t.mergeRows(lr, matchRow, config)
 		} else {
 			// we need to do a nil merge
-			newRow = t.mergeNilRow(lr, refRow, rightSetName)
+			newRow = t.mergeNilRow(lr, refRow, config)
 		}
 		mergedSet.Rows[li] = newRow
 
@@ -212,7 +250,7 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 		}
 	}
 
-	firstOriginalRow := tds.Rows[0]
+	firstOriginalRow := dataset.Rows[0]
 	for _, col := range typedConfig.Columns {
 		realCol := t.GetColumn(firstOriginalRow, col.Left)
 		if realCol == nil {
@@ -221,7 +259,7 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 	}
 
 	// wow we are ready to join those tables
-	mergedSet := t.mergeSets(dataset, tds, typedConfig.TargetDataset, typedConfig.Columns)
+	mergedSet := t.mergeSets(dataset, tds, typedConfig)
 	return mergedSet, nil
 }
 
