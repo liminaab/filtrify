@@ -23,6 +23,9 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	case types.Lookup:
 		op = &operator.LookupOperator{}
 		break
+	case types.MappedValue:
+		op = &operator.MappedValueOperator{}
+		break
 	default:
 		return nil, errors.New("unknown operator")
 	}

@@ -250,7 +250,7 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 		}
 	}
 
-	firstOriginalRow := tds.Rows[0]
+	firstOriginalRow := dataset.Rows[0]
 	for _, col := range typedConfig.Columns {
 		realCol := t.GetColumn(firstOriginalRow, col.Left)
 		if realCol == nil {

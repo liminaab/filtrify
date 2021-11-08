@@ -54,6 +54,24 @@ var UATLookupJoinTestDataFormatted [][]string = [][]string{
 	{"5", "ERIC B LN Equity", "SE0000108656", "CHF", "Europe"},
 }
 
+var UATMappedValueTestDataFormatted [][]string = [][]string{
+	{"Instrument name", "Broker ID", "Quantity"},
+	{"ERIC B SS Equity", "1", "175 000.00"},
+	{"AMZN US Equity", "2", "1 500.00"},
+	{"T 0 12/31/21", "1", "9 000 000.00"},
+	{"ESZ1", "1", "-10.00"},
+	{"USD Cash", "", "5 000 000.00"},
+	{"ERIC B LN Equity", "3", "175 000.00"},
+}
+
+var UATMappedValueMapTestDataFormatted [][]string = [][]string{
+	{"Key", "Value"},
+	{"1", "Goldman Sachs Int."},
+	{"2", "UBS"},
+	{"3", "Credit Suisse"},
+	{"4", "SEB"},
+}
+
 func CopyColumn(col *types.DataColumn) *types.DataColumn {
 
 	cellVal := &types.CellValue{
