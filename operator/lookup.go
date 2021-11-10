@@ -274,6 +274,23 @@ func (t *LookupOperator) buildConfiguration(config string) (*LookupConfiguration
 		return nil, err
 	}
 
+	if len(typedConfig.TargetDataset) < 1 {
+		return nil, errors.New("missing targetdataset in lookup configuration")
+	}
+
+	if len(typedConfig.Columns) < 1 {
+		return nil, errors.New("missing columns in lookup configuration")
+	}
+
+	for _, ob := range typedConfig.Columns {
+		if len(ob.Left) < 1 {
+			return nil, errors.New("missing join left in lookup configuration")
+		}
+		if len(ob.Right) < 1 {
+			return nil, errors.New("missing join right in lookup configuration")
+		}
+	}
+
 	return &typedConfig, nil
 }
 

@@ -143,6 +143,16 @@ func (t *SortOperator) buildConfiguration(config string) (*SortConfiguration, er
 		return nil, err
 	}
 
+	if len(typedConfig.OrderBy) < 1 {
+		return nil, errors.New("missing orderby configuration")
+	}
+
+	for _, ob := range typedConfig.OrderBy {
+		if len(ob.ColumnName) < 1 {
+			return nil, errors.New("missing column name in orderby configuration")
+		}
+	}
+
 	return &typedConfig, nil
 }
 

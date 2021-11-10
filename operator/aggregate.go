@@ -157,7 +157,7 @@ func (t *AggregateOperator) buildConfiguration(config string) (*AggregateConfigu
 	}
 
 	if len(typedConfig.GroupBy) < 1 {
-		return nil, errors.New("invalid aggregate configuration")
+		return nil, errors.New("missing groupby in aggregate configuration")
 	}
 
 	return &typedConfig, nil

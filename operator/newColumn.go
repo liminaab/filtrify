@@ -202,6 +202,10 @@ func (t *NewColumnOperator) buildConfiguration(config string) (*NewColumnConfigu
 		return nil, err
 	}
 
+	if len(typedConfig.Statement) < 1 {
+		return nil, errors.New("missing statement in newcolumn configuration")
+	}
+
 	return &typedConfig, nil
 }
 

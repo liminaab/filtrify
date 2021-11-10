@@ -87,6 +87,15 @@ func (t *MappedValueOperator) buildConfiguration(config string) (*MappedValueCon
 	if err != nil {
 		return nil, err
 	}
+	if len(typedConfig.MappedColumnName) < 1 {
+		return nil, errors.New("missing mappedcolumname in mappedvalue configuration")
+	}
+	if len(typedConfig.NewColumnName) < 1 {
+		return nil, errors.New("missing newcolumnname in mappedvalue configuration")
+	}
+	if len(typedConfig.TargetDataset) < 1 {
+		return nil, errors.New("missing targetdataset in mappedvalue configuration")
+	}
 
 	return &typedConfig, nil
 }
