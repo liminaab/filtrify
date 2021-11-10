@@ -53,6 +53,7 @@ const (
 	Aggregate
 	Lookup
 	MappedValue
+	Sort
 )
 
 type InputData struct {

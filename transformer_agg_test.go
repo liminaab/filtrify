@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"limina.com/dyntransformer"
@@ -60,7 +61,14 @@ func calculateFieldValueForLmnAgg(t *testing.T, ds *types.DataSet, fieldToCalcul
 			}
 			break
 		case types.TimestampType:
-			return nil
+			if !isLastValSet {
+				lastVal = calcCol.CellValue.TimestampValue
+				isLastValSet = true
+			} else {
+				if !calcCol.CellValue.TimestampValue.Equal(lastVal.(time.Time)) {
+					return nil
+				}
+			}
 		case types.StringType:
 			if !isLastValSet {
 				lastVal = calcCol.CellValue.StringValue

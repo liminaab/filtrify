@@ -179,16 +179,7 @@ func (m *LmnInMemTable) Next() schema.Message {
 			for i, val := range row.Columns {
 				vals[i] = m.getCellValue(val)
 			}
-			//u.Debugf("headers: %#v \n\trows:  %#v", m.headers, row)
-			// return datasource.NewSqlDriverMessageMap(m.rowCount, , m.colindex)
-			mm := &datasource.SqlDriverMessageMap{IdVal: m.rowCount, ColIndex: m.colindex, Vals: vals}
-			// TODO fix this !!!!!!!!
-			switch v := vals[0].(type) {
-			case string:
-				mm.SetKey(v)
-			}
-
-			return mm
+			return &datasource.SqlDriverMessageMap{IdVal: m.rowCount, ColIndex: m.colindex, Vals: vals}
 		}
 	}
 }

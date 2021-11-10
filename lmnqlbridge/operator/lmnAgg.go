@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/araddon/qlbridge/aggr"
 	"github.com/araddon/qlbridge/expr"
@@ -74,6 +75,16 @@ func (m *liminaAggCalc) Do(v value.Value) {
 			m.isLastValSet = true
 		} else {
 			if m.lastVal.(bool) != vt.Val() {
+				m.lastVal = nil
+			}
+		}
+		break
+	case value.TimeValue:
+		if !m.isLastValSet {
+			m.lastVal = vt.Val()
+			m.isLastValSet = true
+		} else {
+			if !vt.Val().Equal(m.lastVal.(time.Time)) {
 				m.lastVal = nil
 			}
 		}

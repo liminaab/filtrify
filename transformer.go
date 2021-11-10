@@ -26,6 +26,9 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	case types.MappedValue:
 		op = &operator.MappedValueOperator{}
 		break
+	case types.Sort:
+		op = &operator.SortOperator{}
+		break
 	default:
 		return nil, errors.New("unknown operator")
 	}
