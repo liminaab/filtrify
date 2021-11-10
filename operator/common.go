@@ -98,3 +98,7 @@ func buildSelectStatement(selectFields []string) string {
 	}
 	return sb.String()
 }
+
+func buildColumnNotExistsError(column string) error {
+	return fmt.Errorf("attempted to operate on column “%s” but no such column available", column)
+}

@@ -79,7 +79,7 @@ func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ m
 		return nil, err
 	}
 
-	headers, _ := extractHeadersAndTypeMap(dataset)
+	headers, columnTypeMap := extractHeadersAndTypeMap(dataset)
 
 	headerSelectMap := make(map[string][]*AggregateSelect)
 	for _, h := range headers {
@@ -122,6 +122,11 @@ func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ m
 	if len(typedConfig.GroupBy) > 0 {
 		sb.WriteString(" GROUP BY ")
 		for i, gb := range typedConfig.GroupBy {
+			// let's check if this column exists to group by
+			_, exists := columnTypeMap[gb]
+			if !exists {
+				return nil, buildColumnNotExistsError(gb)
+			}
 			sb.WriteString(fmt.Sprintf("`%s`", gb))
 			if i != len(typedConfig.GroupBy)-1 {
 				sb.WriteString(",")

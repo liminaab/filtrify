@@ -2,6 +2,7 @@ package dyntransformer
 
 import (
 	"errors"
+	"fmt"
 
 	"limina.com/dyntransformer/operator"
 	"limina.com/dyntransformer/types"
@@ -33,7 +34,6 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 		return nil, errors.New("unknown operator")
 	}
 
-	// TODO check errors
 	state, err := op.ValidateConfiguration(step.Configuration)
 	if err != nil {
 		return nil, err
@@ -53,11 +53,12 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 func Transform(dataset *types.DataSet, transformations []*types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
 	newData := dataset
 	var err error
-	for _, ts := range transformations {
+	for i, ts := range transformations {
 		newData, err = processTransformation(newData, ts, otherSets)
+		// let's wrap this error message to give more details
 		if err != nil {
 			// wow we failed
-			return nil, err
+			return nil, fmt.Errorf("could not apply transformation: %s (%s operator, step %d)", err.Error(), ts.Operator.String(), i)
 		}
 	}
 

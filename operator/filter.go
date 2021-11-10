@@ -127,11 +127,10 @@ func (t *FilterOperator) buildCriteriaText(c *Criteria, columnTypeMap map[string
 	// NOT CONTAINS
 	// IS EMPTY
 
-	// TODO make sure value is compatible with column type
 	// we need to find out criteria's column type to be able to do this comparison
 	colType, exists := columnTypeMap[c.FieldName]
 	if !exists {
-		return "", errors.New("column doesn't exist")
+		return "", buildColumnNotExistsError(c.FieldName)
 	}
 
 	switch c.Operator {

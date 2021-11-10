@@ -105,12 +105,12 @@ func (t *SortOperator) Transform(dataset *types.DataSet, config string, _ map[st
 		for _, c := range typedConfig.OrderBy {
 			col1 := t.GetColumn(dataset.Rows[i], c.ColumnName)
 			if col1 == nil {
-				err = errors.New("invalid column in order by configuration")
+				err = buildColumnNotExistsError(c.ColumnName)
 				return true
 			}
 			col2 := t.GetColumn(dataset.Rows[j], c.ColumnName)
 			if col2 == nil {
-				err = errors.New("invalid column in order by configuration")
+				err = buildColumnNotExistsError(c.ColumnName)
 				return true
 			}
 			result, internalErr := t.CompareColumns(col1, col2)

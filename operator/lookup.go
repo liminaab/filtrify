@@ -246,7 +246,7 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 	for _, col := range typedConfig.Columns {
 		realCol := t.GetColumn(firstTargetRow, col.Right)
 		if realCol == nil {
-			return nil, errors.New("column not found in target dataset")
+			return nil, buildColumnNotExistsError(col.Right)
 		}
 	}
 
@@ -254,7 +254,7 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 	for _, col := range typedConfig.Columns {
 		realCol := t.GetColumn(firstOriginalRow, col.Left)
 		if realCol == nil {
-			return nil, errors.New("column not found in original dataset")
+			return nil, buildColumnNotExistsError(col.Left)
 		}
 	}
 

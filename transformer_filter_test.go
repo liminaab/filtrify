@@ -334,3 +334,36 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 		}
 	}
 }
+
+func TestFilterInvalidColumn(t *testing.T) {
+	plainData, err := dyntransformer.ConvertToTypedData(SEQTestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	filterConf := &operator.FilterConfiguration{
+		Statement: &operator.FilterStatement{
+			Criteria: &operator.Criteria{
+				FieldName: "Instrument Class",
+				Operator:  "!=",
+				Value:     "Index Future",
+			},
+		},
+	}
+
+	filterConfText, err := json.Marshal(filterConf)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	steps := []*types.TransformationStep{
+		{
+			Operator:      types.Filter,
+			Configuration: string(filterConfText),
+		},
+	}
+
+	_, err = dyntransformer.Transform(plainData, steps, nil)
+
+	assert.Error(t, err, "invalid column on filter operation didn't return an error")
+	assert.EqualError(t, err, "could not apply transformation: attempted to operate on column “Instrument Class” but no such column available (Filter operator, step 0)")
+}

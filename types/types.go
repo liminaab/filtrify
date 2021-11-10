@@ -8,6 +8,33 @@ import (
 type TransformationOperatorType int64
 type CellDataType int64
 
+const (
+	Filter TransformationOperatorType = iota
+	NewColumn
+	Aggregate
+	Lookup
+	MappedValue
+	Sort
+)
+
+func (t TransformationOperatorType) String() string {
+	switch t {
+	case Filter:
+		return "Filter"
+	case NewColumn:
+		return "NewColumn"
+	case Aggregate:
+		return "Aggregate"
+	case Lookup:
+		return "Lookup"
+	case MappedValue:
+		return "MappedValue"
+	case Sort:
+		return "Sort"
+	}
+	return "Unknown"
+}
+
 // intValue            int32
 // 	longValue           int64
 // 	timestampValue      time.Time // used for Timestamp, Date and Time of day
@@ -46,15 +73,6 @@ func (e CellDataType) String() string {
 		return fmt.Sprintf("%d", int(e))
 	}
 }
-
-const (
-	Filter TransformationOperatorType = iota
-	NewColumn
-	Aggregate
-	Lookup
-	MappedValue
-	Sort
-)
 
 type InputData struct {
 	RawData                  [][]string
