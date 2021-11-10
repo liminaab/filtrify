@@ -70,8 +70,9 @@ func TestBigDataFilter(t *testing.T) {
 	start = time.Now()
 	result, err := dyntransformer.Transform(plainData, steps, nil)
 	assert.NoError(t, err, "new aggregation column operation failed")
-	filterTime := time.Since(start)
-	t.Log(fmt.Printf("Filtering took %s", filterTime))
+	opTime := time.Since(start)
+	assert.LessOrEqual(t, int64(opTime), int64(3*time.Second), "transform operation took longer than expected")
+	t.Log(fmt.Printf("Filtering took %s", opTime))
 	rows := GetRandomResults(result, 1000)
 	for _, r := range rows {
 		col := test.GetColumn(r, "Units Sold")
@@ -115,8 +116,9 @@ func TestBigDataSort(t *testing.T) {
 	result, err := dyntransformer.Transform(plainData, steps, nil)
 	assert.NoError(t, err, "new aggregation column operation failed")
 	assert.NotNil(t, result)
-	filterTime := time.Since(start)
-	t.Log(fmt.Printf("Sorting took %s", filterTime))
+	opTime := time.Since(start)
+	assert.LessOrEqual(t, int64(opTime), int64(3*time.Second), "transform operation took longer than expected")
+	t.Log(fmt.Printf("Sorting took %s", opTime))
 
 	var lastVal *int64 = nil
 	firstCol := test.GetColumn(result.Rows[0], "Units Sold")
@@ -167,6 +169,7 @@ func TestBigDataAggAvgNewColumn(t *testing.T) {
 	assert.NoError(t, err, "new aggregation column operation failed")
 	opTime := time.Since(start)
 	t.Log(fmt.Printf("New Average Column took %s", opTime))
+	assert.LessOrEqual(t, int64(opTime), int64(3*time.Second), "transform operation took longer than expected")
 
 	// one header - 2 for filtered out rows
 	assert.Len(t, result.Rows, len(plainData.Rows), "Basic new column aggregation operation failed. invalid number of rows")
@@ -206,6 +209,8 @@ func TestBigDataAverageAggregate(t *testing.T) {
 	assert.NoError(t, err, "new aggregation column operation failed")
 	opTime := time.Since(start)
 	t.Log(fmt.Printf("Average took %s", opTime))
+
+	assert.LessOrEqual(t, int64(opTime), int64(3*time.Second), "transform operation took longer than expected")
 
 	fieldsToCheck := []string{
 		"Unit Price",
