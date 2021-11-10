@@ -16,7 +16,7 @@ func TestFilterInvalidColumn2(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterConf := &operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "Instrument Class",
 				Operator:  "!=",

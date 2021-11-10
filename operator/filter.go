@@ -15,15 +15,13 @@ type FilterOperator struct {
 }
 
 type FilterConfiguration struct {
-	Statement *FilterStatement `json:"statement"`
+	FilterCriteria *FilterCriteria `json:"filterCriteria"`
 }
 
-// TODO find better names here
-// somehow show that Statements is some nested criteria
-type FilterStatement struct {
-	Statements []*FilterStatement `json:"statements"`
-	Conditions []string           `json:"conditions"`
-	Criteria   *Criteria          `json:"criteria"`
+type FilterCriteria struct {
+	NestedCriterias []*FilterCriteria `json:"nestedCriterias"`
+	ChainWith       []string          `json:"chainWith"`
+	Criteria        *Criteria         `json:"criteria"`
 }
 
 type Criteria struct {
@@ -90,7 +88,7 @@ func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataTyp
 		return fmt.Sprintf("`%s` %s %d", c.FieldName, c.Operator, i), nil
 	case types.TimestampType:
 		// TODO define format smartly - think about this
-		return fmt.Sprintf("`%s` %s todate('2006-01-02T15:04:05', '%s')", c.FieldName, c.Operator, c.Value), nil
+		return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, c.Value), nil
 	case types.StringType:
 		return fmt.Sprintf("`%s` %s '%s'", c.FieldName, c.Operator, c.Value), nil
 	case types.DoubleType:
@@ -151,7 +149,7 @@ func (t *FilterOperator) buildCriteriaText(c *Criteria, columnTypeMap map[string
 	}
 }
 
-func (t *FilterOperator) isListComparison(statement *FilterStatement) bool {
+func (t *FilterOperator) isListComparison(statement *FilterCriteria) bool {
 	if statement.Criteria == nil {
 		return false
 	}
@@ -165,26 +163,26 @@ func (t *FilterOperator) isListComparison(statement *FilterStatement) bool {
 	return false
 }
 
-func (t *FilterOperator) compileListComparisonStatements(statement *FilterStatement) *FilterStatement {
-	newStatement := &FilterStatement{
+func (t *FilterOperator) compileListComparisonStatements(statement *FilterCriteria) *FilterCriteria {
+	newStatement := &FilterCriteria{
 		Criteria: nil,
 	}
-	newStatement.Statements = make([]*FilterStatement, 0)
-	newStatement.Conditions = make([]string, 0)
+	newStatement.NestedCriterias = make([]*FilterCriteria, 0)
+	newStatement.ChainWith = make([]string, 0)
 	val := statement.Criteria.Value
 	val = val[1 : len(val)-1]
 	values := strings.Split(val, ",")
 	for i, v := range values {
-		s := &FilterStatement{
+		s := &FilterCriteria{
 			Criteria: &Criteria{
 				FieldName: statement.Criteria.FieldName,
 				Operator:  statement.Criteria.Operator,
 				Value:     strings.TrimSpace(v),
 			},
 		}
-		newStatement.Statements = append(newStatement.Statements, s)
+		newStatement.NestedCriterias = append(newStatement.NestedCriterias, s)
 		if i != len(values)-1 {
-			newStatement.Conditions = append(newStatement.Conditions, "OR")
+			newStatement.ChainWith = append(newStatement.ChainWith, "OR")
 		}
 	}
 
@@ -192,7 +190,7 @@ func (t *FilterOperator) compileListComparisonStatements(statement *FilterStatem
 }
 
 // this should be a recursive function
-func (t *FilterOperator) buildWhereClause(statement *FilterStatement, columnTypeMap map[string]types.CellDataType) (string, error) {
+func (t *FilterOperator) buildWhereClause(statement *FilterCriteria, columnTypeMap map[string]types.CellDataType) (string, error) {
 	if t.isListComparison(statement) {
 		statement = t.compileListComparisonStatements(statement)
 	} else if statement.Criteria != nil {
@@ -203,11 +201,11 @@ func (t *FilterOperator) buildWhereClause(statement *FilterStatement, columnType
 	}
 	var query strings.Builder
 	var err error
-	if len(statement.Statements)-1 != len(statement.Conditions) {
+	if len(statement.NestedCriterias)-1 != len(statement.ChainWith) {
 		return "", errors.New("invalid where clause configuration")
 	}
 
-	for i, stmt := range statement.Statements {
+	for i, stmt := range statement.NestedCriterias {
 
 		var q string
 		if t.isListComparison(stmt) {
@@ -238,8 +236,8 @@ func (t *FilterOperator) buildWhereClause(statement *FilterStatement, columnType
 			return "", err
 		}
 
-		if i != len(statement.Statements)-1 {
-			query.WriteString(statement.Conditions[i])
+		if i != len(statement.NestedCriterias)-1 {
+			query.WriteString(statement.ChainWith[i])
 			query.WriteString(" ")
 		}
 	}
@@ -262,7 +260,7 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string, _ map[
 	sb.WriteString(" FROM ")
 	sb.WriteString(defaultTableName)
 	sb.WriteString(" WHERE ")
-	whereClause, err := t.buildWhereClause(typedConfig.Statement, colTypeMap)
+	whereClause, err := t.buildWhereClause(typedConfig.FilterCriteria, colTypeMap)
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +281,7 @@ func (t *FilterOperator) buildConfiguration(config string) (*FilterConfiguration
 		return nil, err
 	}
 
-	if typedConfig.Statement == nil {
+	if typedConfig.FilterCriteria == nil {
 		return nil, errors.New("invalid configuration")
 	}
 

@@ -31,7 +31,7 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "balance",
 				Operator:  ">",
@@ -70,7 +70,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "Quantity",
 				Operator:  "<",
@@ -109,7 +109,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "Market Value (Base)",
 				Operator:  ">",
@@ -148,7 +148,7 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "Exposure %",
 				Operator:  "<",
@@ -179,7 +179,7 @@ func TestHandleListWhereCriteria(t *testing.T) {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "Instrument Type",
 				Operator:  "=",
@@ -218,8 +218,8 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
-			Statements: []*operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
+			NestedCriterias: []*operator.FilterCriteria{
 				{
 					Criteria: &operator.Criteria{
 						FieldName: "Instrument Type",
@@ -235,7 +235,7 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 					},
 				},
 			},
-			Conditions: []string{"AND"},
+			ChainWith: []string{"AND"},
 		},
 	}
 	b1, err := json.Marshal(conf1)
@@ -269,10 +269,10 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
-			Statements: []*operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
+			NestedCriterias: []*operator.FilterCriteria{
 				{
-					Statements: []*operator.FilterStatement{
+					NestedCriterias: []*operator.FilterCriteria{
 						{
 							Criteria: &operator.Criteria{
 								FieldName: "Instrument Type",
@@ -288,10 +288,10 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 							},
 						},
 					},
-					Conditions: []string{"AND"},
+					ChainWith: []string{"AND"},
 				},
 				{
-					Statements: []*operator.FilterStatement{
+					NestedCriterias: []*operator.FilterCriteria{
 						{
 							Criteria: &operator.Criteria{
 								FieldName: "Instrument Type",
@@ -307,10 +307,10 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 							},
 						},
 					},
-					Conditions: []string{"AND"},
+					ChainWith: []string{"AND"},
 				},
 			},
-			Conditions: []string{"OR"},
+			ChainWith: []string{"OR"},
 		},
 	}
 	b1, err := json.Marshal(conf1)
@@ -341,7 +341,7 @@ func TestFilterInvalidColumn(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 	filterConf := &operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "Instrument Class",
 				Operator:  "!=",

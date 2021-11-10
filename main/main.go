@@ -21,7 +21,7 @@ func buildTestFilterSteps() []*types.TransformationStep {
 		Operator: types.Filter,
 	}
 	conf1 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
+		FilterCriteria: &operator.FilterCriteria{
 			Criteria: &operator.Criteria{
 				FieldName: "balance",
 				Operator:  ">",
@@ -38,14 +38,14 @@ func buildTestFilterSteps() []*types.TransformationStep {
 	filterStep2 := &types.TransformationStep{
 		Operator: types.Filter,
 	}
-	createdAtStatement := &operator.FilterStatement{
+	createdAtStatement := &operator.FilterCriteria{
 		Criteria: &operator.Criteria{
 			FieldName: "created_at",
 			Operator:  ">",
 			Value:     "2008-06-02T15:04:05",
 		},
 	}
-	activeStatement := &operator.FilterStatement{
+	activeStatement := &operator.FilterCriteria{
 		Criteria: &operator.Criteria{
 			FieldName: "is_active",
 			Operator:  "=",
@@ -53,9 +53,9 @@ func buildTestFilterSteps() []*types.TransformationStep {
 		},
 	}
 	conf2 := operator.FilterConfiguration{
-		Statement: &operator.FilterStatement{
-			Statements: []*operator.FilterStatement{createdAtStatement, activeStatement},
-			Conditions: []string{"AND"},
+		FilterCriteria: &operator.FilterCriteria{
+			NestedCriterias: []*operator.FilterCriteria{createdAtStatement, activeStatement},
+			ChainWith:       []string{"AND"},
 		},
 	}
 	b2, err := json.Marshal(conf2)

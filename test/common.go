@@ -1,7 +1,15 @@
 package test
 
 import (
+	"archive/zip"
+	"bufio"
+	"encoding/csv"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -246,4 +254,139 @@ func CellDataToString(cell *types.CellValue) string {
 	}
 
 	return ""
+}
+
+func loadCSVFile(filePath string, splitHeaders bool) (headers []string, dataset [][]string, err error) {
+	var ior io.Reader
+	ior, err = os.Open(filePath)
+	if err != nil {
+		return nil, nil, err
+	}
+	// let's read columns
+	rc, ok := ior.(io.ReadCloser)
+	defer rc.Close()
+	if !ok {
+		return nil, nil, errors.New("file error possibly huh?")
+	}
+
+	buf := bufio.NewReader(ior)
+	csvr := csv.NewReader(buf)
+	csvr.TrailingComma = true
+	if splitHeaders {
+		headers, err = csvr.Read()
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+	// now lets load the complete file into memory
+	dataset = make([][]string, 0, 10000)
+	for {
+		var row []string
+		row, err = csvr.Read()
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			return headers, dataset, err
+		}
+		dataset = append(dataset, row)
+	}
+
+}
+
+func LoadCSVFileFromTestDataDir(fullPath string, splitHeaders bool) (headers []string, dataset [][]string, err error) {
+	return loadCSVFile(fullPath, splitHeaders)
+}
+
+func DownloadFile(url string, target string) error {
+	out, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DownloadZipFileIfNotExists(url string, zipPath string, filePath string) error {
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return nil
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	_, err = os.Stat(zipPath)
+	if err == nil {
+		return Unzip(zipPath, filePath)
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	err = DownloadFile(url, zipPath)
+	if err != nil {
+		return err
+	}
+	return Unzip(zipPath, filePath)
+}
+
+func Unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := r.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	// Closure to address file descriptors issue with all the deferred .Close() methods
+	extractAndWriteFile := func(f *zip.File) error {
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err := rc.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		path := filepath.Join(dest)
+
+		if f.FileInfo().IsDir() {
+		} else {
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if err := f.Close(); err != nil {
+					panic(err)
+				}
+			}()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	err = extractAndWriteFile(r.File[0])
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
