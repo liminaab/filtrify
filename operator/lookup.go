@@ -46,37 +46,6 @@ func (t *LookupOperator) createColIndex(ds *types.DataSet) map[*types.DataRow]ma
 	return index
 }
 
-func (t *LookupOperator) isEqual(cell1 *types.CellValue, cell2 *types.CellValue) bool {
-	if cell1 == nil || cell2 == nil {
-		return false
-	}
-
-	if cell1.DataType != cell2.DataType {
-		return false
-	}
-
-	if cell1.DataType == types.NilType || cell2.DataType == types.NilType {
-		return false
-	}
-
-	switch cell1.DataType {
-	case types.IntType:
-		return cell1.IntValue == cell2.IntValue
-	case types.LongType:
-		return cell1.LongValue == cell2.LongValue
-	case types.TimestampType:
-		return cell1.TimestampValue.Equal(cell2.TimestampValue)
-	case types.StringType:
-		return cell1.StringValue == cell2.StringValue
-	case types.DoubleType:
-		return cell1.DoubleValue == cell2.DoubleValue
-	case types.BoolType:
-		return cell1.BoolValue == cell2.BoolValue
-	}
-
-	return false
-}
-
 func (t *LookupOperator) copyColumn(col *types.DataColumn, config *LookupConfiguration) *types.DataColumn {
 
 	cellVal := &types.CellValue{
@@ -200,7 +169,7 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 			foundMatch := true
 			// we need to try find if those values are equal?
 			for i := range leftJoinColumns {
-				if !t.isEqual(leftJoinColumns[i].CellValue, rightJoinColumns[i].CellValue) {
+				if !leftJoinColumns[i].CellValue.Equals(rightJoinColumns[i].CellValue) {
 					foundMatch = false
 				}
 			}

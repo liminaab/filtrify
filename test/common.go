@@ -148,38 +148,7 @@ func GetColumn(r *types.DataRow, col string) *types.DataColumn {
 	return nil
 }
 
-func HasSameValues(cell1 *types.CellValue, cell2 *types.CellValue) bool {
-	if cell1 == nil || cell2 == nil {
-		return false
-	}
-
-	if cell1.DataType != cell2.DataType {
-		return false
-	}
-
-	if cell1.DataType == types.NilType || cell2.DataType == types.NilType {
-		return false
-	}
-
-	switch cell1.DataType {
-	case types.IntType:
-		return cell1.IntValue == cell2.IntValue
-	case types.LongType:
-		return cell1.LongValue == cell2.LongValue
-	case types.TimestampType:
-		return cell1.TimestampValue.Equal(cell2.TimestampValue)
-	case types.StringType:
-		return cell1.StringValue == cell2.StringValue
-	case types.DoubleType:
-		return cell1.DoubleValue == cell2.DoubleValue
-	case types.BoolType:
-		return cell1.BoolValue == cell2.BoolValue
-	}
-
-	return false
-}
-
-func IsEqual(cell *types.CellValue, val interface{}) bool {
+func IsEqualToInterfaceVal(cell *types.CellValue, val interface{}) bool {
 	if cell == nil && val == nil {
 		return true
 	}

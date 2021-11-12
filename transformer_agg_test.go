@@ -22,7 +22,7 @@ func isRowTargetGroup(t *testing.T, r *types.DataRow, fields []string, fieldValu
 	for i, f := range fields {
 		col := test.GetColumn(r, f)
 		assert.NotNil(t, col, fmt.Sprintf("%s was not found", f))
-		if !test.IsEqual(col.CellValue, fieldValues[i]) {
+		if !test.IsEqualToInterfaceVal(col.CellValue, fieldValues[i]) {
 			return false
 		}
 	}
@@ -197,7 +197,7 @@ func CheckAggrResults(t *testing.T, ds *types.DataSet, fields []string, fieldVal
 		for key, val := range expectedVals {
 			targetCol := test.GetColumn(r, key)
 			assert.NotNil(t, targetCol, fmt.Sprintf("%s column was not found", key))
-			if !test.IsEqual(targetCol.CellValue, val) {
+			if !test.IsEqualToInterfaceVal(targetCol.CellValue, val) {
 				assert.Fail(t, fmt.Sprintf("%s column value is not equal to %x", key, val))
 			}
 		}

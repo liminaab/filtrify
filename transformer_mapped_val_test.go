@@ -67,8 +67,8 @@ func TestBasicMappedValue(t *testing.T) {
 		for _, rr := range mappedSet.Rows {
 			keyCol := test.GetColumn(rr, "Key")
 			valCol := test.GetColumn(rr, "Value")
-			if test.HasSameValues(keyCol.CellValue, brokerIDCol.CellValue) &&
-				test.HasSameValues(valCol.CellValue, brokerMappedCol.CellValue) {
+			if keyCol.CellValue.Equals(brokerIDCol.CellValue) &&
+				valCol.CellValue.Equals(brokerMappedCol.CellValue) {
 				isFound = true
 				break
 			}

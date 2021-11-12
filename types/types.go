@@ -118,6 +118,37 @@ type CellValue struct {
 	// original_field_source enum   // e.g. “enums.DataSourcePortfolio”
 }
 
+func (v *CellValue) Equals(other *CellValue) bool {
+	if v == nil || other == nil {
+		return false
+	}
+
+	if v.DataType != other.DataType {
+		return false
+	}
+
+	if v.DataType == NilType || other.DataType == NilType {
+		return false
+	}
+
+	switch v.DataType {
+	case IntType:
+		return v.IntValue == other.IntValue
+	case LongType:
+		return v.LongValue == other.LongValue
+	case TimestampType:
+		return v.TimestampValue.Equal(other.TimestampValue)
+	case StringType:
+		return v.StringValue == other.StringValue
+	case DoubleType:
+		return v.DoubleValue == other.DoubleValue
+	case BoolType:
+		return v.BoolValue == other.BoolValue
+	}
+
+	return false
+}
+
 // func (v CellValue) Add(other CellValue) (CellValue, error)      {}
 // func (v CellValue) Subtract(other CellValue) (CellValue, error) {}
 // func (v CellValue) Multiply(other CellValue) (CellValue, error) {}

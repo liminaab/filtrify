@@ -20,7 +20,7 @@ func findFirstRowWithCriteria(dataset *types.DataSet, vals []*types.DataColumn) 
 			if col.CellValue.DataType == types.NilType || v.CellValue.DataType == types.NilType {
 				return nil
 			}
-			if !test.HasSameValues(col.CellValue, v.CellValue) {
+			if !col.CellValue.Equals(v.CellValue) {
 				isFound = false
 			}
 		}
@@ -82,7 +82,7 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 					continue
 				}
 
-				if !test.HasSameValues(lCol.CellValue, rCol.CellValue) {
+				if !lCol.CellValue.Equals(rCol.CellValue) {
 					assert.Fail(t, "joined columns don't have same values")
 				}
 			}
@@ -132,7 +132,7 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 				// no need to verify this
 				continue
 			}
-			if !test.HasSameValues(c.CellValue, leftCol.CellValue) {
+			if !c.CellValue.Equals(leftCol.CellValue) {
 				assert.Fail(t, "joined column values are not same. probably join didn't match to first row")
 			}
 		}
