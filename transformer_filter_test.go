@@ -1,14 +1,14 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
 	"testing"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 var basicData [][]string = [][]string{
@@ -23,7 +23,7 @@ var basicData [][]string = [][]string{
 }
 
 func TestBasicSingleWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(basicData, true, true)
+	ds, err := filtrify.ConvertToTypedData(basicData, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -45,7 +45,7 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -62,7 +62,7 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 }
 
 func TestHandleNegativeWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -84,7 +84,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -101,7 +101,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 }
 
 func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -123,7 +123,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -140,7 +140,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 }
 
 func TestHandlePercentageWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -162,7 +162,7 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -171,7 +171,7 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -193,7 +193,7 @@ func TestHandleListWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -210,7 +210,7 @@ func TestHandleListWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListAndNestedWhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -244,7 +244,7 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -261,7 +261,7 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListAndNested2WhereCriteria(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -319,7 +319,7 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -336,7 +336,7 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 }
 
 func TestFilterInvalidColumn(t *testing.T) {
-	plainData, err := dyntransformer.ConvertToTypedData(SEQTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -362,7 +362,7 @@ func TestFilterInvalidColumn(t *testing.T) {
 		},
 	}
 
-	_, err = dyntransformer.Transform(plainData, steps, nil)
+	_, err = filtrify.Transform(plainData, steps, nil)
 
 	assert.Error(t, err, "invalid column on filter operation didn't return an error")
 	assert.EqualError(t, err, "could not apply transformation: attempted to operate on column “Instrument Class” but no such column available (Filter operator, step 0)")

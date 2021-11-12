@@ -10,8 +10,8 @@ import (
 	"github.com/araddon/qlbridge/expr/builtins"
 	"github.com/araddon/qlbridge/lex"
 	"github.com/araddon/qlbridge/schema"
-	"limina.com/dyntransformer/lmnqlbridge"
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/lmnqlbridge"
+	"github.com/liminaab/filtrify/types"
 )
 
 const defaultTableName string = "ext"

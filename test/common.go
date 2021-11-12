@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/types"
 )
 
 var uat1TestData [][]string = [][]string{

@@ -1,19 +1,19 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
 	"fmt"
 	"testing"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 func TestSort(t *testing.T) {
-	data, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -35,7 +35,7 @@ func TestSort(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	sortedData, err := dyntransformer.Transform(data, []*types.TransformationStep{step}, nil)
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -68,7 +68,7 @@ func TestSort(t *testing.T) {
 }
 
 func TestMultipleSort(t *testing.T) {
-	data, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -94,7 +94,7 @@ func TestMultipleSort(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	sortedData, err := dyntransformer.Transform(data, []*types.TransformationStep{step}, nil)
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

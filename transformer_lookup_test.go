@@ -1,15 +1,15 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
 	"fmt"
 	"testing"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 func findFirstRowWithCriteria(dataset *types.DataSet, vals []*types.DataColumn) *types.DataRow {
@@ -141,12 +141,12 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 }
 
 func TestBasicLookup(t *testing.T) {
-	lookupData, err := dyntransformer.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	instrumentSet, err := dyntransformer.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -173,7 +173,7 @@ func TestBasicLookup(t *testing.T) {
 	joinSet := map[string]*types.DataSet{
 		"Instrument Data": instrumentSet,
 	}
-	joinedData, err := dyntransformer.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
+	joinedData, err := filtrify.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -185,12 +185,12 @@ func TestBasicLookup(t *testing.T) {
 }
 
 func TestMultiMatchLookup(t *testing.T) {
-	lookupData, err := dyntransformer.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	instrumentSet, err := dyntransformer.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -217,7 +217,7 @@ func TestMultiMatchLookup(t *testing.T) {
 	joinSet := map[string]*types.DataSet{
 		"Instrument Data": instrumentSet,
 	}
-	joinedData, err := dyntransformer.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
+	joinedData, err := filtrify.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -230,12 +230,12 @@ func TestMultiMatchLookup(t *testing.T) {
 }
 
 func TestMultiConditionsLookup(t *testing.T) {
-	lookupData, err := dyntransformer.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	instrumentSet, err := dyntransformer.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -266,7 +266,7 @@ func TestMultiConditionsLookup(t *testing.T) {
 	joinSet := map[string]*types.DataSet{
 		"Instrument Data": instrumentSet,
 	}
-	joinedData, err := dyntransformer.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
+	joinedData, err := filtrify.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

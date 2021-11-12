@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	_ "github.com/araddon/qlbridge/qlbdriver"
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/types"
 )
 
 type SortOperator struct {

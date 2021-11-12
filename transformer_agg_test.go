@@ -1,4 +1,4 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 func isRowTargetGroup(t *testing.T, r *types.DataRow, fields []string, fieldValues []interface{}) bool {
@@ -214,7 +214,7 @@ func batchCheckAggFields(t *testing.T, nonAggDataSet *types.DataSet, aggDataSet 
 }
 
 func TestBasicAggregate(t *testing.T) {
-	plainData, err := dyntransformer.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -230,7 +230,7 @@ func TestBasicAggregate(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
+	aggregatedData, err := filtrify.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -247,7 +247,7 @@ func TestBasicAggregate(t *testing.T) {
 }
 
 func TestAverageAggregate(t *testing.T) {
-	plainData, err := dyntransformer.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -269,7 +269,7 @@ func TestAverageAggregate(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
+	aggregatedData, err := filtrify.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -295,7 +295,7 @@ func TestAverageAggregate(t *testing.T) {
 }
 
 func TestWeightedAverageAggregate(t *testing.T) {
-	plainData, err := dyntransformer.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -317,7 +317,7 @@ func TestWeightedAverageAggregate(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
+	aggregatedData, err := filtrify.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -344,7 +344,7 @@ func TestWeightedAverageAggregate(t *testing.T) {
 }
 
 func TestMultipleGroupByColumns(t *testing.T) {
-	plainData, err := dyntransformer.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -360,7 +360,7 @@ func TestMultipleGroupByColumns(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
+	aggregatedData, err := filtrify.Transform(plainData, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

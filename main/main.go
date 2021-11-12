@@ -11,9 +11,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/types"
 )
 
 func buildTestFilterSteps() []*types.TransformationStep {
@@ -109,12 +109,12 @@ func main() {
 		panic(err)
 	}
 	wallets = append([][]string{walletHeaders}, wallets...)
-	ds, err := dyntransformer.ConvertToTypedData(wallets, true, true)
+	ds, err := filtrify.ConvertToTypedData(wallets, true, true)
 	if err != nil {
 		panic(err.Error())
 	}
 	steps := buildTestFilterSteps()
-	newData, err := dyntransformer.Transform(ds, steps, nil)
+	newData, err := filtrify.Transform(ds, steps, nil)
 	if err != nil {
 		panic(err.Error())
 	}

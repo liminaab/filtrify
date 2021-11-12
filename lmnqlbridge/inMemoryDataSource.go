@@ -8,7 +8,7 @@ import (
 	"github.com/araddon/qlbridge/datasource"
 	"github.com/araddon/qlbridge/schema"
 	"github.com/araddon/qlbridge/value"
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/types"
 )
 
 // var (

@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/araddon/qlbridge/expr"
-	"limina.com/dyntransformer/lmnqlbridge/operator"
+	"github.com/liminaab/filtrify/lmnqlbridge/operator"
 )
 
 var loadOnce sync.Once

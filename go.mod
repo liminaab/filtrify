@@ -1,4 +1,4 @@
-module limina.com/dyntransformer
+module github.com/liminaab/filtrify
 
 go 1.16
 

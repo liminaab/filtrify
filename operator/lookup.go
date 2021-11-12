@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	_ "github.com/araddon/qlbridge/qlbdriver"
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/types"
 )
 
 type LookupOperator struct {

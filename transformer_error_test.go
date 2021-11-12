@@ -1,17 +1,17 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
 	"testing"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/types"
 )
 
 func TestFilterInvalidColumn2(t *testing.T) {
-	plainData, err := dyntransformer.ConvertToTypedData(SEQTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -54,7 +54,7 @@ func TestFilterInvalidColumn2(t *testing.T) {
 		},
 	}
 
-	_, err = dyntransformer.Transform(plainData, steps, nil)
+	_, err = filtrify.Transform(plainData, steps, nil)
 
 	assert.Error(t, err, "invalid column on filter operation didn't return an error")
 }

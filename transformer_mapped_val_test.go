@@ -1,24 +1,24 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
 	"fmt"
 	"testing"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 func TestBasicMappedValue(t *testing.T) {
-	data, err := dyntransformer.ConvertToTypedData(test.UATMappedValueTestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UATMappedValueTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	mappedSet, err := dyntransformer.ConvertToTypedData(test.UATMappedValueMapTestDataFormatted, true, true)
+	mappedSet, err := filtrify.ConvertToTypedData(test.UATMappedValueMapTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -39,7 +39,7 @@ func TestBasicMappedValue(t *testing.T) {
 	joinSet := map[string]*types.DataSet{
 		"Broker Mapped": mappedSet,
 	}
-	joinedData, err := dyntransformer.Transform(data, []*types.TransformationStep{step}, joinSet)
+	joinedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, joinSet)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

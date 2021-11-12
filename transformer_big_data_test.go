@@ -1,4 +1,4 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 var HUNDREDTHOUSANDROWS string = "https://eforexcel.com/wp/wp-content/uploads/2017/07/100000-Sales-Records.zip"
@@ -44,7 +44,7 @@ func TestBigDataFilter(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := dyntransformer.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
@@ -68,7 +68,7 @@ func TestBigDataFilter(t *testing.T) {
 		},
 	}
 	start = time.Now()
-	result, err := dyntransformer.Transform(plainData, steps, nil)
+	result, err := filtrify.Transform(plainData, steps, nil)
 	assert.NoError(t, err, "new aggregation column operation failed")
 	opTime := time.Since(start)
 	assert.LessOrEqual(t, int64(opTime), int64(3*time.Second), "transform operation took longer than expected")
@@ -90,7 +90,7 @@ func TestBigDataSort(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := dyntransformer.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
@@ -113,7 +113,7 @@ func TestBigDataSort(t *testing.T) {
 		},
 	}
 	start = time.Now()
-	result, err := dyntransformer.Transform(plainData, steps, nil)
+	result, err := filtrify.Transform(plainData, steps, nil)
 	assert.NoError(t, err, "new aggregation column operation failed")
 	assert.NotNil(t, result)
 	opTime := time.Since(start)
@@ -153,7 +153,7 @@ func TestBigDataAggAvgNewColumn(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := dyntransformer.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
@@ -165,7 +165,7 @@ func TestBigDataAggAvgNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 	start = time.Now()
-	result, err := dyntransformer.Transform(plainData, []*types.TransformationStep{newColStep1}, nil)
+	result, err := filtrify.Transform(plainData, []*types.TransformationStep{newColStep1}, nil)
 	assert.NoError(t, err, "new aggregation column operation failed")
 	opTime := time.Since(start)
 	t.Log(fmt.Printf("New Average Column took %s", opTime))
@@ -181,7 +181,7 @@ func TestBigDataAverageAggregate(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := dyntransformer.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
@@ -205,7 +205,7 @@ func TestBigDataAverageAggregate(t *testing.T) {
 	}
 
 	start = time.Now()
-	aggregatedData, err := dyntransformer.Transform(plainData, []*types.TransformationStep{step}, nil)
+	aggregatedData, err := filtrify.Transform(plainData, []*types.TransformationStep{step}, nil)
 	assert.NoError(t, err, "new aggregation column operation failed")
 	opTime := time.Since(start)
 	t.Log(fmt.Printf("Average took %s", opTime))

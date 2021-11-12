@@ -1,4 +1,4 @@
-package dyntransformer
+package filtrify
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/types"
 )
 
 const defaultColumnName string = "Column"

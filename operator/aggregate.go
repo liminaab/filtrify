@@ -9,8 +9,8 @@ import (
 
 	"github.com/araddon/qlbridge/expr"
 	_ "github.com/araddon/qlbridge/qlbdriver"
-	"limina.com/dyntransformer/lmnqlbridge"
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/lmnqlbridge"
+	"github.com/liminaab/filtrify/types"
 )
 
 type AggregateOperator struct {

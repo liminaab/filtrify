@@ -1,15 +1,15 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"encoding/json"
 	"fmt"
 	"testing"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 var SEQTestDataFormatted [][]string = [][]string{
@@ -22,7 +22,7 @@ var SEQTestDataFormatted [][]string = [][]string{
 }
 
 func TestFilterAggregateNewColumnSequence(t *testing.T) {
-	plainData, err := dyntransformer.ConvertToTypedData(SEQTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -65,7 +65,7 @@ func TestFilterAggregateNewColumnSequence(t *testing.T) {
 		},
 	}
 
-	result, err := dyntransformer.Transform(plainData, steps, nil)
+	result, err := filtrify.Transform(plainData, steps, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

@@ -1,19 +1,19 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"testing"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 func TestSimpleConversionWithoutHeader(t *testing.T) {
 	data := [][]string{
 		{"15", "test text", "2008-06-02T15:04:05", "3.25"},
 	}
-	ds, err := dyntransformer.ConvertToTypedData(data, false, true)
+	ds, err := filtrify.ConvertToTypedData(data, false, true)
 	assert.True(t, err == nil, "no error: %v", err)
 	assert.True(t, len(ds.Rows) == 1, "invalid row count in conversion")
 	firstRow := ds.Rows[0]
@@ -35,7 +35,7 @@ func TestDateConversion(t *testing.T) {
 		{"2020-01-08", "20200108", "01/08/2020", "08/01/2020"},
 		{"2020-01-13", "20200113", "01/13/2020", "13/01/2020"},
 	}
-	ds, err := dyntransformer.ConvertToTypedData(data, false, true)
+	ds, err := filtrify.ConvertToTypedData(data, false, true)
 	assert.True(t, err == nil, "no error: %v", err)
 	assert.True(t, len(ds.Rows) == 3, "invalid row count in conversion")
 
@@ -55,7 +55,7 @@ func TestConversionUAT1(t *testing.T) {
 		{"ESZ1", "Index Future", "-10.00", "-495000.00", "17%", "2021-12-16", "false", "2021-04-06 12:00:00"},
 		{"USD Cash", "Cash Account", "5000000.00", "5000000.0", "20%", "", "", "2020-01-01 12:00:00"},
 	}
-	ds, err := dyntransformer.ConvertToTypedData(uat1TestData, true, true)
+	ds, err := filtrify.ConvertToTypedData(uat1TestData, true, true)
 	assert.True(t, err == nil, "no error: %v", err)
 	assert.True(t, len(ds.Rows) == 5, "invalid row count in conversion")
 

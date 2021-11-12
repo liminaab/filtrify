@@ -1,18 +1,18 @@
-package dyntransformer_test
+package filtrify_test
 
 import (
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/liminaab/filtrify"
+	"github.com/liminaab/filtrify/test"
+	"github.com/liminaab/filtrify/types"
 	"github.com/stretchr/testify/assert"
-	"limina.com/dyntransformer"
-	"limina.com/dyntransformer/test"
-	"limina.com/dyntransformer/types"
 )
 
 func TestBasicNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -24,7 +24,7 @@ func TestBasicNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -43,7 +43,7 @@ func TestBasicNewColumn(t *testing.T) {
 }
 
 func TestMathematicalNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -55,7 +55,7 @@ func TestMathematicalNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -73,7 +73,7 @@ func TestMathematicalNewColumn(t *testing.T) {
 }
 
 func TestCombiningNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -85,7 +85,7 @@ func TestCombiningNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -106,7 +106,7 @@ func TestCombiningNewColumn(t *testing.T) {
 }
 
 func TestAggSumNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -118,7 +118,7 @@ func TestAggSumNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -132,7 +132,7 @@ func TestAggSumNewColumn(t *testing.T) {
 }
 
 func TestAggAvgNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -144,7 +144,7 @@ func TestAggAvgNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -159,7 +159,7 @@ func TestAggAvgNewColumn(t *testing.T) {
 }
 
 func TestAggWeightedAvgNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -171,7 +171,7 @@ func TestAggWeightedAvgNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -186,7 +186,7 @@ func TestAggWeightedAvgNewColumn(t *testing.T) {
 }
 
 func TestFirstNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -198,7 +198,7 @@ func TestFirstNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -213,7 +213,7 @@ func TestFirstNewColumn(t *testing.T) {
 }
 
 func TestLastNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -225,7 +225,7 @@ func TestLastNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -240,7 +240,7 @@ func TestLastNewColumn(t *testing.T) {
 }
 
 func TestMaxColNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -252,7 +252,7 @@ func TestMaxColNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -267,7 +267,7 @@ func TestMaxColNewColumn(t *testing.T) {
 }
 
 func TestMinColNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -279,7 +279,7 @@ func TestMinColNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -294,7 +294,7 @@ func TestMinColNewColumn(t *testing.T) {
 }
 
 func TestManualStringConcatNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -308,7 +308,7 @@ func TestManualStringConcatNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -328,7 +328,7 @@ func TestManualStringConcatNewColumn(t *testing.T) {
 }
 
 func TestManualStringNonTextConcatNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -342,7 +342,7 @@ func TestManualStringNonTextConcatNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -370,7 +370,7 @@ func TestManualStringNonTextConcatNewColumn(t *testing.T) {
 }
 
 func TestLeftNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -382,7 +382,7 @@ func TestLeftNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -404,7 +404,7 @@ func TestLeftNewColumn(t *testing.T) {
 }
 
 func TestRightNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -416,7 +416,7 @@ func TestRightNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -438,7 +438,7 @@ func TestRightNewColumn(t *testing.T) {
 }
 
 func TestLeftRightNestedNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -450,7 +450,7 @@ func TestLeftRightNestedNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -476,7 +476,7 @@ func TestLeftRightNestedNewColumn(t *testing.T) {
 }
 
 func TestSplitNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -488,7 +488,7 @@ func TestSplitNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -506,7 +506,7 @@ func TestSplitNewColumn(t *testing.T) {
 }
 
 func TestSimpleIFNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -518,7 +518,7 @@ func TestSimpleIFNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -539,7 +539,7 @@ func TestSimpleIFNewColumn(t *testing.T) {
 }
 
 func TestIFWithConditionNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -551,7 +551,7 @@ func TestIFWithConditionNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -580,7 +580,7 @@ func TestIFWithConditionNewColumn(t *testing.T) {
 }
 
 func TestIFWithMultipleConditionsNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -593,7 +593,7 @@ func TestIFWithMultipleConditionsNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -626,7 +626,7 @@ func TestIFWithMultipleConditionsNewColumn(t *testing.T) {
 }
 
 func TestIFContainsNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -638,7 +638,7 @@ func TestIFContainsNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -660,7 +660,7 @@ func TestIFContainsNewColumn(t *testing.T) {
 }
 
 func TestIFNotContainsNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -672,7 +672,7 @@ func TestIFNotContainsNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -694,7 +694,7 @@ func TestIFNotContainsNewColumn(t *testing.T) {
 }
 
 func TestNestedIFNewColumn(t *testing.T) {
-	ds, err := dyntransformer.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -706,7 +706,7 @@ func TestNestedIFNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := dyntransformer.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

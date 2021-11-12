@@ -1,11 +1,11 @@
-package dyntransformer
+package filtrify
 
 import (
 	"errors"
 	"fmt"
 
-	"limina.com/dyntransformer/operator"
-	"limina.com/dyntransformer/types"
+	"github.com/liminaab/filtrify/operator"
+	"github.com/liminaab/filtrify/types"
 )
 
 func processTransformation(dataset *types.DataSet, step *types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
