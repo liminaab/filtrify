@@ -8,32 +8,47 @@ import (
 	"github.com/liminaab/filtrify/types"
 )
 
-func processTransformation(dataset *types.DataSet, step *types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
-	var op types.TransformationOperator
+func getOperator(step *types.TransformationStep) (types.TransformationOperator, error) {
 
 	switch step.Operator {
 	case types.Filter:
-		op = &operator.FilterOperator{}
-		break
+		return &operator.FilterOperator{}, nil
 	case types.NewColumn:
-		op = &operator.NewColumnOperator{}
-		break
+		return &operator.NewColumnOperator{}, nil
 	case types.Aggregate:
-		op = &operator.AggregateOperator{}
-		break
+		return &operator.AggregateOperator{}, nil
 	case types.Lookup:
-		op = &operator.LookupOperator{}
-		break
+		return &operator.LookupOperator{}, nil
 	case types.MappedValue:
-		op = &operator.MappedValueOperator{}
-		break
+		return &operator.MappedValueOperator{}, nil
 	case types.Sort:
-		op = &operator.SortOperator{}
-		break
+		return &operator.SortOperator{}, nil
 	default:
 		return nil, errors.New("unknown operator")
 	}
+}
 
+func validateStep(step *types.TransformationStep) error {
+	op, err := getOperator(step)
+	if err != nil {
+		return err
+	}
+	state, err := op.ValidateConfiguration(step.Configuration)
+	if err != nil {
+		return err
+	}
+	if !state {
+		return errors.New("invalid configuration")
+	}
+
+	return nil
+}
+
+func processTransformation(dataset *types.DataSet, step *types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
+	op, err := getOperator(step)
+	if err != nil {
+		return nil, err
+	}
 	state, err := op.ValidateConfiguration(step.Configuration)
 	if err != nil {
 		return nil, err
@@ -63,4 +78,18 @@ func Transform(dataset *types.DataSet, transformations []*types.TransformationSt
 	}
 
 	return newData, nil
+}
+
+func ValidateConfiguration(transformations []*types.TransformationStep) error {
+	var err error
+	for i, ts := range transformations {
+		err = validateStep(ts)
+		// let's wrap this error message to give more details
+		if err != nil {
+			// wow we failed
+			return fmt.Errorf("could not apply transformation: %s (%s operator, step %d)", err.Error(), ts.Operator.String(), i)
+		}
+	}
+
+	return nil
 }

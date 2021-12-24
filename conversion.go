@@ -18,6 +18,12 @@ const minTimestampVal int64 = 946684800
 // 2100-01-01
 const maxTimestampVal int64 = 4102444800
 
+// 2000-01-01
+const minTimestampValMiliseconds int64 = 946684800000
+
+// 2100-01-01
+const maxTimestampValMiliseconds int64 = 4102444800000
+
 var dateTimeFormats []string = []string{
 	// datetime
 	"2006-01-02T15:04:05",
@@ -50,7 +56,7 @@ var dateTimeFormats []string = []string{
 	"03:04:05 PM",
 }
 
-func tryParseUnixTimestamp(data string) *time.Time {
+func tryParseUnixTimestampSeconds(data string) *time.Time {
 	i, err := strconv.ParseInt(data, 10, 64)
 	if err != nil {
 		return nil
@@ -62,6 +68,22 @@ func tryParseUnixTimestamp(data string) *time.Time {
 
 	// wow this is a real timestamp
 	t := time.Unix(i, 0)
+	return &t
+}
+
+func tryParseUnixTimestampMiliseconds(data string) *time.Time {
+	i, err := strconv.ParseInt(data, 10, 64)
+	if err != nil {
+		return nil
+	}
+	// let's check the range
+	if i > maxTimestampValMiliseconds || i < minTimestampValMiliseconds {
+		return nil
+	}
+	sec := i / 1000
+	msec := i % 1000
+	// wow this is a real timestamp
+	t := time.Unix(sec, msec)
 	return &t
 }
 
@@ -93,7 +115,11 @@ func parsePercentage(data string) (float64, error) {
 func parseTimestamp(data string) (*time.Time, error) {
 	// let's start with most restrictive format to least restrictive one
 	// let's first check if this is a unix timestamp
-	t := tryParseUnixTimestamp(data)
+	t := tryParseUnixTimestampSeconds(data)
+	if t != nil {
+		return t, nil
+	}
+	t = tryParseUnixTimestampMiliseconds(data)
 	if t != nil {
 		return t, nil
 	}
@@ -213,7 +239,7 @@ func estimateColumnType(rawData [][]string, colIndex int) types.CellDataType {
 
 func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool) (*types.DataSet, error) {
 	// let's try
-	data, headers, err := ExtractHeaders(rawData, firstLineIsHeader)
+	data, headers, err := extractHeaders(rawData, firstLineIsHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +286,7 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 	return &dataSet, nil
 }
 
-func ExtractHeaders(rawData [][]string, firstLineIsHeader bool) ([][]string, []string, error) {
+func extractHeaders(rawData [][]string, firstLineIsHeader bool) ([][]string, []string, error) {
 	if firstLineIsHeader {
 		headers, data := rawData[0], rawData[1:]
 		return data, headers, nil
