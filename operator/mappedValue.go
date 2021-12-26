@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	_ "github.com/araddon/qlbridge/qlbdriver"
+	"github.com/liminaab/filtrify/conversion"
 	"github.com/liminaab/filtrify/types"
 )
 
@@ -12,9 +13,10 @@ type MappedValueOperator struct {
 }
 
 type MappedValueConfiguration struct {
-	MappedColumnName string `json:"mappedColumnName"`
-	NewColumnName    string `json:"newColumnName"`
-	TargetDataset    string `json:"targetDataset"`
+	MappedColumnName string     `json:"mappedColumnName"`
+	NewColumnName    string     `json:"newColumnName"`
+	TargetDataset    string     `json:"targetDataset"`
+	TargetData       [][]string `json:"targetData"`
 }
 
 func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
@@ -25,10 +27,26 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, o
 	}
 
 	if _, ok := otherSets[typedConfig.TargetDataset]; !ok {
-		return nil, errors.New("target dataset not found")
+		// let's not give up so fast
+		// data might be embedded in our configuration
+		if len(typedConfig.TargetData) == 0 {
+			return nil, errors.New("target dataset not found")
+		}
 	}
 
-	tds := otherSets[typedConfig.TargetDataset]
+	var tds *types.DataSet
+	if len(typedConfig.TargetData) > 0 {
+		// let's append static headers to our data
+		typedConfig.TargetData = append([][]string{{"Key", "Value"}}, typedConfig.TargetData...)
+		tds, err = conversion.ConvertToTypedData(typedConfig.TargetData, true, true)
+		if err != nil {
+			return nil, err
+		}
+		typedConfig.TargetDataset = RandStringBytesMaskImprSrcUnsafe(10)
+		otherSets[typedConfig.TargetDataset] = tds
+	} else {
+		tds = otherSets[typedConfig.TargetDataset]
+	}
 
 	if len(tds.Rows) < 1 || len(dataset.Rows) < 1 {
 		return dataset, nil
@@ -93,7 +111,7 @@ func (t *MappedValueOperator) buildConfiguration(config string) (*MappedValueCon
 	if len(typedConfig.NewColumnName) < 1 {
 		return nil, errors.New("missing newcolumnname in mappedvalue configuration")
 	}
-	if len(typedConfig.TargetDataset) < 1 {
+	if len(typedConfig.TargetDataset) < 1 && len(typedConfig.TargetData) < 1 {
 		return nil, errors.New("missing targetdataset in mappedvalue configuration")
 	}
 

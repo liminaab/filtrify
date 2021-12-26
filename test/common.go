@@ -80,6 +80,13 @@ var UATMappedValueMapTestDataFormatted [][]string = [][]string{
 	{"4", "SEB"},
 }
 
+var UATMappedValueMapEmbeddedTestDataFormatted [][]string = [][]string{
+	{"1", "Goldman Sachs Int."},
+	{"2", "UBS"},
+	{"3", "Credit Suisse"},
+	{"4", "SEB"},
+}
+
 func CopyColumn(col *types.DataColumn) *types.DataColumn {
 
 	cellVal := &types.CellValue{
