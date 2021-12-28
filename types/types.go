@@ -161,7 +161,7 @@ func (c *CellValue) ToString() string {
 	case StringType:
 		return c.StringValue
 	case DoubleType:
-		return strconv.FormatFloat(c.DoubleValue, 'E', -1, 64)
+		return strconv.FormatFloat(c.DoubleValue, 'f', -1, 64)
 	case BoolType:
 		if c.BoolValue {
 			return "true"
