@@ -17,7 +17,7 @@ type Floor struct{}
 
 func (m *Floor) Validate(n *expr.FuncNode) (expr.EvaluatorFunc, error) {
 	if len(n.Args) != 2 {
-		return nil, fmt.Errorf("expected 2 arg for Round(arg) but got %s", n)
+		return nil, fmt.Errorf("expected 2 arg for Floor(arg) but got %s", n)
 	}
 	return floorEval, nil
 }
