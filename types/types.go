@@ -16,6 +16,7 @@ const (
 	Lookup
 	MappedValue
 	Sort
+	RemoveColumn
 )
 
 func (t TransformationOperatorType) String() string {
@@ -32,6 +33,8 @@ func (t TransformationOperatorType) String() string {
 		return "MappedValue"
 	case Sort:
 		return "Sort"
+	case RemoveColumn:
+		return "RemoveColumn"
 	}
 	return "Unknown"
 }
@@ -172,12 +175,51 @@ func (c *CellValue) ToString() string {
 	return ""
 }
 
+func (v *CellValue) IsNumeric() bool {
+	switch v.DataType {
+	case IntType:
+		return true
+	case LongType:
+		return true
+	case TimestampType:
+		return false
+	case StringType:
+		return false
+	case DoubleType:
+		return true
+	case BoolType:
+		return false
+	case NilType:
+		return false
+	}
+
+	return false
+}
+
+func (v *CellValue) GetNumericVal() float64 {
+
+	switch v.DataType {
+	case IntType:
+		return float64(v.IntValue)
+	case LongType:
+		return float64(v.LongValue)
+	case DoubleType:
+		return v.DoubleValue
+	}
+	return -1
+}
+
 func (v *CellValue) Equals(other *CellValue) bool {
 	if v == nil || other == nil {
 		return false
 	}
 
 	if v.DataType != other.DataType {
+		// there is only one exception here - if these are numeric types we still should check their
+		if v.IsNumeric() && other.IsNumeric() {
+			return v.GetNumericVal() == other.GetNumericVal()
+		}
+
 		return false
 	}
 

@@ -23,6 +23,8 @@ func getOperator(step *types.TransformationStep) (types.TransformationOperator, 
 		return &operator.MappedValueOperator{}, nil
 	case types.Sort:
 		return &operator.SortOperator{}, nil
+	case types.RemoveColumn:
+		return &operator.RemoveColumnOperator{}, nil
 	default:
 		return nil, errors.New("unknown operator")
 	}
