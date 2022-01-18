@@ -26,6 +26,7 @@ const maxTimestampValMiliseconds int64 = 4102444800000
 
 var dateTimeFormats []string = []string{
 	// datetime
+	time.RFC3339,
 	"2006-01-02T15:04:05",
 	"2006-01-02T15:04:05-0700",
 	"2 Jan 2006 15:04:05",
