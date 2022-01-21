@@ -74,7 +74,11 @@ func (t *FilterOperator) buildContainsQuery(c *Criteria, colType types.CellDataT
 }
 
 func (t *FilterOperator) buildEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
-	return fmt.Sprintf("`%s` IS NULL", c.FieldName), nil
+	return fmt.Sprintf("`%s` = NULL", c.FieldName), nil
+}
+
+func (t *FilterOperator) buildNotEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
+	return fmt.Sprintf("`%s` != NULL", c.FieldName), nil
 }
 
 func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataType) (string, error) {
@@ -144,6 +148,9 @@ func (t *FilterOperator) buildCriteriaText(c *Criteria, columnTypeMap map[string
 	case "IS EMPTY":
 		// valid for all
 		return t.buildEmptyQuery(c, colType)
+	case "IS NOT EMPTY":
+		// valid for all
+		return t.buildNotEmptyQuery(c, colType)
 	default:
 		return "", errors.New("unknown comparison operator in filter")
 	}
