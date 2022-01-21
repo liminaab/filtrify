@@ -78,7 +78,7 @@ func (t *FilterOperator) buildEmptyQuery(c *Criteria, colType types.CellDataType
 }
 
 func (t *FilterOperator) buildNotEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
-	return fmt.Sprintf("`%s` != NULL", c.FieldName), nil
+	return fmt.Sprintf("NOT (`%s` = NULL)", c.FieldName), nil
 }
 
 func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataType) (string, error) {
