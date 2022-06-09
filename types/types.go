@@ -17,6 +17,7 @@ const (
 	MappedValue
 	Sort
 	RemoveColumn
+	RenameColumn
 )
 
 func (t TransformationOperatorType) String() string {
@@ -35,6 +36,8 @@ func (t TransformationOperatorType) String() string {
 		return "Sort"
 	case RemoveColumn:
 		return "RemoveColumn"
+	case RenameColumn:
+		return "RenameColumn"
 	}
 	return "Unknown"
 }
