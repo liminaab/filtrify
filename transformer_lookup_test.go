@@ -3,6 +3,7 @@ package filtrify_test
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/liminaab/filtrify"
@@ -41,6 +42,21 @@ func isRightMatchColumn(colName string, config *operator.LookupConfiguration) bo
 	return false
 }
 
+func shouldColumnExistInJoin(config *operator.LookupConfiguration, columnName string) bool {
+	shouldColumnExistOnJoinedTable := true
+	// not should this column exist or not?
+	if len(config.SelectedColumns) > 0 {
+		shouldColumnExistOnJoinedTable = false
+		for _, sc := range config.SelectedColumns {
+			if strings.EqualFold(sc, columnName) {
+				shouldColumnExistOnJoinedTable = true
+				break
+			}
+		}
+	}
+	return shouldColumnExistOnJoinedTable
+}
+
 func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined *types.DataSet, config *operator.LookupConfiguration) {
 
 	leftRefRow := left.Rows[0]
@@ -60,11 +76,21 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 					expectedColName = rc.ColumnName
 				}
 				col := test.GetColumn(jr, expectedColName)
-				assert.NotNil(t, col, fmt.Sprintf("%s column was not found", expectedColName))
+				shouldColumnExistOnJoinedTable := shouldColumnExistInJoin(config, rc.ColumnName)
+				if shouldColumnExistOnJoinedTable {
+					assert.NotNil(t, col, fmt.Sprintf("%s column was not found", expectedColName))
+				} else {
+					assert.Nil(t, col, fmt.Sprintf("%s column was not filtered properly", expectedColName))
+				}
 			}
 
 			// now let's see if merged keys were correct
 			for _, col := range config.Columns {
+				shouldColumnExistOnJoinedTable := shouldColumnExistInJoin(config, col.Right)
+				if !shouldColumnExistOnJoinedTable {
+					continue
+				}
+
 				lCol := test.GetColumn(jr, col.Left)
 				assert.NotNil(t, lCol, fmt.Sprintf("%s column was not found", col.Left))
 
@@ -127,6 +153,10 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 
 		// now we have to make sure that joined row is exactly same as copy row in every value
 		for _, c := range copyRow.Columns {
+			shouldColumnExistOnJoinedTable := shouldColumnExistInJoin(config, c.ColumnName)
+			if !shouldColumnExistOnJoinedTable {
+				continue
+			}
 			leftCol := test.GetColumn(jr, c.ColumnName)
 			if leftCol.CellValue.DataType == types.NilType || c.CellValue.DataType == types.NilType {
 				// no need to verify this
@@ -158,6 +188,51 @@ func TestBasicLookup(t *testing.T) {
 				Right: "Instrument ID",
 			},
 		},
+		RemoveRightMatchColumn:   false,
+		RemoveRightDatasetPrefix: false,
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Lookup,
+		Configuration: string(b1),
+	}
+
+	joinSet := map[string]*types.DataSet{
+		"Instrument Data": instrumentSet,
+	}
+	joinedData, err := filtrify.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
+	if err != nil {
+		assert.NoError(t, err, "new aggregation column operation failed")
+	}
+
+	assert.Len(t, joinedData.Rows, len(lookupData.Rows), "join failed. invalid number of rows")
+
+	// now we need to make sure join was successful
+	verifyJoin(t, lookupData, instrumentSet, joinedData, conf)
+}
+
+func TestBasicLookupWithSelectedColumns(t *testing.T) {
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	conf := &operator.LookupConfiguration{
+		TargetDataset: "Instrument Data",
+		Columns: []*operator.JoinColumn{
+			{
+				Left:  "Instrument ID",
+				Right: "Instrument ID",
+			},
+		},
+		SelectedColumns:          []string{"Instrument name", "Currency"},
 		RemoveRightMatchColumn:   false,
 		RemoveRightDatasetPrefix: false,
 	}

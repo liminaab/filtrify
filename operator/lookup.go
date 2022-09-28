@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	_ "github.com/araddon/qlbridge/qlbdriver"
 	"github.com/liminaab/filtrify/types"
@@ -22,6 +23,7 @@ type LookupConfiguration struct {
 	Columns                  []*JoinColumn `json:"columns"`
 	RemoveRightMatchColumn   bool          `json:"removeRightMatchColumn"`
 	RemoveRightDatasetPrefix bool          `json:"removeRightDatasetPrefix"`
+	SelectedColumns          []string      `json:"selectedColumns"`
 }
 
 func (t *LookupOperator) GetColumn(r *types.DataRow, col string) *types.DataColumn {
@@ -101,6 +103,9 @@ func (t *LookupOperator) mergeRows(left *types.DataRow, right *types.DataRow, co
 	if config.RemoveRightMatchColumn {
 		targetLength -= len(config.Columns)
 	}
+	if len(config.SelectedColumns) > 0 {
+		targetLength = len(left.Columns) + len(config.SelectedColumns)
+	}
 	newRow := &types.DataRow{
 		Columns: make([]*types.DataColumn, targetLength),
 	}
@@ -112,6 +117,19 @@ func (t *LookupOperator) mergeRows(left *types.DataRow, right *types.DataRow, co
 		if config.RemoveRightMatchColumn && t.isRightMatchColumn(c, config) {
 			// let's skip this
 			continue
+		}
+		if len(config.SelectedColumns) > 0 {
+			// let's check if this column is selected
+			found := false
+			for _, sc := range config.SelectedColumns {
+				if strings.EqualFold(sc, c.ColumnName) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
 		}
 		newRow.Columns[len(left.Columns)+colCounter] = t.copyColumn(c, config)
 		colCounter++
@@ -125,6 +143,9 @@ func (t *LookupOperator) mergeNilRow(left *types.DataRow, rightTemplate *types.D
 	if config.RemoveRightMatchColumn {
 		targetLength -= len(config.Columns)
 	}
+	if len(config.SelectedColumns) > 0 {
+		targetLength = len(left.Columns) + len(config.SelectedColumns)
+	}
 	newRow := &types.DataRow{
 		Columns: make([]*types.DataColumn, targetLength),
 	}
@@ -136,6 +157,19 @@ func (t *LookupOperator) mergeNilRow(left *types.DataRow, rightTemplate *types.D
 		if config.RemoveRightMatchColumn && t.isRightMatchColumn(c, config) {
 			// let's skip this
 			continue
+		}
+		if len(config.SelectedColumns) > 0 {
+			// let's check if this column is selected
+			found := false
+			for _, sc := range config.SelectedColumns {
+				if strings.EqualFold(sc, c.ColumnName) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
 		}
 		newRow.Columns[len(left.Columns)+colCounter] = &types.DataColumn{
 			ColumnName: t.getRightColumnName(c, config),
