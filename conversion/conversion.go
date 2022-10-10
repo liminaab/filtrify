@@ -289,6 +289,9 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 
 func extractHeaders(rawData [][]string, firstLineIsHeader bool) ([][]string, []string, error) {
 	if firstLineIsHeader {
+		if len(rawData) < 1 {
+			return nil, nil, errors.New("empty raw data")
+		}
 		headers, data := rawData[0], rawData[1:]
 		return data, headers, nil
 	}

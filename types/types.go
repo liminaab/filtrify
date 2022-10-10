@@ -18,6 +18,7 @@ const (
 	Sort
 	RemoveColumn
 	RenameColumn
+	ChangeColumnType
 )
 
 func (t TransformationOperatorType) String() string {
@@ -38,6 +39,8 @@ func (t TransformationOperatorType) String() string {
 		return "RemoveColumn"
 	case RenameColumn:
 		return "RenameColumn"
+	case ChangeColumnType:
+		return "ChangeColumnType"
 	}
 	return "Unknown"
 }

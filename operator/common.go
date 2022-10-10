@@ -1,8 +1,10 @@
 package operator
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 	"unsafe"
@@ -101,4 +103,112 @@ func buildSelectStatement(selectFields []string) string {
 
 func buildColumnNotExistsError(column string) error {
 	return fmt.Errorf("attempted to operate on column “%s” but no such column available", column)
+}
+
+// 2000-01-01
+const minTimestampVal int64 = 946684800
+
+// 2100-01-01
+const maxTimestampVal int64 = 4102444800
+
+// 2000-01-01
+const minTimestampValMiliseconds int64 = 946684800000
+
+// 2100-01-01
+const maxTimestampValMiliseconds int64 = 4102444800000
+
+var dateTimeFormats []string = []string{
+	// datetime
+	time.RFC3339,
+	"2006-01-02T15:04:05",
+	"2006-01-02T15:04:05-0700",
+	"2 Jan 2006 15:04:05",
+	"2 Jan 2006 15:04",
+	"Mon, 2 Jan 2006 15:04:05 MST",
+	"2006-01-02 15:04:05",
+	// date
+	"2006-01-02",
+	"20060102",
+	"January 02, 2006",
+	"02 January 2006",
+	"02-Jan-2006",
+	"01/02/06",
+	"01/02/2006",
+	"01/01/2006",
+	"02/01/2006",
+	"010206",
+	"Jan-02-06",
+	"Jan-02-2006",
+	// "06",
+	"Mon",
+	"Monday	",
+	"Jan-06",
+	// time
+	"15:04",
+	"15:04:05",
+	"3:04 PM",
+	"03:04:05 PM",
+}
+
+func tryParseUnixTimestampSeconds(data string) *time.Time {
+	i, err := strconv.ParseInt(data, 10, 64)
+	if err != nil {
+		return nil
+	}
+	// let's check the range
+	if i > maxTimestampVal || i < minTimestampVal {
+		return nil
+	}
+
+	// wow this is a real timestamp
+	t := time.Unix(i, 0)
+	return &t
+}
+
+func tryParseUnixTimestampMiliseconds(data string) *time.Time {
+	i, err := strconv.ParseInt(data, 10, 64)
+	if err != nil {
+		return nil
+	}
+	// let's check the range
+	if i > maxTimestampValMiliseconds || i < minTimestampValMiliseconds {
+		return nil
+	}
+	sec := i / 1000
+	msec := i % 1000
+	// wow this is a real timestamp
+	t := time.Unix(sec, msec)
+	return &t
+}
+
+func tryParseDateAndTime(data string) *time.Time {
+	for _, layout := range dateTimeFormats {
+		t, err := time.Parse(layout, data)
+		if err != nil {
+			continue
+		}
+		return &t
+	}
+
+	return nil
+}
+
+func parseTimestamp(data string) (*time.Time, error) {
+	// let's start with most restrictive format to least restrictive one
+	// let's first check if this is a unix timestamp
+	t := tryParseUnixTimestampSeconds(data)
+	if t != nil {
+		return t, nil
+	}
+	t = tryParseUnixTimestampMiliseconds(data)
+	if t != nil {
+		return t, nil
+	}
+
+	t = tryParseDateAndTime(data)
+	if t != nil {
+		return t, nil
+	}
+
+	return nil, errors.New("invalid time format")
 }
