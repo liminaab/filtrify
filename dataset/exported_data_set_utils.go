@@ -1,6 +1,8 @@
 package dataset
 
 import (
+	"time"
+
 	"github.com/liminaab/filtrify/types"
 )
 
@@ -35,5 +37,106 @@ func StringColumn(name string, val string) *types.DataColumn {
 			DataType:    types.StringType,
 			StringValue: val,
 		},
+	}
+}
+
+func IntColumn(name string, val int32) *types.DataColumn {
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.IntType, IntValue: val},
+	}
+}
+
+func TimestampColumn(name string, val time.Time) *types.DataColumn {
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.TimestampType, TimestampValue: val},
+	}
+}
+
+func DoubleColumn(name string, val float64) *types.DataColumn {
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.DoubleType, DoubleValue: val},
+	}
+}
+
+func BoolColumn(name string, val bool) *types.DataColumn {
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.BoolType, BoolValue: val},
+	}
+}
+
+func NilColumn(name string) *types.DataColumn {
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.NilType},
+	}
+}
+
+func LongOrNilColumn(name string, val *int64) *types.DataColumn {
+	if val == nil {
+		return NilColumn(name)
+	}
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue: &types.CellValue{
+			DataType:  types.LongType,
+			LongValue: *val,
+		},
+	}
+}
+
+func StringOrNilColumn(name string, val *string) *types.DataColumn {
+	if val == nil {
+		return NilColumn(name)
+	}
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue: &types.CellValue{
+			DataType:    types.StringType,
+			StringValue: *val,
+		},
+	}
+}
+
+func IntOrNilColumn(name string, val *int32) *types.DataColumn {
+	if val == nil {
+		return NilColumn(name)
+	}
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.IntType, IntValue: *val},
+	}
+}
+
+func TimestampOrNilColumn(name string, val *time.Time) *types.DataColumn {
+	if val == nil {
+		return NilColumn(name)
+	}
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.TimestampType, TimestampValue: *val},
+	}
+}
+
+func DoubleOrNilColumn(name string, val *float64) *types.DataColumn {
+	if val == nil {
+		return NilColumn(name)
+	}
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.DoubleType, DoubleValue: *val},
+	}
+}
+
+func BoolOrNilColumn(name string, val *bool) *types.DataColumn {
+	if val == nil {
+		return NilColumn(name)
+	}
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  &types.CellValue{DataType: types.BoolType, BoolValue: *val},
 	}
 }
