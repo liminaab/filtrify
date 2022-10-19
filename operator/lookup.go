@@ -234,6 +234,10 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 		return nil, err
 	}
 
+	return t.TransformTyped(dataset, typedConfig, otherSets)
+}
+
+func (t *LookupOperator) TransformTyped(dataset *types.DataSet, typedConfig *LookupConfiguration, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
 	if _, ok := otherSets[typedConfig.TargetDataset]; !ok {
 		return nil, errors.New("target dataset not found")
 	}
