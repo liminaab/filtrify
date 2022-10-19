@@ -259,6 +259,11 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string, _ map[
 		return nil, err
 	}
 
+	return t.TransformTyped(dataset, typedConfig)
+}
+
+func (t *FilterOperator) TransformTyped(dataset *types.DataSet, typedConfig *FilterConfiguration) (*types.DataSet, error) {
+
 	headers, colTypeMap := extractHeadersAndTypeMap(dataset)
 
 	var sb strings.Builder

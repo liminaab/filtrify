@@ -5,7 +5,7 @@ go 1.18
 replace github.com/araddon/qlbridge => github.com/bahadirbb/qlbridge v0.0.22
 
 require (
-	github.com/araddon/gou v0.0.0-20190110011759-c797efecbb61
+	github.com/araddon/gou v0.0.0-20211019181548-e7d08105776c
 	github.com/araddon/qlbridge v0.0.2
 	github.com/stretchr/testify v1.4.0
 )
