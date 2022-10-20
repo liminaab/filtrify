@@ -110,6 +110,8 @@ func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataTyp
 		} else {
 			return "", errors.New("invalid boolean value")
 		}
+	case types.NilType:
+		return fmt.Sprintf("`%s` %s '%s'", c.FieldName, c.Operator, c.Value), nil
 	default:
 		return "", errors.New("unknown column type in where clause")
 	}
