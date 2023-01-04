@@ -19,6 +19,7 @@ const (
 	RemoveColumn
 	RenameColumn
 	ChangeColumnType
+	JSON
 )
 
 func (t TransformationOperatorType) String() string {
@@ -41,6 +42,8 @@ func (t TransformationOperatorType) String() string {
 		return "RenameColumn"
 	case ChangeColumnType:
 		return "ChangeColumnType"
+	case JSON:
+		return "JSON"
 	}
 	return "Unknown"
 }

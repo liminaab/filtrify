@@ -29,6 +29,8 @@ func getOperator(step *types.TransformationStep) (types.TransformationOperator, 
 		return &operator.RenameColumnOperator{}, nil
 	case types.ChangeColumnType:
 		return &operator.ChangeColumnTypeOperator{}, nil
+	case types.JSON:
+		return &operator.JSONOperator{}, nil
 	default:
 		return nil, errors.New("unknown operator")
 	}
