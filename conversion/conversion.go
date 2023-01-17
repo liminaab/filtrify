@@ -133,7 +133,7 @@ func parseTimestamp(data string) (*time.Time, error) {
 	return nil, errors.New("invalid time format")
 }
 
-func parseToCell(data string, enforceType types.CellDataType) (*types.CellValue, error) {
+func ParseToCell(data string, enforceType types.CellDataType) (*types.CellValue, error) {
 	cellValue := &types.CellValue{
 		DataType: enforceType,
 	}
@@ -229,7 +229,7 @@ func estimateColumnType(rawData [][]string, colIndex int) types.CellDataType {
 		if len(cellData) == 0 {
 			continue
 		}
-		_, err := parseToCell(cellData, currentType)
+		_, err := ParseToCell(cellData, currentType)
 		if err != nil {
 			currentType = getNextTypeToParse(currentType)
 			i = -1
@@ -269,7 +269,7 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 			typedCols[ci].ColumnName = headers[ci]
 			var cell *types.CellValue
 			if len(row[ci]) > 0 {
-				cell, err = parseToCell(row[ci], cellTypes[ci])
+				cell, err = ParseToCell(row[ci], cellTypes[ci])
 			} else {
 				cell = &types.CellValue{
 					DataType: types.NilType,

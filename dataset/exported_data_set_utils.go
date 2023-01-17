@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"github.com/liminaab/filtrify/conversion"
 	"time"
 
 	"github.com/liminaab/filtrify/types"
@@ -18,6 +19,17 @@ func DataRow(columns ...*types.DataColumn) *types.DataRow {
 	return &types.DataRow{
 		Columns: columns,
 	}
+}
+
+func NewColumn(name string, val string, targetType types.CellDataType) (*types.DataColumn, error) {
+	cell, err := conversion.ParseToCell(val, targetType)
+	if err != nil {
+		return nil, err
+	}
+	return &types.DataColumn{
+		ColumnName: name,
+		CellValue:  cell,
+	}, nil
 }
 
 func LongColumn(name string, val int64) *types.DataColumn {
