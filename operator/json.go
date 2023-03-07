@@ -12,8 +12,8 @@ type JSONOperator struct {
 }
 
 type JSONConfiguration struct {
-	Fields          map[string]bool `json:"fields"`
-	TargetFieldName string          `json:"targetFieldName"`
+	Fields          []string `json:"fields"`
+	TargetFieldName string   `json:"targetFieldName"`
 }
 
 func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
@@ -26,7 +26,10 @@ func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[st
 	newDataset := types.DataSet{
 		Rows: make([]*types.DataRow, len(dataset.Rows)),
 	}
-
+	fieldMap := make(map[string]bool)
+	for _, field := range typedConfig.Fields {
+		fieldMap[field] = true
+	}
 	for i, row := range dataset.Rows {
 		newRow := types.DataRow{
 			Columns: make([]*types.DataColumn, 0),
@@ -36,7 +39,7 @@ func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[st
 			if col.ColumnName == typedConfig.TargetFieldName {
 				continue
 			}
-			shouldBeRemoved, found := typedConfig.Fields[col.ColumnName]
+			shouldBeRemoved, found := fieldMap[col.ColumnName]
 			if !found || !shouldBeRemoved {
 				newRow.Columns = append(newRow.Columns, col)
 			} else {
@@ -78,6 +81,12 @@ func (t *JSONOperator) buildConfiguration(config string) (*JSONConfiguration, er
 
 	if len(typedConfig.TargetFieldName) < 1 {
 		return nil, errors.New("missing json configuration")
+	}
+
+	for _, ob := range typedConfig.Fields {
+		if len(ob) < 1 {
+			return nil, errors.New("missing column name in json configuration")
+		}
 	}
 
 	return &typedConfig, nil

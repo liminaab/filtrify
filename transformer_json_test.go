@@ -19,7 +19,7 @@ func TestJSON(t *testing.T) {
 	}
 
 	conf := &operator.ObjectifyConfiguration{
-		Fields:          map[string]bool{"Instrument Type": true, "Instrument name": true},
+		Fields:          []string{"Instrument Type", "Instrument name"},
 		TargetFieldName: "jsonified",
 	}
 	b1, err := json.Marshal(conf)
@@ -59,7 +59,7 @@ func TestJSONReplacesExistingColumns(t *testing.T) {
 	}
 
 	conf := &operator.ObjectifyConfiguration{
-		Fields:          map[string]bool{"Instrument Type": true, "Instrument name": true},
+		Fields:          []string{"Instrument Type", "Instrument name"},
 		TargetFieldName: "Quantity",
 	}
 	b1, err := json.Marshal(conf)

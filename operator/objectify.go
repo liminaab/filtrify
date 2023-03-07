@@ -12,8 +12,8 @@ type ObjectifyOperator struct {
 }
 
 type ObjectifyConfiguration struct {
-	Fields          map[string]bool `json:"fields"`
-	TargetFieldName string          `json:"targetFieldName"`
+	Fields          []string `json:"fields"`
+	TargetFieldName string   `json:"targetFieldName"`
 }
 
 func (t *ObjectifyOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
@@ -26,7 +26,10 @@ func (t *ObjectifyOperator) Transform(dataset *types.DataSet, config string, _ m
 	newDataset := types.DataSet{
 		Rows: make([]*types.DataRow, len(dataset.Rows)),
 	}
-
+	fieldMap := make(map[string]bool)
+	for _, field := range typedConfig.Fields {
+		fieldMap[field] = true
+	}
 	for i, row := range dataset.Rows {
 		newRow := types.DataRow{
 			Columns: make([]*types.DataColumn, 0),
@@ -37,7 +40,7 @@ func (t *ObjectifyOperator) Transform(dataset *types.DataSet, config string, _ m
 			if col.ColumnName == typedConfig.TargetFieldName {
 				continue
 			}
-			shouldBeRemoved, found := typedConfig.Fields[col.ColumnName]
+			shouldBeRemoved, found := fieldMap[col.ColumnName]
 			if !found || !shouldBeRemoved {
 				newRow.Columns = append(newRow.Columns, col)
 			} else {
@@ -76,6 +79,12 @@ func (t *ObjectifyOperator) buildConfiguration(config string) (*ObjectifyConfigu
 
 	if len(typedConfig.TargetFieldName) < 1 {
 		return nil, errors.New("target field name must be specified in objectify configuration")
+	}
+
+	for _, ob := range typedConfig.Fields {
+		if len(ob) < 1 {
+			return nil, errors.New("missing column name in objectify configuration")
+		}
 	}
 
 	return &typedConfig, nil
