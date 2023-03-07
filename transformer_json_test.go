@@ -19,7 +19,7 @@ func TestJSON(t *testing.T) {
 	}
 
 	conf := &operator.ObjectifyConfiguration{
-		Fields:          []string{"Instrument Type", "Instrument name"},
+		Fields:          map[string]bool{"Instrument Type": true, "Instrument name": true},
 		TargetFieldName: "jsonified",
 	}
 	b1, err := json.Marshal(conf)

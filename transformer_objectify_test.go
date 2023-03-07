@@ -19,7 +19,7 @@ func TestObjectify(t *testing.T) {
 	}
 
 	conf := &operator.ObjectifyConfiguration{
-		Fields:          []string{"Instrument Type", "Instrument name"},
+		Fields:          map[string]bool{"Instrument Type": true, "Instrument name": true},
 		TargetFieldName: "objectified",
 	}
 	b1, err := json.Marshal(conf)
@@ -55,7 +55,7 @@ func TestObjectifySilentlySkipsUnknownColumns(t *testing.T) {
 	}
 
 	conf := &operator.ObjectifyConfiguration{
-		Fields:          []string{"Instrument Type", "Instrument name", "asdasdasd"},
+		Fields:          map[string]bool{"Instrument Type": true, "Instrument name": true, "asdasdasdasd": true},
 		TargetFieldName: "objectified",
 	}
 	b1, err := json.Marshal(conf)
