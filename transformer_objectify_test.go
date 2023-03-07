@@ -81,3 +81,32 @@ func TestObjectifySilentlySkipsUnknownColumns(t *testing.T) {
 	assert.Equal(t, instrumentTypeCol.CellValue.StringValue, firstCol.CellValue.ObjectValue["Instrument Type"], "objectify operation failed")
 	assert.Equal(t, instrumentNameCol.CellValue.StringValue, firstCol.CellValue.ObjectValue["Instrument name"], "objectify operation failed")
 }
+
+func TestObjectifyReplacesExistingColumns(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	conf := &operator.ObjectifyConfiguration{
+		Fields:          map[string]bool{"Instrument Type": true, "Instrument name": true, "asdasdasdasd": true},
+		TargetFieldName: "Quantity",
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Objectify,
+		Configuration: string(b1),
+	}
+
+	objectifiedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "objectify operation failed")
+	}
+
+	firstCol := test.GetColumn(objectifiedData.Rows[0], "Quantity")
+	assert.Equal(t, types.ObjectType, firstCol.CellValue.DataType, "objectify operation failed")
+	assert.Equal(t, 2, len(firstCol.CellValue.ObjectValue), "objectify operation failed")
+}

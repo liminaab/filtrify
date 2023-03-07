@@ -33,6 +33,9 @@ func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[st
 		}
 		jsonColumnMap := make(map[string]string)
 		for _, col := range row.Columns {
+			if col.ColumnName == typedConfig.TargetFieldName {
+				continue
+			}
 			shouldBeRemoved, found := typedConfig.Fields[col.ColumnName]
 			if !found || !shouldBeRemoved {
 				newRow.Columns = append(newRow.Columns, col)

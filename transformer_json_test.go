@@ -51,3 +51,32 @@ func TestJSON(t *testing.T) {
 	instrumentTypeColOnObjectified := test.GetColumn(objectifiedData.Rows[0], "Instrument Type")
 	assert.Nil(t, instrumentTypeColOnObjectified, "json operation failed")
 }
+
+func TestJSONReplacesExistingColumns(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	conf := &operator.ObjectifyConfiguration{
+		Fields:          map[string]bool{"Instrument Type": true, "Instrument name": true},
+		TargetFieldName: "Quantity",
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.JSON,
+		Configuration: string(b1),
+	}
+
+	objectifiedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "json operation failed")
+	}
+
+	firstCol := test.GetColumn(objectifiedData.Rows[0], "Quantity")
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "jsonified"))
+	assert.Equal(t, types.StringType, firstCol.CellValue.DataType, "json operation failed")
+}

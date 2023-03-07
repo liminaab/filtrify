@@ -33,6 +33,10 @@ func (t *ObjectifyOperator) Transform(dataset *types.DataSet, config string, _ m
 		}
 		objectColumnMap := make(map[string]interface{})
 		for _, col := range row.Columns {
+			// if this col has the same name with targetFieldName, we should skip it
+			if col.ColumnName == typedConfig.TargetFieldName {
+				continue
+			}
 			shouldBeRemoved, found := typedConfig.Fields[col.ColumnName]
 			if !found || !shouldBeRemoved {
 				newRow.Columns = append(newRow.Columns, col)
