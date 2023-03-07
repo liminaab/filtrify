@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -20,6 +21,7 @@ const (
 	RenameColumn
 	ChangeColumnType
 	JSON
+	Objectify
 )
 
 func (t TransformationOperatorType) String() string {
@@ -44,6 +46,8 @@ func (t TransformationOperatorType) String() string {
 		return "ChangeColumnType"
 	case JSON:
 		return "JSON"
+	case Objectify:
+		return "Objectify"
 	}
 	return "Unknown"
 }
@@ -64,6 +68,7 @@ const (
 	DoubleType
 	BoolType
 	NilType
+	ObjectType
 )
 
 func (e CellDataType) String() string {
@@ -82,6 +87,8 @@ func (e CellDataType) String() string {
 		return "BoolType"
 	case NilType:
 		return "NilType"
+	case ObjectType:
+		return "ObjectType"
 	default:
 		return fmt.Sprintf("%d", int(e))
 	}
@@ -149,9 +156,36 @@ type CellValue struct {
 	StringValue    string
 	DoubleValue    float64
 	BoolValue      bool
-	// Is_original_field   bool
-	// Original_field_name string // e.g. “name”
-	// original_field_source enum   // e.g. “enums.DataSourcePortfolio”
+	ObjectValue    map[string]interface{}
+}
+
+func (c *CellValue) Value() interface{} {
+	if c == nil {
+		return nil
+	}
+
+	if c.DataType == NilType {
+		return nil
+	}
+
+	switch c.DataType {
+	case IntType:
+		return c.IntValue
+	case LongType:
+		return c.LongValue
+	case TimestampType:
+		return c.TimestampValue
+	case StringType:
+		return c.StringValue
+	case DoubleType:
+		return c.DoubleValue
+	case BoolType:
+		return c.BoolValue
+	case ObjectType:
+		return c.ObjectValue
+	}
+
+	return nil
 }
 
 func (c *CellValue) ToString() string {
@@ -179,6 +213,12 @@ func (c *CellValue) ToString() string {
 			return "true"
 		}
 		return "false"
+	case ObjectType:
+		b, err := json.Marshal(c.ObjectValue)
+		if err != nil {
+			return ""
+		}
+		return string(b)
 	}
 
 	return ""
@@ -199,6 +239,8 @@ func (v *CellValue) IsNumeric() bool {
 	case BoolType:
 		return false
 	case NilType:
+		return false
+	case ObjectType:
 		return false
 	}
 
@@ -249,6 +291,9 @@ func (v *CellValue) Equals(other *CellValue) bool {
 		return v.DoubleValue == other.DoubleValue
 	case BoolType:
 		return v.BoolValue == other.BoolValue
+	case ObjectType:
+		// we don't support object comparison for now
+		return false
 	}
 
 	return false

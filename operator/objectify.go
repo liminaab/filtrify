@@ -8,15 +8,15 @@ import (
 	"github.com/liminaab/filtrify/types"
 )
 
-type JSONOperator struct {
+type ObjectifyOperator struct {
 }
 
-type JSONConfiguration struct {
+type ObjectifyConfiguration struct {
 	Fields          []string `json:"fields"`
 	TargetFieldName string   `json:"targetFieldName"`
 }
 
-func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
+func (t *ObjectifyOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
 
 	typedConfig, confError := t.buildConfiguration(config)
 	if confError != nil {
@@ -34,8 +34,9 @@ func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[st
 		newRow := types.DataRow{
 			Columns: make([]*types.DataColumn, 0),
 		}
-		jsonColumnMap := make(map[string]string)
+		objectColumnMap := make(map[string]interface{})
 		for _, col := range row.Columns {
+			// if this col has the same name with targetFieldName, we should skip it
 			if col.ColumnName == typedConfig.TargetFieldName {
 				continue
 			}
@@ -44,55 +45,52 @@ func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[st
 				newRow.Columns = append(newRow.Columns, col)
 			} else {
 				// we should make this a json column
-				jsonColumnMap[col.ColumnName] = col.CellValue.ToString()
+				objectColumnMap[col.ColumnName] = col.CellValue.Value()
 			}
 		}
-		jsonColumnString, err := json.Marshal(jsonColumnMap)
-		if err != nil {
-			return nil, err
-		}
-		jsonColumn := &types.DataColumn{
+
+		objectColumn := &types.DataColumn{
 			ColumnName: typedConfig.TargetFieldName,
 			CellValue: &types.CellValue{
-				DataType:    types.StringType,
-				StringValue: string(jsonColumnString),
+				DataType:    types.ObjectType,
+				ObjectValue: objectColumnMap,
 			},
 		}
-		newRow.Columns = append(newRow.Columns, jsonColumn)
+		newRow.Columns = append(newRow.Columns, objectColumn)
 		newDataset.Rows[i] = &newRow
 	}
 	return &newDataset, nil
 }
 
-func (t *JSONOperator) buildConfiguration(config string) (*JSONConfiguration, error) {
+func (t *ObjectifyOperator) buildConfiguration(config string) (*ObjectifyConfiguration, error) {
 	if len(config) < 1 {
 		return nil, errors.New("invalid configuration")
 	}
 	// config is a json declaration of our field configuration
-	typedConfig := JSONConfiguration{}
+	typedConfig := ObjectifyConfiguration{}
 	err := json.Unmarshal([]byte(config), &typedConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(typedConfig.Fields) < 1 {
-		return nil, errors.New("missing json configuration")
+		return nil, errors.New("fields must be specified in objectify configuration")
 	}
 
 	if len(typedConfig.TargetFieldName) < 1 {
-		return nil, errors.New("missing json configuration")
+		return nil, errors.New("target field name must be specified in objectify configuration")
 	}
 
 	for _, ob := range typedConfig.Fields {
 		if len(ob) < 1 {
-			return nil, errors.New("missing column name in json configuration")
+			return nil, errors.New("missing column name in objectify configuration")
 		}
 	}
 
 	return &typedConfig, nil
 }
 
-func (t *JSONOperator) ValidateConfiguration(config string) (bool, error) {
+func (t *ObjectifyOperator) ValidateConfiguration(config string) (bool, error) {
 	typedConfig, err := t.buildConfiguration(config)
 	return typedConfig != nil, err
 }
