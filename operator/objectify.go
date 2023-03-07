@@ -73,16 +73,16 @@ func (t *ObjectifyOperator) buildConfiguration(config string) (*ObjectifyConfigu
 	}
 
 	if len(typedConfig.Fields) < 1 {
-		return nil, errors.New("missing json configuration")
+		return nil, errors.New("fields must be specified in objectify configuration")
 	}
 
 	if len(typedConfig.TargetFieldName) < 1 {
-		return nil, errors.New("missing json configuration")
+		return nil, errors.New("target field name must be specified in objectify configuration")
 	}
 
 	for _, ob := range typedConfig.Fields {
 		if len(ob) < 1 {
-			return nil, errors.New("missing column name in json configuration")
+			return nil, errors.New("missing column name in objectify configuration")
 		}
 	}
 
