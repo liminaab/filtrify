@@ -1,6 +1,7 @@
 package operator
 
 import (
+	"github.com/araddon/qlbridge/value"
 	"reflect"
 	"time"
 	"unsafe"
@@ -54,6 +55,14 @@ func convertToCell(d interface{}) *types.CellValue {
 		cell.DataType = types.BoolType
 		cell.BoolValue = v
 		break
+	case map[string]value.Value:
+		// let's convert this to our internal object type
+		objectVal := make(map[string]interface{})
+		for k, v := range v {
+			objectVal[k] = v.Value()
+		}
+		cell.DataType = types.ObjectType
+		cell.ObjectValue = objectVal
 	default:
 		cell.DataType = types.NilType
 		break

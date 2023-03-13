@@ -74,11 +74,11 @@ func (t *FilterOperator) buildContainsQuery(c *Criteria, colType types.CellDataT
 }
 
 func (t *FilterOperator) buildEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
-	return fmt.Sprintf("`%s` = NULL", c.FieldName), nil
+	return fmt.Sprintf("(`%s` = NULL OR `%s` = '')", c.FieldName, c.FieldName), nil
 }
 
 func (t *FilterOperator) buildNotEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
-	return fmt.Sprintf("NOT (`%s` = NULL)", c.FieldName), nil
+	return fmt.Sprintf("NOT (`%s` = NULL OR `%s` = '')", c.FieldName, c.FieldName), nil
 }
 
 func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataType) (string, error) {
@@ -213,7 +213,6 @@ func (t *FilterOperator) buildWhereClause(statement *FilterCriteria, columnTypeM
 	}
 
 	for i, stmt := range statement.NestedCriterias {
-
 		var q string
 		if t.isListComparison(stmt) {
 			stmt = t.compileListComparisonStatements(stmt)

@@ -67,6 +67,8 @@ func (m *LmnInMemDataSource) mapToInternalType(t types.CellDataType) value.Value
 		return value.StringType
 	case types.NilType:
 		return value.NilType
+	case types.ObjectType:
+		return value.MapValueType
 	}
 
 	return value.NilType
@@ -153,6 +155,8 @@ func (m *LmnInMemTable) getCellValue(col *types.DataColumn) interface{} {
 		return col.CellValue.BoolValue
 	case types.StringType:
 		return col.CellValue.StringValue
+	case types.ObjectType:
+		return col.CellValue.ObjectValue
 	case types.NilType:
 		return nil
 	}
