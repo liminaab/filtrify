@@ -278,7 +278,7 @@ func (t *FilterOperator) TransformTyped(dataset *types.DataSet, typedConfig *Fil
 	sb.WriteString(whereClause)
 	fullQuery := sb.String()
 
-	return executeSQLQuery(fullQuery, dataset)
+	return executeSQLQuery(fullQuery, dataset, colTypeMap)
 }
 
 func (t *FilterOperator) buildConfiguration(config string) (*FilterConfiguration, error) {

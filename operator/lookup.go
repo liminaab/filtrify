@@ -60,7 +60,7 @@ func (t *LookupOperator) copyColumn(col *types.DataColumn, config *LookupConfigu
 	case types.LongType:
 		cellVal.LongValue = col.CellValue.LongValue
 		break
-	case types.TimestampType:
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
 		cellVal.TimestampValue = col.CellValue.TimestampValue
 		break
 	case types.StringType:

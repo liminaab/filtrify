@@ -9,7 +9,7 @@ import (
 	"github.com/liminaab/filtrify/types"
 )
 
-func convertToCell(d interface{}) *types.CellValue {
+func convertToCell(d interface{}, existingType types.CellDataType) *types.CellValue {
 	cell := types.CellValue{}
 	isPtr := reflect.ValueOf(d).Type().Kind() == reflect.Ptr
 	if isPtr {
@@ -36,7 +36,14 @@ func convertToCell(d interface{}) *types.CellValue {
 		}
 		break
 	case time.Time:
-		cell.DataType = types.TimestampType
+		// this might be 3 different types
+		// we need to check the existing type
+		// if it's nil, we'll just assume it's a timestamp
+		if existingType == types.NilType {
+			cell.DataType = types.TimestampType
+		} else {
+			cell.DataType = existingType
+		}
 		cell.TimestampValue = v
 		break
 	case string:
@@ -70,16 +77,20 @@ func convertToCell(d interface{}) *types.CellValue {
 	return &cell
 }
 
-func convertToDataSet(data [][]interface{}, headers []string) *types.DataSet {
+func convertToDataSet(data [][]interface{}, headers []string, existingColumnTypeMap map[string]types.CellDataType) *types.DataSet {
 	dataSet := &types.DataSet{}
 	dataSet.Rows = make([]*types.DataRow, len(data))
 	for ri, r := range data {
 		dataRow := types.DataRow{}
 		dataRow.Columns = make([]*types.DataColumn, len(headers))
 		for i, c := range r {
+			existingType, ok := existingColumnTypeMap[headers[i]]
+			if !ok {
+				existingType = types.NilType
+			}
 			dataRow.Columns[i] = &types.DataColumn{}
 			dataRow.Columns[i].ColumnName = headers[i]
-			dataRow.Columns[i].CellValue = convertToCell(c)
+			dataRow.Columns[i].CellValue = convertToCell(c, existingType)
 		}
 
 		dataSet.Rows[ri] = &dataRow

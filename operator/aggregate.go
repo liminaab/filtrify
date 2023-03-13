@@ -138,7 +138,7 @@ func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ m
 	}
 	fullQuery := sb.String()
 
-	result, err := executeSQLQuery(fullQuery, dataset)
+	result, err := executeSQLQuery(fullQuery, dataset, columnTypeMap)
 	if err != nil {
 		return nil, err
 	}

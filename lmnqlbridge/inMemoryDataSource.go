@@ -53,7 +53,7 @@ func (m *LmnInMemDataSource) ReplaceTable(name string, dataset *types.DataSet) {
 
 func (m *LmnInMemDataSource) mapToInternalType(t types.CellDataType) value.ValueType {
 	switch t {
-	case types.TimestampType:
+	case types.DateType, types.TimestampType, types.TimeOfDayType:
 		return value.TimeType
 	case types.IntType:
 		return value.IntType
@@ -143,7 +143,7 @@ func (m *LmnInMemTable) Columns() []string {
 
 func (m *LmnInMemTable) getCellValue(col *types.DataColumn) interface{} {
 	switch col.CellValue.DataType {
-	case types.TimestampType:
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
 		return col.CellValue.TimestampValue
 	case types.IntType:
 		return col.CellValue.IntValue

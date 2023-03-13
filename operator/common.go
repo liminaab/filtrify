@@ -32,7 +32,7 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-func executeSQLQuery(q string, dataset *types.DataSet) (*types.DataSet, error) {
+func executeSQLQuery(q string, dataset *types.DataSet, existingColumnTypeMap map[string]types.CellDataType) (*types.DataSet, error) {
 	exit := make(chan bool)
 	inMemoryDataSource := lmnqlbridge.NewLmnInMemDataSource(exit)
 
@@ -50,7 +50,7 @@ func executeSQLQuery(q string, dataset *types.DataSet) (*types.DataSet, error) {
 	if err != nil {
 		return nil, err
 	}
-	ds := convertToDataSet(result, columns)
+	ds := convertToDataSet(result, columns, existingColumnTypeMap)
 	return ds, nil
 }
 

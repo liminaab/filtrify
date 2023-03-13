@@ -28,7 +28,7 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 		return nil, err
 	}
 
-	headers, _ := extractHeadersAndTypeMap(dataset)
+	headers, columnTypeMap := extractHeadersAndTypeMap(dataset)
 	plainAggs := make([]*types.DataColumn, 0)
 
 	var sb strings.Builder
@@ -49,7 +49,7 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 			// we have aggregations but we don't have a group by
 			// we have to execute each of these aggregations like a seperate query
 			for _, agg := range aggs {
-				aggData, err := t.executePlainAggregation(agg, dataset)
+				aggData, err := t.executePlainAggregation(agg, dataset, columnTypeMap)
 				if err != nil {
 					return nil, err
 				}
@@ -83,7 +83,7 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 	}
 	fullQuery := sb.String()
 
-	result, err := executeSQLQuery(fullQuery, dataset)
+	result, err := executeSQLQuery(fullQuery, dataset, columnTypeMap)
 	if err != nil {
 		return nil, err
 	}
@@ -96,9 +96,9 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 	return result, nil
 }
 
-func (t *NewColumnOperator) executePlainAggregation(aggrStatement string, ds *types.DataSet) (*types.DataSet, error) {
+func (t *NewColumnOperator) executePlainAggregation(aggrStatement string, ds *types.DataSet, existingColumnTypeMap map[string]types.CellDataType) (*types.DataSet, error) {
 	q := fmt.Sprintf("SELECT %s FROM %s", aggrStatement, defaultTableName)
-	result, err := executeSQLQuery(q, ds)
+	result, err := executeSQLQuery(q, ds, existingColumnTypeMap)
 	if err != nil {
 		return nil, err
 	}
