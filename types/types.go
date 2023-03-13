@@ -115,7 +115,6 @@ type TransformationOperator interface {
 // }
 
 type DataSet struct {
-	//Headers []*ColumnDefinition
 	Rows []*DataRow
 }
 
@@ -146,10 +145,6 @@ type DataRow struct {
 	Columns []*DataColumn
 }
 
-//	type ColumnDefinition struct {
-//		ColumnName string
-//		DataType   CellDataType
-//	}
 type DataColumn struct {
 	ColumnName string
 	CellValue  *CellValue
