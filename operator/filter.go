@@ -92,7 +92,11 @@ func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataTyp
 		return fmt.Sprintf("`%s` %s %d", c.FieldName, c.Operator, i), nil
 	case types.TimestampType:
 		// TODO define format smartly - think about this
+		return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, c.Value), nil
+	case types.DateType:
 		return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, c.Value), nil
+	case types.TimeOfDayType:
+		return fmt.Sprintf("`%s` %s totime('%s')", c.FieldName, c.Operator, c.Value), nil
 	case types.StringType:
 		return fmt.Sprintf("`%s` %s '%s'", c.FieldName, c.Operator, c.Value), nil
 	case types.DoubleType:

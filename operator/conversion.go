@@ -1,6 +1,7 @@
 package operator
 
 import (
+	"cloud.google.com/go/civil"
 	"github.com/araddon/qlbridge/value"
 	"reflect"
 	"time"
@@ -25,6 +26,12 @@ func convertToCell(d interface{}, existingType types.CellDataType) *types.CellVa
 		cell.DataType = types.LongType
 		cell.LongValue = v
 		break
+	case civil.Date:
+		cell.DataType = types.DateType
+		cell.TimestampValue = v.In(time.UTC)
+	case civil.Time:
+		cell.DataType = types.TimeOfDayType
+		cell.TimestampValue = time.Date(0, 0, 0, v.Hour, v.Minute, v.Second, v.Nanosecond, time.UTC)
 	case int:
 		size := unsafe.Sizeof(v)
 		if size == 4 {

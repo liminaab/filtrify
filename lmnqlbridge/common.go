@@ -30,8 +30,11 @@ var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
 	"containsx":        &operator.Contains{},
 	"notcontainsx":     &operator.NotContains{},
 	"today":            &operator.Today{},
+	"time":             &operator.Time{},
 	"eval":             &operator.Eval{},
 	"lmnagg":           &operator.LiminaAgg{},
+	"todate":           &operator.ToDate{},
+	"totime":           &operator.ToTime{},
 }
 
 func GetOperators() map[string]expr.CustomFunc {

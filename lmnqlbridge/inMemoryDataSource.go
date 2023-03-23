@@ -1,6 +1,7 @@
 package lmnqlbridge
 
 import (
+	"cloud.google.com/go/civil"
 	"database/sql/driver"
 	"strings"
 
@@ -53,8 +54,12 @@ func (m *LmnInMemDataSource) ReplaceTable(name string, dataset *types.DataSet) {
 
 func (m *LmnInMemDataSource) mapToInternalType(t types.CellDataType) value.ValueType {
 	switch t {
-	case types.DateType, types.TimestampType, types.TimeOfDayType:
+	case types.TimestampType:
 		return value.TimeType
+	case types.TimeOfDayType:
+		return value.TimeOnlyType
+	case types.DateType:
+		return value.DateType
 	case types.IntType:
 		return value.IntType
 	case types.LongType:
@@ -143,8 +148,12 @@ func (m *LmnInMemTable) Columns() []string {
 
 func (m *LmnInMemTable) getCellValue(col *types.DataColumn) interface{} {
 	switch col.CellValue.DataType {
-	case types.TimestampType, types.DateType, types.TimeOfDayType:
+	case types.TimestampType:
 		return col.CellValue.TimestampValue
+	case types.DateType:
+		return civil.DateOf(col.CellValue.TimestampValue)
+	case types.TimeOfDayType:
+		return civil.TimeOf(col.CellValue.TimestampValue)
 	case types.IntType:
 		return col.CellValue.IntValue
 	case types.LongType:
