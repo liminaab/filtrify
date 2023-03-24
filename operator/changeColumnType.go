@@ -1,6 +1,7 @@
 package operator
 
 import (
+	"cloud.google.com/go/civil"
 	"encoding/json"
 	"errors"
 	"strconv"
@@ -45,6 +46,8 @@ func init() {
 	conversionMap[types.TimestampType][types.LongType] = timeToLong
 	conversionMap[types.TimestampType][types.DoubleType] = timeToDouble
 	conversionMap[types.TimestampType][types.BoolType] = timeToBool
+	conversionMap[types.TimestampType][types.DateType] = timeToDate
+	conversionMap[types.TimestampType][types.TimeOfDayType] = timeToTimeofDay
 
 	// Integer conversion functions
 	conversionMap[types.IntType] = make(map[types.CellDataType]conversionFunc)
@@ -54,6 +57,8 @@ func init() {
 	conversionMap[types.IntType][types.LongType] = intToLong
 	conversionMap[types.IntType][types.DoubleType] = intToDouble
 	conversionMap[types.IntType][types.BoolType] = intToBool
+	conversionMap[types.IntType][types.DateType] = intToDate
+	conversionMap[types.IntType][types.TimeOfDayType] = noopConversion
 
 	// Long conversion functions
 	conversionMap[types.LongType] = make(map[types.CellDataType]conversionFunc)
@@ -63,6 +68,8 @@ func init() {
 	conversionMap[types.LongType][types.IntType] = longToInt
 	conversionMap[types.LongType][types.DoubleType] = longToDouble
 	conversionMap[types.LongType][types.BoolType] = longToBool
+	conversionMap[types.LongType][types.DateType] = longToDate
+	conversionMap[types.LongType][types.TimeOfDayType] = noopConversion
 
 	// Double conversion functions
 	conversionMap[types.DoubleType] = make(map[types.CellDataType]conversionFunc)
@@ -72,6 +79,8 @@ func init() {
 	conversionMap[types.DoubleType][types.IntType] = doubleToInt
 	conversionMap[types.DoubleType][types.LongType] = doubleToLong
 	conversionMap[types.DoubleType][types.BoolType] = doubleToBool
+	conversionMap[types.DoubleType][types.DateType] = doubleToDate
+	conversionMap[types.DoubleType][types.TimeOfDayType] = noopConversion
 
 	// Bool conversion functions
 	conversionMap[types.BoolType] = make(map[types.CellDataType]conversionFunc)
@@ -81,6 +90,8 @@ func init() {
 	conversionMap[types.BoolType][types.IntType] = boolToInt
 	conversionMap[types.BoolType][types.LongType] = boolToLong
 	conversionMap[types.BoolType][types.DoubleType] = boolToDouble
+	conversionMap[types.BoolType][types.DateType] = noopConversion
+	conversionMap[types.BoolType][types.TimeOfDayType] = noopConversion
 
 	// String conversion functions
 	conversionMap[types.StringType] = make(map[types.CellDataType]conversionFunc)
@@ -90,6 +101,30 @@ func init() {
 	conversionMap[types.StringType][types.IntType] = stringToInt
 	conversionMap[types.StringType][types.LongType] = stringToLong
 	conversionMap[types.StringType][types.DoubleType] = stringToDouble
+	conversionMap[types.StringType][types.DateType] = stringToDate
+	conversionMap[types.StringType][types.TimeOfDayType] = stringToTimeofDay
+
+	// Date conversion functions
+	conversionMap[types.DateType] = make(map[types.CellDataType]conversionFunc)
+	conversionMap[types.DateType][types.DateType] = noopConversion
+	conversionMap[types.DateType][types.StringType] = dateToString
+	conversionMap[types.DateType][types.IntType] = dateToInt
+	conversionMap[types.DateType][types.LongType] = dateToLong
+	conversionMap[types.DateType][types.DoubleType] = dateToDouble
+	conversionMap[types.DateType][types.BoolType] = dateToBool
+	conversionMap[types.DateType][types.TimestampType] = dateToTime
+	conversionMap[types.DateType][types.TimeOfDayType] = noopConversion
+
+	// Timeofday conversion functions
+	conversionMap[types.TimeOfDayType] = make(map[types.CellDataType]conversionFunc)
+	conversionMap[types.TimeOfDayType][types.TimeOfDayType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.StringType] = timeofDayToString
+	conversionMap[types.TimeOfDayType][types.IntType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.LongType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.DoubleType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.BoolType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.TimestampType] = timeofDayToTime
+	conversionMap[types.TimeOfDayType][types.DateType] = noopConversion
 }
 
 func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config ConversionConfiguration) types.DataColumn {
@@ -109,7 +144,7 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config C
 	}
 	var sourceData interface{}
 	switch col.CellValue.DataType {
-	case types.TimestampType:
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
 		sourceData = col.CellValue.TimestampValue
 	case types.IntType:
 		sourceData = col.CellValue.IntValue
@@ -132,7 +167,7 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config C
 		},
 	}
 	switch config.TargetType {
-	case types.TimestampType:
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
 		convertedColumn.CellValue.TimestampValue = convertedData.(time.Time)
 	case types.IntType:
 		convertedColumn.CellValue.IntValue = convertedData.(int32)
@@ -207,6 +242,18 @@ func noopConversion(input interface{}, config ConversionConfiguration) interface
 	return input
 }
 
+func convertTimeToDate(t time.Time) time.Time {
+	utcInput := t.In(time.UTC)
+	return time.Date(utcInput.Year(), utcInput.Month(), utcInput.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func convertTimeToTimeofDay(t time.Time) time.Time {
+	utcInput := t.In(time.UTC)
+	return time.Date(0, 0, 0, utcInput.Hour(), utcInput.Minute(), utcInput.Second(), utcInput.Nanosecond(), time.UTC)
+}
+
+////////////////// Timestamp conversions //////////////////
+
 func timeToString(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
 	convertedInputText := convertedInput.Format("2006-01-02 15:04:05")
@@ -233,6 +280,64 @@ func timeToBool(input interface{}, config ConversionConfiguration) interface{} {
 	return !convertedInput.IsZero()
 }
 
+func timeToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return convertTimeToDate(convertedInput)
+}
+
+func timeToTimeofDay(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return convertTimeToTimeofDay(convertedInput)
+}
+
+////////////////// Date conversions //////////////////
+
+func dateToTime(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return convertedInput
+}
+
+func dateToString(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	convertedInputText := convertedInput.Format("2006-01-02")
+	return convertedInputText
+}
+
+func dateToInt(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return int32(convertedInput.Unix())
+}
+
+func dateToLong(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return convertedInput.Unix()
+}
+
+func dateToDouble(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return float64(convertedInput.Unix())
+}
+
+func dateToBool(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return !convertedInput.IsZero()
+}
+
+////////////////// Timeofday conversions //////////////////
+
+func timeofDayToTime(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return convertedInput
+}
+
+func timeofDayToString(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	convertedInputText := convertedInput.Format("15:04:05")
+	return convertedInputText
+}
+
+////////////////// int conversions //////////////////
+
 func intToString(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(int32)
 	return strconv.Itoa(int(convertedInput))
@@ -241,6 +346,11 @@ func intToString(input interface{}, config ConversionConfiguration) interface{} 
 func intToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(int32)
 	return time.Unix(int64(convertedInput), 0)
+}
+
+func intToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(int32)
+	return convertTimeToDate(time.Unix(int64(convertedInput), 0))
 }
 
 func intToLong(input interface{}, config ConversionConfiguration) interface{} {
@@ -268,6 +378,11 @@ func longToTime(input interface{}, config ConversionConfiguration) interface{} {
 	return time.Unix(convertedInput, 0)
 }
 
+func longToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(int64)
+	return convertTimeToDate(time.Unix(convertedInput, 0))
+}
+
 func longToInt(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(int64)
 	return int32(convertedInput)
@@ -291,6 +406,11 @@ func doubleToString(input interface{}, config ConversionConfiguration) interface
 func doubleToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(float64)
 	return time.Unix(int64(convertedInput), 0)
+}
+
+func doubleToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(float64)
+	return convertTimeToDate(time.Unix(int64(convertedInput), 0))
 }
 
 func doubleToInt(input interface{}, config ConversionConfiguration) interface{} {
@@ -363,6 +483,24 @@ func stringToTime(input interface{}, config ConversionConfiguration) interface{}
 		return time.Time{}
 	}
 	return parsedTime
+}
+
+func stringToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(string)
+	parsedTime, err := parseTimestamp(convertedInput)
+	if err != nil {
+		return civil.Date{}
+	}
+	return convertTimeToDate(*parsedTime)
+}
+
+func stringToTimeofDay(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(string)
+	t, err := ParseTime(convertedInput)
+	if err != nil {
+		return time.Time{}
+	}
+	return t
 }
 
 func stringToInt(input interface{}, config ConversionConfiguration) interface{} {
