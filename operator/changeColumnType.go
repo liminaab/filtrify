@@ -296,27 +296,31 @@ func commonTimeToInt(t time.Time, config ConversionConfiguration) int64 {
 // Converts a Java-style datetime layout string to a Go-style layout string
 func convertJavaLayoutToGoLayout(javaLayout string) (string, error) {
 	// Define the Java-style layout strings and their Go-style equivalents
-	javaLayouts := map[string]string{
-		"yyyy": "2006",
-		"yy":   "06",
-		"MM":   "01",
-		"M":    "1",
-		"dd":   "02",
-		"d":    "2",
-		"HH":   "15",
-		"H":    "3",
-		"mm":   "04",
-		"m":    "4",
-		"ss":   "05",
-		"s":    "5",
-		"SSS":  "000",
-		"Z":    "Z07:00",
-		"ZZ":   "-07:00",
+	javaLayouts := [][]string{
+		{"yyyy", "2006"},
+		{"YYYY", "2006"},
+		{"yy", "06"},
+		{"MM", "01"},
+		{"M", "1"},
+		{"dd", "02"},
+		{"d", "2"},
+		{"HH", "15"},
+		{"hh", "15"},
+		{"H", "3"},
+		{"mm", "04"},
+		{"m", "4"},
+		{"ss", "05"},
+		{"s", "5"},
+		{"SSS", "000"},
+		{"Z", "Z07:00"},
+		{"ZZ", "-07:00"},
 	}
 
 	// Replace each Java-style layout string with its Go-style equivalent
 	goLayout := javaLayout
-	for javaStr, goStr := range javaLayouts {
+	for _, layoutMap := range javaLayouts {
+		javaStr := layoutMap[0]
+		goStr := layoutMap[1]
 		if !strings.Contains(javaLayout, javaStr) {
 			continue
 		}
@@ -367,6 +371,7 @@ func commonTimeToString(t time.Time, config ConversionConfiguration, defaultForm
 		f, err := convertJavaLayoutToGoLayout(config.StringDate.DateFormat)
 		if err != nil {
 			fmt.Print("Unable to convert date format: " + config.StringDate.DateFormat)
+			return ""
 		} else {
 			format = f
 		}
@@ -445,7 +450,7 @@ func dateToBool(input interface{}, config ConversionConfiguration) interface{} {
 
 func timeofDayToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
-	return convertedInput
+	return time.Date(0, 0, 0, convertedInput.Hour(), convertedInput.Minute(), convertedInput.Second(), convertedInput.Nanosecond(), time.UTC)
 }
 
 func timeofDayToString(input interface{}, config ConversionConfiguration) interface{} {
@@ -459,10 +464,7 @@ func intToString(input interface{}, config ConversionConfiguration) interface{} 
 	p := message.NewPrinter(language.English)
 	convertedNumber := p.Sprintf("%d", input)
 	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
-		convertedNumber = strings.ReplaceAll(convertedNumber, ".", config.StringNumeric.ThousandSeperator)
-	}
-	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
-		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.DecimalSymbol)
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.ThousandSeperator)
 	}
 	return convertedNumber
 }
@@ -471,19 +473,19 @@ const numberOfDaysBetweenUnixEpochAndExcelEpoch = 25569
 
 func commonIntToTime(input int64, config ConversionConfiguration) time.Time {
 	if config.NumericDate != nil && config.NumericDate.IsUnixMillis {
-		return time.UnixMilli(input)
+		return time.UnixMilli(input).In(time.UTC)
 	}
 	if config.NumericDate != nil && config.NumericDate.IsUnixSeconds {
-		return time.Unix(input, 0)
+		return time.Unix(input, 0).In(time.UTC)
 	}
 	if config.NumericDate != nil && config.NumericDate.IsExcelDate {
 		// Convert Excel date value to Unix timestamp
 		unixTimestamp := (input - numberOfDaysBetweenUnixEpochAndExcelEpoch) * 86400
 		// Convert Unix timestamp to time.Time value
-		return time.Unix(unixTimestamp, 0)
+		return time.Unix(unixTimestamp, 0).In(time.UTC)
 	}
 	// Default to Unix timestamp
-	return time.Unix(input, 0)
+	return time.Unix(input, 0).In(time.UTC)
 }
 
 func intToTime(input interface{}, config ConversionConfiguration) interface{} {
@@ -516,10 +518,7 @@ func longToString(input interface{}, config ConversionConfiguration) interface{}
 	p := message.NewPrinter(language.English)
 	convertedNumber := p.Sprintf("%d", input)
 	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
-		convertedNumber = strings.ReplaceAll(convertedNumber, ".", config.StringNumeric.ThousandSeperator)
-	}
-	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
-		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.DecimalSymbol)
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.ThousandSeperator)
 	}
 	return convertedNumber
 }
@@ -550,6 +549,9 @@ func longToBool(input interface{}, config ConversionConfiguration) interface{} {
 	return convertedInput != 0
 }
 
+const tempThousandPlaceholder = "__"
+const tempDecimalPlaceholder = "**"
+
 func doubleToString(input interface{}, config ConversionConfiguration) interface{} {
 	p := message.NewPrinter(language.English)
 	decimalPlaces := 2
@@ -558,10 +560,17 @@ func doubleToString(input interface{}, config ConversionConfiguration) interface
 	}
 	convertedNumber := p.Sprintf("%."+strconv.Itoa(decimalPlaces)+"f", input)
 	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
-		convertedNumber = strings.ReplaceAll(convertedNumber, ".", config.StringNumeric.ThousandSeperator)
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", tempThousandPlaceholder)
 	}
 	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
-		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.DecimalSymbol)
+		convertedNumber = strings.ReplaceAll(convertedNumber, ".", tempDecimalPlaceholder)
+	}
+	// we are doing this in 2 steps - otherwise thousand and decimal seperator might be swapped
+	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, tempThousandPlaceholder, config.StringNumeric.ThousandSeperator)
+	}
+	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, tempDecimalPlaceholder, config.StringNumeric.DecimalSymbol)
 	}
 	return convertedNumber
 }
