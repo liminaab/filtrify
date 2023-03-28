@@ -9,6 +9,7 @@ require (
 	github.com/araddon/gou v0.0.0-20211019181548-e7d08105776c
 	github.com/araddon/qlbridge v0.0.2
 	github.com/stretchr/testify v1.4.0
+	golang.org/x/text v0.3.2
 )
 
 require (

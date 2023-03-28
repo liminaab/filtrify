@@ -71,7 +71,7 @@ func TestChangeColumnType2(t *testing.T) {
 		Columns: map[string]operator.ConversionConfiguration{
 			"Quantity": {
 				TargetType: types.DoubleType,
-				StringToNumeric: operator.FromStringToNumericConfiguration{
+				StringNumeric: &operator.StringNumericConfiguration{
 					DecimalSymbol:     ".",
 					ThousandSeperator: ",",
 				},

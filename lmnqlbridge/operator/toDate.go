@@ -22,7 +22,7 @@ type ToDate struct{}
 // Type time
 func (m *ToDate) Type() value.ValueType { return value.DateType }
 func (m *ToDate) Validate(n *expr.FuncNode) (expr.EvaluatorFunc, error) {
-	if len(n.Args) == 1 {
+	if len(n.Args) != 1 {
 		return nil, fmt.Errorf(`Expected 1 arg for ToDate([format] , field) but got %s`, n)
 	}
 	return toDateEval, nil

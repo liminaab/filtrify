@@ -58,7 +58,7 @@ func (t *FilterOperator) buildComparisonQuery(c *Criteria, colType types.CellDat
 		return fmt.Sprintf("`%s` %s %f", c.FieldName, c.Operator, i), nil
 	case types.TimestampType:
 		// TODO define format smartly - think about this
-		return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, c.Value), nil
+		return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, c.Value), nil
 	default:
 		return "", errors.New("invalid comparison on filter query")
 	}

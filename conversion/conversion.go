@@ -33,6 +33,8 @@ var dateTimeFormats map[string]types.CellDataType = map[string]types.CellDataTyp
 	"2 Jan 2006 15:04":             types.TimestampType,
 	"Mon, 2 Jan 2006 15:04:05 MST": types.TimestampType,
 	"2006-01-02 15:04:05":          types.TimestampType,
+	"02/01/2006 15:04:05":          types.TimestampType,
+	"01/02/2006 15:04:05":          types.TimestampType,
 	// date
 	"2006-01-02":       types.DateType,
 	"20060102":         types.DateType,
