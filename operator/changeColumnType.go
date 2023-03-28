@@ -30,7 +30,8 @@ type ConversionConfiguration struct {
 }
 
 type DateTimeDateConfiguration struct {
-	Timezone string `json:"timezone"`
+	Timezone     string `json:"timezone"`
+	SelectedTime string `json:"selectedTime"`
 }
 
 type StringNumericConfiguration struct {
@@ -272,9 +273,19 @@ func convertTimeToDate(t time.Time, config ConversionConfiguration) time.Time {
 	return time.Date(convertedInput.Year(), convertedInput.Month(), convertedInput.Day(), 0, 0, 0, 0, time.UTC)
 }
 
-func convertTimeToTimeofDay(t time.Time) time.Time {
+func convertTimeToTimeofDay(t time.Time, config ConversionConfiguration) time.Time {
 	utcInput := t.In(time.UTC)
-	return time.Date(0, 0, 0, utcInput.Hour(), utcInput.Minute(), utcInput.Second(), utcInput.Nanosecond(), time.UTC)
+	location := time.UTC
+	if config.DateTimeDate != nil && len(config.DateTimeDate.Timezone) > 0 {
+		l, err := time.LoadLocation(config.DateTimeDate.Timezone)
+		if err != nil {
+			fmt.Print("Unable to load timezone: " + config.DateTimeDate.Timezone)
+			l = time.UTC
+		}
+		location = l
+	}
+	convertedInput := utcInput.In(location)
+	return time.Date(0, 0, 0, convertedInput.Hour(), convertedInput.Minute(), convertedInput.Second(), convertedInput.Nanosecond(), time.UTC)
 }
 
 ////////////////// Timestamp conversions //////////////////
@@ -411,14 +422,33 @@ func timeToDate(input interface{}, config ConversionConfiguration) interface{} {
 
 func timeToTimeofDay(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
-	return convertTimeToTimeofDay(convertedInput)
+	return convertTimeToTimeofDay(convertedInput, config)
 }
 
 ////////////////// Date conversions //////////////////
 
 func dateToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
-	return convertedInput
+	selectedTime := time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC)
+	if config.DateTimeDate != nil && len(config.DateTimeDate.SelectedTime) > 0 {
+		t, err := ParseTime(config.DateTimeDate.SelectedTime)
+		if err != nil {
+			fmt.Print("Unable to parse selected time: " + config.DateTimeDate.SelectedTime)
+		} else {
+			selectedTime = t
+		}
+	}
+	selectedLocation := time.UTC
+	if config.DateTimeDate != nil && len(config.DateTimeDate.Timezone) > 0 {
+		l, err := time.LoadLocation(config.DateTimeDate.Timezone)
+		if err != nil {
+			fmt.Println("Unable to load timezone: " + config.DateTimeDate.Timezone)
+		} else {
+			selectedLocation = l
+		}
+	}
+	computedDateTime := time.Date(convertedInput.Year(), convertedInput.Month(), convertedInput.Day(), selectedTime.Hour(), selectedTime.Minute(), selectedTime.Second(), selectedTime.Nanosecond(), time.UTC)
+	return computedDateTime.In(selectedLocation)
 }
 
 func dateToString(input interface{}, config ConversionConfiguration) interface{} {

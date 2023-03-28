@@ -204,6 +204,18 @@ func getDateTimeConversionTests() []conversionTest {
 			want:   time.Date(0, 0, 0, 8, 35, 44, 533, time.UTC),
 			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimeOfDayType}),
 		},
+		{
+			name:   "datetime_to_time_CET",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.TimestampType, TimestampValue: time.Date(2023, 3, 28, 8, 35, 44, 533, time.UTC)}),
+			want:   time.Date(0, 0, 0, 10, 35, 44, 533, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimeOfDayType, DateTimeDate: &operator.DateTimeDateConfiguration{Timezone: "CET"}}),
+		},
+		{
+			name:   "datetime_to_time_CET_2",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.TimestampType, TimestampValue: time.Date(2023, 3, 5, 8, 35, 44, 533, time.UTC)}),
+			want:   time.Date(0, 0, 0, 9, 35, 44, 533, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimeOfDayType, DateTimeDate: &operator.DateTimeDateConfiguration{Timezone: "CET"}}),
+		},
 	}
 }
 
@@ -274,6 +286,12 @@ func getDateConversionTests() []conversionTest {
 			data:   getDatasetForConversion(types.CellValue{DataType: types.DateType, TimestampValue: time.Date(2023, 3, 28, 8, 35, 44, 533, time.UTC)}),
 			want:   true,
 			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.BoolType}),
+		},
+		{
+			name:   "date_to_datetime",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.DateType, TimestampValue: time.Date(2023, 3, 28, 8, 35, 44, 533, time.UTC)}),
+			want:   time.Date(2023, 3, 28, 15, 44, 9, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimestampType, DateTimeDate: &operator.DateTimeDateConfiguration{Timezone: "UTC", SelectedTime: "15:44:09"}}),
 		},
 	}
 }
