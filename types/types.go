@@ -52,14 +52,6 @@ func (t TransformationOperatorType) String() string {
 	return "Unknown"
 }
 
-// intValue            int32
-// 	longValue           int64
-// 	timestampValue      time.Time // used for Timestamp, Date and Time of day
-// 	stringValue         string
-// 	doubleValue         float64
-// 	boolValue           bool
-// 	is_original_field   bool
-
 const (
 	IntType CellDataType = iota
 	LongType
@@ -69,6 +61,8 @@ const (
 	BoolType
 	NilType
 	ObjectType
+	DateType
+	TimeOfDayType
 )
 
 func (e CellDataType) String() string {
@@ -89,6 +83,10 @@ func (e CellDataType) String() string {
 		return "NilType"
 	case ObjectType:
 		return "ObjectType"
+	case DateType:
+		return "DateType"
+	case TimeOfDayType:
+		return "TimeOfDayType"
 	default:
 		return fmt.Sprintf("%d", int(e))
 	}
@@ -144,6 +142,7 @@ func (t *DataSet) ToRawData() [][]string {
 type DataRow struct {
 	Columns []*DataColumn
 }
+
 type DataColumn struct {
 	ColumnName string
 	CellValue  *CellValue
@@ -173,7 +172,7 @@ func (c *CellValue) Value() interface{} {
 		return c.IntValue
 	case LongType:
 		return c.LongValue
-	case TimestampType:
+	case TimestampType, DateType, TimeOfDayType:
 		return c.TimestampValue
 	case StringType:
 		return c.StringValue
@@ -204,6 +203,10 @@ func (c *CellValue) ToString() string {
 		return strconv.FormatInt(c.LongValue, 10)
 	case TimestampType:
 		return c.TimestampValue.Format(time.RFC3339)
+	case TimeOfDayType:
+		return c.TimestampValue.Format("15:04:05")
+	case DateType:
+		return c.TimestampValue.Format("2006-01-02")
 	case StringType:
 		return c.StringValue
 	case DoubleType:
@@ -226,22 +229,8 @@ func (c *CellValue) ToString() string {
 
 func (v *CellValue) IsNumeric() bool {
 	switch v.DataType {
-	case IntType:
+	case IntType, LongType, DoubleType:
 		return true
-	case LongType:
-		return true
-	case TimestampType:
-		return false
-	case StringType:
-		return false
-	case DoubleType:
-		return true
-	case BoolType:
-		return false
-	case NilType:
-		return false
-	case ObjectType:
-		return false
 	}
 
 	return false
@@ -283,7 +272,7 @@ func (v *CellValue) Equals(other *CellValue) bool {
 		return v.IntValue == other.IntValue
 	case LongType:
 		return v.LongValue == other.LongValue
-	case TimestampType:
+	case TimestampType, DateType, TimeOfDayType:
 		return v.TimestampValue.Equal(other.TimestampValue)
 	case StringType:
 		return v.StringValue == other.StringValue

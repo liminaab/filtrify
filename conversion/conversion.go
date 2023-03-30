@@ -24,37 +24,39 @@ const minTimestampValMiliseconds int64 = 946684800000
 // 2100-01-01
 const maxTimestampValMiliseconds int64 = 4102444800000
 
-var dateTimeFormats []string = []string{
+var dateTimeFormats map[string]types.CellDataType = map[string]types.CellDataType{
 	// datetime
-	time.RFC3339,
-	"2006-01-02T15:04:05",
-	"2006-01-02T15:04:05-0700",
-	"2 Jan 2006 15:04:05",
-	"2 Jan 2006 15:04",
-	"Mon, 2 Jan 2006 15:04:05 MST",
-	"2006-01-02 15:04:05",
+	time.RFC3339:                   types.TimestampType,
+	"2006-01-02T15:04:05":          types.TimestampType,
+	"2006-01-02T15:04:05-0700":     types.TimestampType,
+	"2 Jan 2006 15:04:05":          types.TimestampType,
+	"2 Jan 2006 15:04":             types.TimestampType,
+	"Mon, 2 Jan 2006 15:04:05 MST": types.TimestampType,
+	"2006-01-02 15:04:05":          types.TimestampType,
+	"02/01/2006 15:04:05":          types.TimestampType,
+	"01/02/2006 15:04:05":          types.TimestampType,
 	// date
-	"2006-01-02",
-	"20060102",
-	"January 02, 2006",
-	"02 January 2006",
-	"02-Jan-2006",
-	"01/02/06",
-	"01/02/2006",
-	"01/01/2006",
-	"02/01/2006",
-	"010206",
-	"Jan-02-06",
-	"Jan-02-2006",
+	"2006-01-02":       types.DateType,
+	"20060102":         types.DateType,
+	"January 02, 2006": types.DateType,
+	"02 January 2006":  types.DateType,
+	"02-Jan-2006":      types.DateType,
+	"01/02/06":         types.DateType,
+	"01/02/2006":       types.DateType,
+	"01/01/2006":       types.DateType,
+	"02/01/2006":       types.DateType,
+	"010206":           types.DateType,
+	"Jan-02-06":        types.DateType,
+	"Jan-02-2006":      types.DateType,
 	// "06",
-	"Mon",
-	"Monday	",
-	"Jan-06",
+	"Mon":     types.DateType,
+	"Monday	": types.DateType,
+	"Jan-06":  types.DateType,
 	// time
-	"15:04",
-	"15:04:05",
-	"3:04 PM",
-	"03:04:05 PM",
+	"15:04":       types.TimeOfDayType,
+	"15:04:05":    types.TimeOfDayType,
+	"3:04 PM":     types.TimeOfDayType,
+	"03:04:05 PM": types.TimeOfDayType,
 }
 
 func tryParseUnixTimestampSeconds(data string) *time.Time {
@@ -88,16 +90,16 @@ func tryParseUnixTimestampMiliseconds(data string) *time.Time {
 	return &t
 }
 
-func tryParseDateAndTime(data string) *time.Time {
-	for _, layout := range dateTimeFormats {
+func tryParseDateAndTime(data string) (*time.Time, types.CellDataType) {
+	for layout, layoutType := range dateTimeFormats {
 		t, err := time.Parse(layout, data)
 		if err != nil {
 			continue
 		}
-		return &t
+		return &t, layoutType
 	}
 
-	return nil
+	return nil, types.NilType
 }
 
 func parsePercentage(data string) (float64, error) {
@@ -113,24 +115,24 @@ func parsePercentage(data string) (float64, error) {
 	return 0, errors.New("invalid percentage format")
 }
 
-func parseTimestamp(data string) (*time.Time, error) {
+func parseTimeData(data string) (*time.Time, types.CellDataType, error) {
 	// let's start with most restrictive format to least restrictive one
 	// let's first check if this is a unix timestamp
 	t := tryParseUnixTimestampSeconds(data)
 	if t != nil {
-		return t, nil
+		return t, types.TimestampType, nil
 	}
 	t = tryParseUnixTimestampMiliseconds(data)
 	if t != nil {
-		return t, nil
+		return t, types.TimestampType, nil
 	}
 
-	t = tryParseDateAndTime(data)
+	t, layoutType := tryParseDateAndTime(data)
 	if t != nil {
-		return t, nil
+		return t, layoutType, nil
 	}
 
-	return nil, errors.New("invalid time format")
+	return nil, types.NilType, errors.New("invalid time format")
 }
 
 func ParseToCell(data string, enforceType types.CellDataType) (*types.CellValue, error) {
@@ -152,11 +154,12 @@ func ParseToCell(data string, enforceType types.CellDataType) (*types.CellValue,
 		}
 		cellValue.LongValue = i
 		break
-	case types.TimestampType:
-		i, err := parseTimestamp(data)
+	case types.TimestampType, types.TimeOfDayType, types.DateType:
+		i, dataType, err := parseTimeData(data)
 		if err != nil {
 			return nil, err
 		}
+		cellValue.DataType = dataType
 		cellValue.TimestampValue = *i
 		break
 	case types.StringType:

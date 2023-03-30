@@ -3,6 +3,9 @@ package operator
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 	"strconv"
 	"strings"
 	"time"
@@ -19,17 +22,32 @@ type ChangeColumnTypeConfiguration struct {
 }
 
 type ConversionConfiguration struct {
-	TargetType      types.CellDataType               `json:"targetType"`
-	StringToNumeric FromStringToNumericConfiguration `json:"stringToNumericConfiguration"`
-	StringToDate    FromStringToDateConfiguration    `json:"stringToDateConfiguration"`
+	TargetType    types.CellDataType          `json:"targetType"`
+	StringNumeric *StringNumericConfiguration `json:"stringNumericConfiguration"`
+	StringDate    *StringDateConfiguration    `json:"stringDateConfiguration"`
+	NumericDate   *NumericDateConfiguration   `json:"numericDateConfiguration"`
+	DateTimeDate  *DateTimeDateConfiguration  `json:"dateTimeDateConfiguration"`
 }
 
-type FromStringToNumericConfiguration struct {
+type DateTimeDateConfiguration struct {
+	Timezone     string `json:"timezone"`
+	SelectedTime string `json:"selectedTime"`
+}
+
+type StringNumericConfiguration struct {
 	DecimalSymbol     string `json:"decimalSymbol"`
 	ThousandSeperator string `json:"thousandSeperator"`
+	NumberOfDecimals  int    `json:"numberOfDecimals"`
 }
 
-type FromStringToDateConfiguration struct {
+type NumericDateConfiguration struct {
+	IsUnixSeconds bool `json:"isUnixSeconds"`
+	IsUnixMillis  bool `json:"isUnixMillis"`
+	IsExcelDate   bool `json:"isExcelDate"`
+}
+
+type StringDateConfiguration struct {
+	DateFormat string `json:"dateFormat"`
 }
 
 type conversionFunc func(I interface{}, config ConversionConfiguration) interface{}
@@ -45,6 +63,8 @@ func init() {
 	conversionMap[types.TimestampType][types.LongType] = timeToLong
 	conversionMap[types.TimestampType][types.DoubleType] = timeToDouble
 	conversionMap[types.TimestampType][types.BoolType] = timeToBool
+	conversionMap[types.TimestampType][types.DateType] = timeToDate
+	conversionMap[types.TimestampType][types.TimeOfDayType] = timeToTimeofDay
 
 	// Integer conversion functions
 	conversionMap[types.IntType] = make(map[types.CellDataType]conversionFunc)
@@ -54,6 +74,8 @@ func init() {
 	conversionMap[types.IntType][types.LongType] = intToLong
 	conversionMap[types.IntType][types.DoubleType] = intToDouble
 	conversionMap[types.IntType][types.BoolType] = intToBool
+	conversionMap[types.IntType][types.DateType] = intToDate
+	conversionMap[types.IntType][types.TimeOfDayType] = noopConversion
 
 	// Long conversion functions
 	conversionMap[types.LongType] = make(map[types.CellDataType]conversionFunc)
@@ -63,6 +85,8 @@ func init() {
 	conversionMap[types.LongType][types.IntType] = longToInt
 	conversionMap[types.LongType][types.DoubleType] = longToDouble
 	conversionMap[types.LongType][types.BoolType] = longToBool
+	conversionMap[types.LongType][types.DateType] = longToDate
+	conversionMap[types.LongType][types.TimeOfDayType] = noopConversion
 
 	// Double conversion functions
 	conversionMap[types.DoubleType] = make(map[types.CellDataType]conversionFunc)
@@ -72,6 +96,8 @@ func init() {
 	conversionMap[types.DoubleType][types.IntType] = doubleToInt
 	conversionMap[types.DoubleType][types.LongType] = doubleToLong
 	conversionMap[types.DoubleType][types.BoolType] = doubleToBool
+	conversionMap[types.DoubleType][types.DateType] = doubleToDate
+	conversionMap[types.DoubleType][types.TimeOfDayType] = noopConversion
 
 	// Bool conversion functions
 	conversionMap[types.BoolType] = make(map[types.CellDataType]conversionFunc)
@@ -81,6 +107,8 @@ func init() {
 	conversionMap[types.BoolType][types.IntType] = boolToInt
 	conversionMap[types.BoolType][types.LongType] = boolToLong
 	conversionMap[types.BoolType][types.DoubleType] = boolToDouble
+	conversionMap[types.BoolType][types.DateType] = noopConversion
+	conversionMap[types.BoolType][types.TimeOfDayType] = noopConversion
 
 	// String conversion functions
 	conversionMap[types.StringType] = make(map[types.CellDataType]conversionFunc)
@@ -90,6 +118,30 @@ func init() {
 	conversionMap[types.StringType][types.IntType] = stringToInt
 	conversionMap[types.StringType][types.LongType] = stringToLong
 	conversionMap[types.StringType][types.DoubleType] = stringToDouble
+	conversionMap[types.StringType][types.DateType] = stringToDate
+	conversionMap[types.StringType][types.TimeOfDayType] = stringToTimeofDay
+
+	// Date conversion functions
+	conversionMap[types.DateType] = make(map[types.CellDataType]conversionFunc)
+	conversionMap[types.DateType][types.DateType] = noopConversion
+	conversionMap[types.DateType][types.StringType] = dateToString
+	conversionMap[types.DateType][types.IntType] = dateToInt
+	conversionMap[types.DateType][types.LongType] = dateToLong
+	conversionMap[types.DateType][types.DoubleType] = dateToDouble
+	conversionMap[types.DateType][types.BoolType] = dateToBool
+	conversionMap[types.DateType][types.TimestampType] = dateToTime
+	conversionMap[types.DateType][types.TimeOfDayType] = noopConversion
+
+	// Timeofday conversion functions
+	conversionMap[types.TimeOfDayType] = make(map[types.CellDataType]conversionFunc)
+	conversionMap[types.TimeOfDayType][types.TimeOfDayType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.StringType] = timeofDayToString
+	conversionMap[types.TimeOfDayType][types.IntType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.LongType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.DoubleType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.BoolType] = noopConversion
+	conversionMap[types.TimeOfDayType][types.TimestampType] = timeofDayToTime
+	conversionMap[types.TimeOfDayType][types.DateType] = noopConversion
 }
 
 func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config ConversionConfiguration) types.DataColumn {
@@ -109,7 +161,7 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config C
 	}
 	var sourceData interface{}
 	switch col.CellValue.DataType {
-	case types.TimestampType:
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
 		sourceData = col.CellValue.TimestampValue
 	case types.IntType:
 		sourceData = col.CellValue.IntValue
@@ -132,7 +184,7 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config C
 		},
 	}
 	switch config.TargetType {
-	case types.TimestampType:
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
 		convertedColumn.CellValue.TimestampValue = convertedData.(time.Time)
 	case types.IntType:
 		convertedColumn.CellValue.IntValue = convertedData.(int32)
@@ -207,25 +259,155 @@ func noopConversion(input interface{}, config ConversionConfiguration) interface
 	return input
 }
 
+func convertTimeToDate(t time.Time, config ConversionConfiguration) time.Time {
+	location := time.UTC
+	if config.DateTimeDate != nil && len(config.DateTimeDate.Timezone) > 0 {
+		l, err := time.LoadLocation(config.DateTimeDate.Timezone)
+		if err != nil {
+			fmt.Print("Unable to load timezone: " + config.DateTimeDate.Timezone)
+			l = time.UTC
+		}
+		location = l
+	}
+	convertedInput := t.In(location)
+	return time.Date(convertedInput.Year(), convertedInput.Month(), convertedInput.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func convertTimeToTimeofDay(t time.Time, config ConversionConfiguration) time.Time {
+	utcInput := t.In(time.UTC)
+	location := time.UTC
+	if config.DateTimeDate != nil && len(config.DateTimeDate.Timezone) > 0 {
+		l, err := time.LoadLocation(config.DateTimeDate.Timezone)
+		if err != nil {
+			fmt.Print("Unable to load timezone: " + config.DateTimeDate.Timezone)
+			l = time.UTC
+		}
+		location = l
+	}
+	convertedInput := utcInput.In(location)
+	return time.Date(0, 0, 0, convertedInput.Hour(), convertedInput.Minute(), convertedInput.Second(), convertedInput.Nanosecond(), time.UTC)
+}
+
+////////////////// Timestamp conversions //////////////////
+
+func commonTimeToInt(t time.Time, config ConversionConfiguration) int64 {
+	if config.NumericDate != nil && config.NumericDate.IsUnixMillis {
+		return t.UnixMilli()
+	}
+	if config.NumericDate != nil && config.NumericDate.IsUnixSeconds {
+		return t.Unix()
+	}
+	if config.NumericDate != nil && config.NumericDate.IsExcelDate {
+		return (t.Unix() / 86400) + numberOfDaysBetweenUnixEpochAndExcelEpoch
+	}
+	// Default to Unix timestamp
+	return t.Unix()
+}
+
+// Converts a Java-style datetime layout string to a Go-style layout string
+func convertJavaLayoutToGoLayout(javaLayout string) (string, error) {
+	// Define the Java-style layout strings and their Go-style equivalents
+	javaLayouts := [][]string{
+		{"yyyy", "2006"},
+		{"YYYY", "2006"},
+		{"yy", "06"},
+		{"MM", "01"},
+		{"M", "1"},
+		{"dd", "02"},
+		{"d", "2"},
+		{"HH", "15"},
+		{"hh", "15"},
+		{"H", "3"},
+		{"mm", "04"},
+		{"m", "4"},
+		{"ss", "05"},
+		{"s", "5"},
+		{"SSS", "000"},
+		{"Z", "Z07:00"},
+		{"ZZ", "-07:00"},
+	}
+
+	// Replace each Java-style layout string with its Go-style equivalent
+	goLayout := javaLayout
+	for _, layoutMap := range javaLayouts {
+		javaStr := layoutMap[0]
+		goStr := layoutMap[1]
+		if !strings.Contains(javaLayout, javaStr) {
+			continue
+		}
+		goLayout = strings.ReplaceAll(goLayout, javaStr, goStr)
+	}
+
+	// Check if the resulting layout contains any unrecognized format strings
+	unrecognized := []string{}
+	for _, r := range goLayout {
+		if r == ' ' || r == 't' || r == 'T' {
+			continue
+		}
+		if strings.IndexRune("2006-01-02T15:04:05.999999999Z07:00", r) == -1 {
+			unrecognized = append(unrecognized, string(r))
+		}
+	}
+	if len(unrecognized) > 0 {
+		return "", errors.New("unrecognized format string: " + strings.Join(unrecognized, ","))
+	}
+
+	return goLayout, nil
+}
+
+// Converts an ISO 8601 layout string to a Go layout string
+func convertISO8601ToGoLayout(layout string) string {
+	// Replace ISO 8601 date format strings with their Go equivalents
+	layout = strings.ReplaceAll(layout, "YYYY", "2006")
+	layout = strings.ReplaceAll(layout, "YY", "06")
+	layout = strings.ReplaceAll(layout, "MM", "01")
+	layout = strings.ReplaceAll(layout, "DD", "02")
+
+	// Replace ISO 8601 time format strings with their Go equivalents
+	layout = strings.ReplaceAll(layout, "hh", "15")
+	layout = strings.ReplaceAll(layout, "mm", "04")
+	layout = strings.ReplaceAll(layout, "ss", "05")
+	layout = strings.ReplaceAll(layout, "SSS", "000")
+
+	// Replace ISO 8601 timezone format strings with their Go equivalents
+	layout = strings.ReplaceAll(layout, "ZZ", "-07:00")
+	layout = strings.ReplaceAll(layout, "Z", "Z07:00")
+
+	return layout
+}
+
+func commonTimeToString(t time.Time, config ConversionConfiguration, defaultFormat string) string {
+	format := defaultFormat
+	if config.StringDate != nil && len(config.StringDate.DateFormat) > 0 {
+		f, err := convertJavaLayoutToGoLayout(config.StringDate.DateFormat)
+		if err != nil {
+			fmt.Print("Unable to convert date format: " + config.StringDate.DateFormat)
+			return ""
+		} else {
+			format = f
+		}
+	}
+	return t.Format(format)
+}
+
 func timeToString(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
-	convertedInputText := convertedInput.Format("2006-01-02 15:04:05")
-	return convertedInputText
+	return commonTimeToString(convertedInput, config, "2006-01-02 15:04:05")
 }
 
 func timeToInt(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
-	return int32(convertedInput.Unix())
+	return int32(commonTimeToInt(convertedInput, config))
 }
 
 func timeToLong(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
-	return convertedInput.Unix()
+	return commonTimeToInt(convertedInput, config)
 }
 
 func timeToDouble(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(time.Time)
-	return float64(convertedInput.Unix())
+	return float64(commonTimeToInt(convertedInput, config))
 }
 
 func timeToBool(input interface{}, config ConversionConfiguration) interface{} {
@@ -233,14 +415,118 @@ func timeToBool(input interface{}, config ConversionConfiguration) interface{} {
 	return !convertedInput.IsZero()
 }
 
+func timeToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return convertTimeToDate(convertedInput, config)
+}
+
+func timeToTimeofDay(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return convertTimeToTimeofDay(convertedInput, config)
+}
+
+////////////////// Date conversions //////////////////
+
+func dateToTime(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	selectedTime := time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC)
+	if config.DateTimeDate != nil && len(config.DateTimeDate.SelectedTime) > 0 {
+		t, err := ParseTime(config.DateTimeDate.SelectedTime)
+		if err != nil {
+			fmt.Print("Unable to parse selected time: " + config.DateTimeDate.SelectedTime)
+		} else {
+			selectedTime = t
+		}
+	}
+	selectedLocation := time.UTC
+	if config.DateTimeDate != nil && len(config.DateTimeDate.Timezone) > 0 {
+		l, err := time.LoadLocation(config.DateTimeDate.Timezone)
+		if err != nil {
+			fmt.Println("Unable to load timezone: " + config.DateTimeDate.Timezone)
+		} else {
+			selectedLocation = l
+		}
+	}
+	computedDateTime := time.Date(convertedInput.Year(), convertedInput.Month(), convertedInput.Day(), selectedTime.Hour(), selectedTime.Minute(), selectedTime.Second(), selectedTime.Nanosecond(), time.UTC)
+	return computedDateTime.In(selectedLocation)
+}
+
+func dateToString(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return commonTimeToString(convertedInput, config, "2006-01-02")
+}
+
+func dateToInt(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return int32(commonTimeToInt(convertedInput, config))
+}
+
+func dateToLong(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return commonTimeToInt(convertedInput, config)
+}
+
+func dateToDouble(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return float64(commonTimeToInt(convertedInput, config))
+}
+
+func dateToBool(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return !convertedInput.IsZero()
+}
+
+////////////////// Timeofday conversions //////////////////
+
+func timeofDayToTime(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return time.Date(0, 0, 0, convertedInput.Hour(), convertedInput.Minute(), convertedInput.Second(), convertedInput.Nanosecond(), time.UTC)
+}
+
+func timeofDayToString(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(time.Time)
+	return commonTimeToString(convertedInput, config, "15:04:05")
+}
+
+////////////////// int conversions //////////////////
+
 func intToString(input interface{}, config ConversionConfiguration) interface{} {
-	convertedInput := input.(int32)
-	return strconv.Itoa(int(convertedInput))
+	p := message.NewPrinter(language.English)
+	convertedNumber := p.Sprintf("%d", input)
+	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.ThousandSeperator)
+	}
+	return convertedNumber
+}
+
+const numberOfDaysBetweenUnixEpochAndExcelEpoch = 25569
+
+func commonIntToTime(input int64, config ConversionConfiguration) time.Time {
+	if config.NumericDate != nil && config.NumericDate.IsUnixMillis {
+		return time.UnixMilli(input).In(time.UTC)
+	}
+	if config.NumericDate != nil && config.NumericDate.IsUnixSeconds {
+		return time.Unix(input, 0).In(time.UTC)
+	}
+	if config.NumericDate != nil && config.NumericDate.IsExcelDate {
+		// Convert Excel date value to Unix timestamp
+		unixTimestamp := (input - numberOfDaysBetweenUnixEpochAndExcelEpoch) * 86400
+		// Convert Unix timestamp to time.Time value
+		return time.Unix(unixTimestamp, 0).In(time.UTC)
+	}
+	// Default to Unix timestamp
+	return time.Unix(input, 0).In(time.UTC)
 }
 
 func intToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(int32)
-	return time.Unix(int64(convertedInput), 0)
+	return commonIntToTime(int64(convertedInput), config)
+}
+
+func intToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(int32)
+	timeResult := commonIntToTime(int64(convertedInput), config)
+	return convertTimeToDate(timeResult, config)
 }
 
 func intToLong(input interface{}, config ConversionConfiguration) interface{} {
@@ -259,13 +545,23 @@ func intToBool(input interface{}, config ConversionConfiguration) interface{} {
 }
 
 func longToString(input interface{}, config ConversionConfiguration) interface{} {
-	convertedInput := input.(int64)
-	return strconv.FormatInt(convertedInput, 10)
+	p := message.NewPrinter(language.English)
+	convertedNumber := p.Sprintf("%d", input)
+	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.ThousandSeperator)
+	}
+	return convertedNumber
 }
 
 func longToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(int64)
-	return time.Unix(convertedInput, 0)
+	return commonIntToTime(convertedInput, config)
+}
+
+func longToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(int64)
+	timeResult := commonIntToTime(convertedInput, config)
+	return convertTimeToDate(timeResult, config)
 }
 
 func longToInt(input interface{}, config ConversionConfiguration) interface{} {
@@ -283,14 +579,41 @@ func longToBool(input interface{}, config ConversionConfiguration) interface{} {
 	return convertedInput != 0
 }
 
+const tempThousandPlaceholder = "__"
+const tempDecimalPlaceholder = "**"
+
 func doubleToString(input interface{}, config ConversionConfiguration) interface{} {
-	convertedInput := input.(float64)
-	return strconv.FormatFloat(convertedInput, 'f', -1, 64)
+	p := message.NewPrinter(language.English)
+	decimalPlaces := 2
+	if config.StringNumeric != nil {
+		decimalPlaces = config.StringNumeric.NumberOfDecimals
+	}
+	convertedNumber := p.Sprintf("%."+strconv.Itoa(decimalPlaces)+"f", input)
+	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", tempThousandPlaceholder)
+	}
+	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, ".", tempDecimalPlaceholder)
+	}
+	// we are doing this in 2 steps - otherwise thousand and decimal seperator might be swapped
+	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, tempThousandPlaceholder, config.StringNumeric.ThousandSeperator)
+	}
+	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
+		convertedNumber = strings.ReplaceAll(convertedNumber, tempDecimalPlaceholder, config.StringNumeric.DecimalSymbol)
+	}
+	return convertedNumber
 }
 
 func doubleToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(float64)
-	return time.Unix(int64(convertedInput), 0)
+	return commonIntToTime(int64(convertedInput), config)
+}
+
+func doubleToDate(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(float64)
+	timeResult := commonIntToTime(int64(convertedInput), config)
+	return convertTimeToDate(timeResult, config)
 }
 
 func doubleToInt(input interface{}, config ConversionConfiguration) interface{} {
@@ -356,45 +679,65 @@ func stringToBool(input interface{}, config ConversionConfiguration) interface{}
 	return false
 }
 
-func stringToTime(input interface{}, config ConversionConfiguration) interface{} {
-	convertedInput := input.(string)
-	parsedTime, err := parseTimestamp(convertedInput)
+func commonStringToTime(input string, config ConversionConfiguration, defaultFormat string) time.Time {
+	format := defaultFormat
+	if config.StringDate != nil && len(config.StringDate.DateFormat) > 0 {
+		f, err := convertJavaLayoutToGoLayout(config.StringDate.DateFormat)
+		if err != nil {
+			fmt.Print("Unable to convert date format: " + config.StringDate.DateFormat)
+		} else {
+			format = f
+		}
+	}
+	t, err := time.Parse(format, input)
 	if err != nil {
+		fmt.Printf("error parsing time %v with format %v", input, format)
 		return time.Time{}
 	}
-	return parsedTime
+	return t
 }
 
-func stringToInt(input interface{}, config ConversionConfiguration) interface{} {
+func stringToTime(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(string)
-	i, err := strconv.ParseInt(convertedInput, 10, 32)
-	if err != nil {
-		return int32(0)
-	}
-	return int32(i)
+	return commonStringToTime(convertedInput, config, time.RFC3339)
 }
 
-func stringToLong(input interface{}, config ConversionConfiguration) interface{} {
+func stringToDate(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(string)
-	i, err := strconv.ParseInt(convertedInput, 10, 64)
-	if err != nil {
-		return int64(0)
-	}
-	return i
+	return commonStringToTime(convertedInput, config, "2006-01-02")
 }
 
-func stringToDouble(input interface{}, config ConversionConfiguration) interface{} {
+func stringToTimeofDay(input interface{}, config ConversionConfiguration) interface{} {
 	convertedInput := input.(string)
-	if len(config.StringToNumeric.ThousandSeperator) > 0 {
+	return commonStringToTime(convertedInput, config, "15:04:05")
+}
+
+func commonStringToNumeric(input string, config ConversionConfiguration) float64 {
+	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
 		// let's throw away thousand seperator
-		convertedInput = strings.Replace(convertedInput, config.StringToNumeric.ThousandSeperator, "", -1)
+		input = strings.Replace(input, config.StringNumeric.ThousandSeperator, "", -1)
 	}
-	if len(config.StringToNumeric.DecimalSymbol) > 0 && config.StringToNumeric.DecimalSymbol != "." {
-		convertedInput = strings.Replace(convertedInput, config.StringToNumeric.DecimalSymbol, ".", 1)
+	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 && config.StringNumeric.DecimalSymbol != "." {
+		input = strings.Replace(input, config.StringNumeric.DecimalSymbol, ".", 1)
 	}
-	i, err := strconv.ParseFloat(convertedInput, 64)
+	i, err := strconv.ParseFloat(input, 64)
 	if err != nil {
 		return float64(0)
 	}
 	return i
+}
+
+func stringToInt(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(string)
+	return int32(commonStringToNumeric(convertedInput, config))
+}
+
+func stringToLong(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(string)
+	return int64(commonStringToNumeric(convertedInput, config))
+}
+
+func stringToDouble(input interface{}, config ConversionConfiguration) interface{} {
+	convertedInput := input.(string)
+	return commonStringToNumeric(convertedInput, config)
 }

@@ -44,6 +44,7 @@ func (t *RenameColumnOperator) Transform(dataset *types.DataSet, config string, 
 				StringValue:    col.CellValue.StringValue,
 				DoubleValue:    col.CellValue.DoubleValue,
 				BoolValue:      col.CellValue.BoolValue,
+				ObjectValue:    col.CellValue.ObjectValue,
 			}
 			newCol := &types.DataColumn{
 				ColumnName: newName,

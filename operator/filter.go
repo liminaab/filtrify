@@ -58,7 +58,7 @@ func (t *FilterOperator) buildComparisonQuery(c *Criteria, colType types.CellDat
 		return fmt.Sprintf("`%s` %s %f", c.FieldName, c.Operator, i), nil
 	case types.TimestampType:
 		// TODO define format smartly - think about this
-		return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, c.Value), nil
+		return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, c.Value), nil
 	default:
 		return "", errors.New("invalid comparison on filter query")
 	}
@@ -74,11 +74,11 @@ func (t *FilterOperator) buildContainsQuery(c *Criteria, colType types.CellDataT
 }
 
 func (t *FilterOperator) buildEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
-	return fmt.Sprintf("`%s` = NULL", c.FieldName), nil
+	return fmt.Sprintf("(`%s` = NULL OR `%s` = '')", c.FieldName, c.FieldName), nil
 }
 
 func (t *FilterOperator) buildNotEmptyQuery(c *Criteria, colType types.CellDataType) (string, error) {
-	return fmt.Sprintf("NOT (`%s` = NULL)", c.FieldName), nil
+	return fmt.Sprintf("NOT (`%s` = NULL OR `%s` = '')", c.FieldName, c.FieldName), nil
 }
 
 func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataType) (string, error) {
@@ -92,7 +92,11 @@ func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataTyp
 		return fmt.Sprintf("`%s` %s %d", c.FieldName, c.Operator, i), nil
 	case types.TimestampType:
 		// TODO define format smartly - think about this
+		return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, c.Value), nil
+	case types.DateType:
 		return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, c.Value), nil
+	case types.TimeOfDayType:
+		return fmt.Sprintf("`%s` %s totime('%s')", c.FieldName, c.Operator, c.Value), nil
 	case types.StringType:
 		return fmt.Sprintf("`%s` %s '%s'", c.FieldName, c.Operator, c.Value), nil
 	case types.DoubleType:
@@ -213,7 +217,6 @@ func (t *FilterOperator) buildWhereClause(statement *FilterCriteria, columnTypeM
 	}
 
 	for i, stmt := range statement.NestedCriterias {
-
 		var q string
 		if t.isListComparison(stmt) {
 			stmt = t.compileListComparisonStatements(stmt)
@@ -279,7 +282,7 @@ func (t *FilterOperator) TransformTyped(dataset *types.DataSet, typedConfig *Fil
 	sb.WriteString(whereClause)
 	fullQuery := sb.String()
 
-	return executeSQLQuery(fullQuery, dataset)
+	return executeSQLQuery(fullQuery, dataset, colTypeMap)
 }
 
 func (t *FilterOperator) buildConfiguration(config string) (*FilterConfiguration, error) {

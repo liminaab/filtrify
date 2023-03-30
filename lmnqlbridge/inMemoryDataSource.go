@@ -1,6 +1,7 @@
 package lmnqlbridge
 
 import (
+	"cloud.google.com/go/civil"
 	"database/sql/driver"
 	"strings"
 
@@ -55,6 +56,10 @@ func (m *LmnInMemDataSource) mapToInternalType(t types.CellDataType) value.Value
 	switch t {
 	case types.TimestampType:
 		return value.TimeType
+	case types.TimeOfDayType:
+		return value.TimeOnlyType
+	case types.DateType:
+		return value.DateType
 	case types.IntType:
 		return value.IntType
 	case types.LongType:
@@ -67,6 +72,8 @@ func (m *LmnInMemDataSource) mapToInternalType(t types.CellDataType) value.Value
 		return value.StringType
 	case types.NilType:
 		return value.NilType
+	case types.ObjectType:
+		return value.MapValueType
 	}
 
 	return value.NilType
@@ -143,6 +150,10 @@ func (m *LmnInMemTable) getCellValue(col *types.DataColumn) interface{} {
 	switch col.CellValue.DataType {
 	case types.TimestampType:
 		return col.CellValue.TimestampValue
+	case types.DateType:
+		return civil.DateOf(col.CellValue.TimestampValue)
+	case types.TimeOfDayType:
+		return civil.TimeOf(col.CellValue.TimestampValue)
 	case types.IntType:
 		return col.CellValue.IntValue
 	case types.LongType:
@@ -153,6 +164,8 @@ func (m *LmnInMemTable) getCellValue(col *types.DataColumn) interface{} {
 		return col.CellValue.BoolValue
 	case types.StringType:
 		return col.CellValue.StringValue
+	case types.ObjectType:
+		return col.CellValue.ObjectValue
 	case types.NilType:
 		return nil
 	}

@@ -41,7 +41,41 @@ func TestDateConversion(t *testing.T) {
 
 	for _, r := range ds.Rows {
 		for _, c := range r.Columns {
+			assert.True(t, c.CellValue.DataType == types.DateType, "invalid conversion type should be timestamp but it is %s. val: %s", c.CellValue.DataType.String(), test.CellDataToString(c.CellValue))
+		}
+	}
+}
+
+func TestDateTimeConversion(t *testing.T) {
+	data := [][]string{
+		{"2020-01-01 12:20:04", "01/01/2020 12:20:04"},
+		{"2020-01-08 12:20:04", "01/08/2020 12:20:04"},
+		{"2020-01-13 12:20:04", "01/13/2020 12:20:04"},
+	}
+	ds, err := filtrify.ConvertToTypedData(data, false, true)
+	assert.True(t, err == nil, "no error: %v", err)
+	assert.True(t, len(ds.Rows) == 3, "invalid row count in conversion")
+
+	for _, r := range ds.Rows {
+		for _, c := range r.Columns {
 			assert.True(t, c.CellValue.DataType == types.TimestampType, "invalid conversion type should be timestamp but it is %s. val: %s", c.CellValue.DataType.String(), test.CellDataToString(c.CellValue))
+		}
+	}
+}
+
+func TestTimeOnlyConversion(t *testing.T) {
+	data := [][]string{
+		{"12:20:04", "12:30:04", "12:20:04", "12:20:04"},
+		{"12:20:04", "16:45:04", "12:20:04", "12:20:04"},
+		{"12:20:04", "12:20", "12:20:59", "12:20:04"},
+	}
+	ds, err := filtrify.ConvertToTypedData(data, false, true)
+	assert.True(t, err == nil, "no error: %v", err)
+	assert.True(t, len(ds.Rows) == 3, "invalid row count in conversion")
+
+	for _, r := range ds.Rows {
+		for _, c := range r.Columns {
+			assert.True(t, c.CellValue.DataType == types.TimeOfDayType, "invalid conversion type should be timestamp but it is %s. val: %s", c.CellValue.DataType.String(), test.CellDataToString(c.CellValue))
 		}
 	}
 }
@@ -73,7 +107,7 @@ func TestConversionUAT1(t *testing.T) {
 		assert.Equal(t, types.DoubleType, cols[4].CellValue.DataType, "invalid column type on conversion. expected string but it is %s. val: %s", cols[4].CellValue.DataType.String(), test.CellDataToString(cols[4].CellValue))
 		assert.Equal(t, "Maturity Date", cols[5].ColumnName, "invalid column name on conversion")
 		if cols[5].CellValue.DataType != types.NilType {
-			assert.Equal(t, types.TimestampType, cols[5].CellValue.DataType, "invalid column type on conversion. expected timestamp but it is %s. val: %s", cols[5].CellValue.DataType.String(), test.CellDataToString(cols[5].CellValue))
+			assert.Equal(t, types.DateType, cols[5].CellValue.DataType, "invalid column type on conversion. expected timestamp but it is %s. val: %s", cols[5].CellValue.DataType.String(), test.CellDataToString(cols[5].CellValue))
 		}
 		assert.Equal(t, "EU Sanction listed", cols[6].ColumnName, "invalid column name on conversion")
 		if cols[6].CellValue.DataType != types.NilType {
