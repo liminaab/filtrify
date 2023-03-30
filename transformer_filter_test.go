@@ -455,3 +455,73 @@ func TestFilterInvalidColumn(t *testing.T) {
 	assert.Error(t, err, "invalid column on filter operation didn't return an error")
 	assert.EqualError(t, err, "could not apply transformation: attempted to operate on column “Instrument Class” but no such column available (Filter operator, step 0)")
 }
+
+func TestFilterDateType(t *testing.T) {
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted2, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	filterConf := &operator.FilterConfiguration{
+		FilterCriteria: &operator.FilterCriteria{
+			Criteria: &operator.Criteria{
+				FieldName: "Maturity Date",
+				Operator:  "=",
+				Value:     "2022-03-14",
+			},
+		},
+	}
+
+	filterConfText, err := json.Marshal(filterConf)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	steps := []*types.TransformationStep{
+		{
+			Operator:      types.Filter,
+			Configuration: string(filterConfText),
+		},
+	}
+
+	newData, err := filtrify.Transform(plainData, steps, nil)
+
+	assert.Nil(t, err, "filtering by date failed")
+	assert.Len(t, newData.Rows, 1, "filtering by date failed")
+	maturityDate := test.GetColumn(newData.Rows[0], "Maturity Date")
+	assert.Equal(t, types.DateType, maturityDate.CellValue.DataType, "filtering by date failed")
+}
+
+func TestFilterTimeType(t *testing.T) {
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted2, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	filterConf := &operator.FilterConfiguration{
+		FilterCriteria: &operator.FilterCriteria{
+			Criteria: &operator.Criteria{
+				FieldName: "Active From",
+				Operator:  "=",
+				Value:     "21:12:48",
+			},
+		},
+	}
+
+	filterConfText, err := json.Marshal(filterConf)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	steps := []*types.TransformationStep{
+		{
+			Operator:      types.Filter,
+			Configuration: string(filterConfText),
+		},
+	}
+
+	newData, err := filtrify.Transform(plainData, steps, nil)
+
+	assert.Nil(t, err, "filtering by time failed")
+	assert.Len(t, newData.Rows, 1, "filtering by time failed")
+	maturityDate := test.GetColumn(newData.Rows[0], "Active From")
+	assert.Equal(t, types.TimeOfDayType, maturityDate.CellValue.DataType, "filtering by time failed")
+}
