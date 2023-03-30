@@ -263,6 +263,7 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 
 	// wow we are ready to join those tables
 	mergedSet := t.mergeSets(dataset, tds, typedConfig)
+	mergedSet.Headers = buildHeaders(mergedSet, dataset)
 	return mergedSet, nil
 }
 

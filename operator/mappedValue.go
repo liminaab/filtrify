@@ -13,10 +13,11 @@ type MappedValueOperator struct {
 }
 
 type MappedValueConfiguration struct {
-	MappedColumnName string     `json:"mappedColumnName"`
-	NewColumnName    string     `json:"newColumnName"`
-	TargetDataset    string     `json:"targetDataset"`
-	TargetData       [][]string `json:"targetData"`
+	MappedColumnName string                 `json:"mappedColumnName"`
+	NewColumnName    string                 `json:"newColumnName"`
+	NewColumnMeta    map[string]interface{} `json:"newColumnMeta"`
+	TargetDataset    string                 `json:"targetDataset"`
+	TargetData       [][]string             `json:"targetData"`
 }
 
 func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
@@ -82,6 +83,9 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, o
 		return nil, err
 	}
 
+	// so is our new data is really string?
+	// let's try to guess it's real type
+	//estimateColumnDataType(transformedSet, typedConfig.NewColumnName)
 	for _, r := range transformedSet.Rows {
 		lastCol := r.Columns[len(r.Columns)-1]
 		if lastCol.ColumnName != "Value" {
@@ -91,8 +95,20 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, o
 		lastCol.ColumnName = typedConfig.NewColumnName
 	}
 
-	return transformedSet, nil
+	if len(typedConfig.NewColumnMeta) > 0 {
+		header, found := transformedSet.Headers[typedConfig.NewColumnName]
+		if !found {
+			header = &types.Header{
+				ColumnName: typedConfig.NewColumnName,
+				DataType:   tds.Headers["Value"].DataType,
+			}
+			transformedSet.Headers[typedConfig.NewColumnName] = header
+		}
+		header.Metadata = typedConfig.NewColumnMeta
+	}
 
+	transformedSet.Headers = buildHeaders(transformedSet, dataset)
+	return transformedSet, nil
 }
 
 func (t *MappedValueOperator) buildConfiguration(config string) (*MappedValueConfiguration, error) {

@@ -249,17 +249,24 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 	}
 
 	cellTypes := make([]types.CellDataType, len(headers))
+	typedHeaders := make(map[string]*types.Header)
 	for i := range headers {
 		if convertDataTypes {
 			cellTypes[i] = estimateColumnType(data, i)
 		} else {
 			cellTypes[i] = types.StringType
 		}
+		typedHeaders[headers[i]] = &types.Header{
+			ColumnName: headers[i],
+			DataType:   cellTypes[i],
+			Metadata:   map[string]interface{}{},
+		}
 	}
 
 	dataRows := make([]*types.DataRow, len(data))
 	dataSet := types.DataSet{
-		Rows: dataRows,
+		Rows:    dataRows,
+		Headers: typedHeaders,
 	}
 	// now we need to iterate over these
 	for ri, row := range data {

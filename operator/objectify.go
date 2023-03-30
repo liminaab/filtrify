@@ -59,6 +59,8 @@ func (t *ObjectifyOperator) Transform(dataset *types.DataSet, config string, _ m
 		newRow.Columns = append(newRow.Columns, objectColumn)
 		newDataset.Rows[i] = &newRow
 	}
+
+	newDataset.Headers = buildHeaders(&newDataset, dataset)
 	return &newDataset, nil
 }
 

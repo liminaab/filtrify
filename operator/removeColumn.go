@@ -45,6 +45,7 @@ func (t *RemoveColumnOperator) Transform(dataset *types.DataSet, config string, 
 		newDataset.Rows[i] = &newRow
 	}
 
+	newDataset.Headers = buildHeaders(&newDataset, dataset)
 	return &newDataset, nil
 }
 
