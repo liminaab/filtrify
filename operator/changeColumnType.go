@@ -229,6 +229,7 @@ func (t *ChangeColumnTypeOperator) Transform(dataset *types.DataSet, config stri
 		newDataset.Rows[i] = &newRow
 	}
 
+	newDataset.Headers = buildHeaders(&newDataset, dataset)
 	return &newDataset, nil
 }
 

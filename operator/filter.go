@@ -262,7 +262,12 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string, _ map[
 		return nil, err
 	}
 
-	return t.TransformTyped(dataset, typedConfig)
+	newDataset, err := t.TransformTyped(dataset, typedConfig)
+	if err != nil {
+		return nil, err
+	}
+	newDataset.Headers = buildHeaders(newDataset, dataset)
+	return newDataset, nil
 }
 
 func (t *FilterOperator) TransformTyped(dataset *types.DataSet, typedConfig *FilterConfiguration) (*types.DataSet, error) {

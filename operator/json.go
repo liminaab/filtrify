@@ -61,6 +61,7 @@ func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[st
 		newRow.Columns = append(newRow.Columns, jsonColumn)
 		newDataset.Rows[i] = &newRow
 	}
+	newDataset.Headers = buildHeaders(&newDataset, dataset)
 	return &newDataset, nil
 }
 

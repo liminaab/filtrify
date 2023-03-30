@@ -93,6 +93,7 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 		r.Columns = append(r.Columns, plainAggs...)
 	}
 
+	result.Headers = buildHeaders(result, dataset)
 	return result, nil
 }
 

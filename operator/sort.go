@@ -131,6 +131,7 @@ func (t *SortOperator) Transform(dataset *types.DataSet, config string, _ map[st
 		return true
 	})
 
+	dataset.Headers = buildHeaders(dataset, dataset)
 	return dataset, nil
 }
 

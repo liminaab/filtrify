@@ -150,6 +150,53 @@ var dateTimeFormats []string = []string{
 	"03:04:05 PM",
 }
 
+func buildHeaders(newDataset *types.DataSet, oldDataset *types.DataSet) map[string]*types.Header {
+	headers := make(map[string]*types.Header)
+	if len(newDataset.Rows) > 0 {
+		sampleRow := newDataset.Rows[0]
+		for ci := range sampleRow.Columns {
+			bestColumn := sampleRow.Columns[ci]
+			if bestColumn.CellValue.DataType == types.NilType {
+				for ri := range newDataset.Rows {
+					c := newDataset.Rows[ri].Columns[ci]
+					if c.CellValue.DataType != types.NilType {
+						// let's try the next row
+						bestColumn = c
+						break
+					}
+				}
+			}
+			// let's find the best column type
+			// because we might have some nil values
+			// it doesn't mean column type is always nil
+			oldHeader, found := oldDataset.Headers[bestColumn.ColumnName]
+			if !found {
+				oldHeader = &types.Header{}
+			}
+			newHeader, found := newDataset.Headers[bestColumn.ColumnName]
+			if !found {
+				newHeader = &types.Header{}
+			}
+			builtHeader := &types.Header{
+				ColumnName: bestColumn.ColumnName,
+				DataType:   bestColumn.CellValue.DataType,
+				Metadata:   newHeader.Metadata,
+			}
+			if builtHeader.Metadata == nil {
+				builtHeader.Metadata = map[string]interface{}{}
+			}
+			for k, v := range oldHeader.Metadata {
+				if _, ok := builtHeader.Metadata[k]; !ok {
+					builtHeader.Metadata[k] = v
+				}
+			}
+			headers[bestColumn.ColumnName] = builtHeader
+		}
+	}
+
+	return headers
+}
+
 func tryParseUnixTimestampSeconds(data string) *time.Time {
 	i, err := strconv.ParseInt(data, 10, 64)
 	if err != nil {

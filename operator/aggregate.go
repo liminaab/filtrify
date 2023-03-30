@@ -142,6 +142,7 @@ func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ m
 	if err != nil {
 		return nil, err
 	}
+	result.Headers = buildHeaders(result, dataset)
 	return result, nil
 }
 

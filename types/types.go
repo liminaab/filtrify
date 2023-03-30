@@ -112,8 +112,21 @@ type TransformationOperator interface {
 // 	RawDataFirstLineIsHeader bool
 // }
 
+type Header struct {
+	ColumnName string
+	DataType   CellDataType
+	Metadata   map[string]interface{}
+}
+
+type HeaderMap map[string]*Header
+
+func (h HeaderMap) mergeMetadata(name string) {
+
+}
+
 type DataSet struct {
-	Rows []*DataRow
+	Rows    []*DataRow
+	Headers HeaderMap
 }
 
 func (t *DataSet) ToRawData() [][]string {
