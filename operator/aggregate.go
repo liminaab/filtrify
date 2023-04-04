@@ -100,21 +100,38 @@ func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ m
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
 	// we need to remove this column from header if this is already being selected
-	for hi, h := range headers {
-		if v, ok := headerSelectMap[h]; !ok || len(v) < 1 {
-			sb.WriteString(fmt.Sprintf("lmnagg(`%s`) AS `%s`", h, h))
-		} else {
+	for _, h := range headers {
+		v, ok := headerSelectMap[h]
+		if ok && len(v) > 0 {
 			for i, aggSel := range v {
 				selQ, err := buildLiminaAggSelectStatement(aggSel, i)
 				if err != nil {
 					return nil, err
 				}
 				sb.WriteString(selQ)
+				sb.WriteString(",")
 			}
+		} else {
+			continue
 		}
-		if hi != len(headers)-1 {
+	}
+	str := sb.String()
+	if str[len(str)-1:] == "," {
+		str = str[:len(str)-1]
+	}
+	sb.Reset()
+	sb.WriteString(str)
+
+	for _, gb := range typedConfig.GroupBy {
+		// let's check if this column exists to group by
+		_, exists := columnTypeMap[gb]
+		if !exists {
+			return nil, buildColumnNotExistsError(gb)
+		}
+		if len(typedConfig.Select) > 0 {
 			sb.WriteString(",")
 		}
+		sb.WriteString(fmt.Sprintf("lmnagg(`%s`) AS `%s`", gb, gb))
 	}
 
 	sb.WriteString(" FROM ")

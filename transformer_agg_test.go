@@ -204,13 +204,8 @@ func CheckAggrResults(t *testing.T, ds *types.DataSet, fields []string, fieldVal
 	}
 }
 
-func batchCheckAggFields(t *testing.T, nonAggDataSet *types.DataSet, aggDataSet *types.DataSet, fieldsToCheck []string, fields []string, fieldValues []interface{}) {
-	valsToCheck := make(map[string]interface{})
-	for _, f := range fieldsToCheck {
-		valsToCheck[f] = calculateFieldValueForLmnAgg(t, nonAggDataSet, f, fields, fieldValues)
-	}
-
-	CheckAggrResults(t, aggDataSet, fields, fieldValues, valsToCheck)
+func batchCheckAggFields(t *testing.T, expectedFieldVals map[string]interface{}, aggDataSet *types.DataSet, fieldsToCheck []string, fields []string, fieldValues []interface{}) {
+	CheckAggrResults(t, aggDataSet, fields, fieldValues, expectedFieldVals)
 }
 
 func TestBasicAggregate(t *testing.T) {
@@ -220,6 +215,12 @@ func TestBasicAggregate(t *testing.T) {
 	}
 	conf := &operator.AggregateConfiguration{
 		GroupBy: []string{"EU Sanction listed"},
+		Select: []*operator.AggregateSelect{
+			{
+				Columns: []string{"Instrument name"},
+				Method:  "last",
+			},
+		},
 	}
 	b1, err := json.Marshal(conf)
 	if err != nil {
@@ -236,12 +237,23 @@ func TestBasicAggregate(t *testing.T) {
 	}
 
 	fieldsToCheck := []string{
-		"Instrument name", "Instrument Type", "Quantity", "Market Value (Base)", "Exposure %", "Active From", "Currency",
+		"Instrument name", "EU Sanction listed",
 	}
-
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{false})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{true})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
+	expectedFalseFieldOutputs := map[string]interface{}{
+		"Instrument name":    "ESZ1",
+		"EU Sanction listed": false,
+	}
+	expectedTrueFieldOutputs := map[string]interface{}{
+		"Instrument name":    "AMZN US Equity",
+		"EU Sanction listed": true,
+	}
+	expectedNilFieldOutputs := map[string]interface{}{
+		"Instrument name":    "USD Cash",
+		"EU Sanction listed": nil,
+	}
+	batchCheckAggFields(t, expectedFalseFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{false})
+	batchCheckAggFields(t, expectedTrueFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{true})
+	batchCheckAggFields(t, expectedNilFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
 	// one header - 2 for filtered out rows
 	assert.Len(t, aggregatedData.Rows, 3, "Aggregate operation failed. invalid number of rows")
 }
@@ -275,12 +287,24 @@ func TestAverageAggregate(t *testing.T) {
 	}
 
 	fieldsToCheck := []string{
-		"Instrument name", "Instrument Type", "Quantity", "Exposure %", "Active From", "Currency",
+		"Market Value (Base)", "EU Sanction listed",
+	}
+	expectedFalseFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(4127500),
+		"EU Sanction listed":  false,
+	}
+	expectedTrueFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(4000000),
+		"EU Sanction listed":  true,
+	}
+	expectedNilFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(5000000),
+		"EU Sanction listed":  nil,
 	}
 
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{false})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{true})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
+	batchCheckAggFields(t, expectedFalseFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{false})
+	batchCheckAggFields(t, expectedTrueFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{true})
+	batchCheckAggFields(t, expectedNilFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
 
 	expectedFalseAggMarket := calculateAVGValueForAgg(t, plainData, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{false})
 	expectedTrueAggMarket := calculateAVGValueForAgg(t, plainData, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{true})
@@ -323,12 +347,24 @@ func TestWeightedAverageAggregate(t *testing.T) {
 	}
 
 	fieldsToCheck := []string{
-		"Instrument name", "Instrument Type", "Quantity", "Exposure %", "Active From", "Currency",
+		"Instrument name", "EU Sanction listed",
+	}
+	expectedFalseFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(8750010.27),
+		"EU Sanction listed":  false,
+	}
+	expectedTrueFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(2033994.33),
+		"EU Sanction listed":  true,
+	}
+	expectedNilFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(5000000),
+		"EU Sanction listed":  nil,
 	}
 
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{false})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{true})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
+	batchCheckAggFields(t, expectedFalseFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{false})
+	batchCheckAggFields(t, expectedTrueFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{true})
+	batchCheckAggFields(t, expectedNilFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
 
 	weightedFields := []string{"Market Value (Base)", "Quantity"}
 	expectedFalseAggMarket := calculateWeightedAVGValueForAgg(t, plainData, weightedFields, []string{"EU Sanction listed"}, []interface{}{false})
@@ -350,6 +386,12 @@ func TestMultipleGroupByColumns(t *testing.T) {
 	}
 	conf := &operator.AggregateConfiguration{
 		GroupBy: []string{"Currency", "EU Sanction listed"},
+		Select: []*operator.AggregateSelect{
+			{
+				Columns: []string{"Instrument name"},
+				Method:  "last",
+			},
+		},
 	}
 	b1, err := json.Marshal(conf)
 	if err != nil {
@@ -366,16 +408,33 @@ func TestMultipleGroupByColumns(t *testing.T) {
 	}
 
 	fieldsToCheck := []string{
-		"Instrument name", "Instrument Type", "Quantity", "Exposure %", "Active From", "Market Value (Base)",
+		"Instrument name", "EU Sanction listed", "Currency",
 	}
 
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"USD", false})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"USD", true})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"USD", nil})
+	expectedUSDTrueFieldOutputs := map[string]interface{}{
+		"Instrument name":    "AMZN US Equity",
+		"EU Sanction listed": true,
+	}
+	expectedUSDNilFieldOutputs := map[string]interface{}{
+		"Instrument name":    "USD Cash",
+		"EU Sanction listed": nil,
+	}
+	expectedSEKFalseFieldOutputs := map[string]interface{}{
+		"Instrument name":    "ESZ1",
+		"EU Sanction listed": false,
+	}
+	expectedSEKTrueFieldOutputs := map[string]interface{}{
+		"Instrument name":    "ERIC B SS Equity",
+		"EU Sanction listed": true,
+	}
 
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"SEK", false})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"SEK", true})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"SEK", nil})
+	batchCheckAggFields(t, nil, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"USD", false})
+	batchCheckAggFields(t, expectedUSDTrueFieldOutputs, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"USD", true})
+	batchCheckAggFields(t, expectedUSDNilFieldOutputs, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"USD", nil})
+
+	batchCheckAggFields(t, expectedSEKFalseFieldOutputs, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"SEK", false})
+	batchCheckAggFields(t, expectedSEKTrueFieldOutputs, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"SEK", true})
+	batchCheckAggFields(t, nil, aggregatedData, fieldsToCheck, []string{"Currency", "EU Sanction listed"}, []interface{}{"SEK", nil})
 
 	// one header - 2 for filtered out rows
 	assert.Len(t, aggregatedData.Rows, 4, "Aggregate operation failed. invalid number of rows")

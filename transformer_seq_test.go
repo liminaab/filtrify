@@ -47,6 +47,12 @@ func TestFilterAggregateNewColumnSequence(t *testing.T) {
 
 	aggregateConf := &operator.AggregateConfiguration{
 		GroupBy: []string{"Instrument Type"},
+		Select: []*operator.AggregateSelect{
+			{
+				Columns: []string{"Market Value (Base)"},
+				Method:  "average",
+			},
+		},
 	}
 
 	newColConfig := "{\"statement\": \"IFEL(`Market Value (Base)` > 5000000, 'Large', 'Small') AS `Size` \"}"
@@ -91,12 +97,24 @@ func TestFilterAggregateNewColumnSequence(t *testing.T) {
 
 	// let's check aggregation now
 	fieldsToCheck := []string{
-		"Instrument name", "Quantity", "Market Value (Base)", "Exposure %", "Maturity Date", "EU Sanction listed", "Active From",
+		"Market Value (Base)", "Instrument Type",
+	}
+	expectedEquityFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(4000000),
+		"Instrument Type":     "Equity",
+	}
+	expectedBillFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(8750000),
+		"Instrument Type":     "Bill",
+	}
+	expectedCashAccountFieldOutputs := map[string]interface{}{
+		"Market Value (Base)": float64(5000000),
+		"Instrument Type":     "Cash Account",
 	}
 
-	batchCheckAggFields(t, plainData, result, fieldsToCheck, []string{"Instrument Type"}, []interface{}{"Equity"})
-	batchCheckAggFields(t, plainData, result, fieldsToCheck, []string{"Instrument Type"}, []interface{}{"Bill"})
-	batchCheckAggFields(t, plainData, result, fieldsToCheck, []string{"Instrument Type"}, []interface{}{"Cash Account"})
+	batchCheckAggFields(t, expectedEquityFieldOutputs, result, fieldsToCheck, []string{"Instrument Type"}, []interface{}{"Equity"})
+	batchCheckAggFields(t, expectedBillFieldOutputs, result, fieldsToCheck, []string{"Instrument Type"}, []interface{}{"Bill"})
+	batchCheckAggFields(t, expectedCashAccountFieldOutputs, result, fieldsToCheck, []string{"Instrument Type"}, []interface{}{"Cash Account"})
 
 	// and time to check the new column
 	for _, r := range result.Rows {
