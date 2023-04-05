@@ -735,7 +735,7 @@ func TestNewColumnPlusOperator(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	s1 := "(3+5) AS `Test Column`"
+	s1 := "PLUS(3, 5) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
 		Operator:      types.NewColumn,
@@ -752,8 +752,8 @@ func TestNewColumnPlusOperator(t *testing.T) {
 	for _, r := range newData.Rows {
 		newCol := test.GetColumn(r, "Test Column")
 		assert.NotNil(t, newCol, "test column was not found")
-		assert.Equal(t, types.IntType, newCol.CellValue.DataType, "new column wasn't copied")
-		assert.Equal(t, 8, newCol.CellValue.IntValue, "new column wasn't copied properly")
+		assert.Equal(t, types.DoubleType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, float64(8), newCol.CellValue.DoubleValue, "new column wasn't processed correctly")
 	}
 
 }
