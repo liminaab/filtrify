@@ -35,6 +35,10 @@ var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
 	"lmnagg":           &operator.LiminaAgg{},
 	"todate":           &operator.ToDate{},
 	"totime":           &operator.ToTime{},
+	"plus":             &operator.PLUS{},
+	"minus":            &operator.MINUS{},
+	"multiply":         &operator.MULTIPLY{},
+	"divide":           &operator.DIVIDE{},
 }
 
 func GetOperators() map[string]expr.CustomFunc {
