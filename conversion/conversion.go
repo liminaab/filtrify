@@ -259,7 +259,6 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 		typedHeaders[headers[i]] = &types.Header{
 			ColumnName: headers[i],
 			DataType:   cellTypes[i],
-			Metadata:   map[string]interface{}{},
 		}
 	}
 
