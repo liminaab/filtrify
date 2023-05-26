@@ -728,3 +728,32 @@ func TestNestedIFNewColumn(t *testing.T) {
 		assert.Equal(t, expectedTestCol, testCol.CellValue.StringValue, "new column wasn't calculated properly")
 	}
 }
+
+func TestNewColumnPlusOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "PLUS(3, 5) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "filter operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.DoubleType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, float64(8), newCol.CellValue.DoubleValue, "new column wasn't processed correctly")
+	}
+
+}

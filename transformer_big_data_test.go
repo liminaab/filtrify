@@ -216,9 +216,9 @@ func TestBigDataAverageAggregate(t *testing.T) {
 		"Unit Price",
 	}
 
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{false})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{true})
-	batchCheckAggFields(t, plainData, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{nil})
+	batchCheckAggFields(t, nil, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{false})
+	batchCheckAggFields(t, nil, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{true})
+	batchCheckAggFields(t, nil, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{nil})
 
 	expectedFalseAggMarket := calculateAVGValueForAgg(t, plainData, "Units Sold", []string{"Region"}, []interface{}{"Middle East and North Africa"})
 	expectedTrueAggMarket := calculateAVGValueForAgg(t, plainData, "Units Sold", []string{"Region"}, []interface{}{"Central America and the Caribbean"})
