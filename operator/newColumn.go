@@ -39,7 +39,10 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 
 		// we need to execute multiple queries here
 		// first do we have any aggregations in statement?
-		plainStatement, aggs := t.splitAggs(typedConfig.Statement)
+		plainStatement, aggs, err := t.splitAggs(typedConfig.Statement)
+		if err != nil {
+			return nil, err
+		}
 		if len(plainStatement) > 0 {
 			sb.WriteString(", ")
 			sb.WriteString(plainStatement)
@@ -178,10 +181,13 @@ func (t *NewColumnOperator) splitStatements(statement string) []string {
 	return statements
 }
 
-func (t *NewColumnOperator) splitAggs(statement string) (string, []string) {
+func (t *NewColumnOperator) splitAggs(statement string) (string, []string, error) {
 	plainStatements := make([]string, 0)
 	aggStatements := make([]string, 0)
 	miniStatements := t.splitStatements(statement)
+	if len(miniStatements) != 1 {
+		return "", nil, errors.New("new column operator only supports one statement")
+	}
 	for _, ms := range miniStatements {
 		if t.hasAggCall(ms) {
 			aggStatements = append(aggStatements, ms)
@@ -189,7 +195,7 @@ func (t *NewColumnOperator) splitAggs(statement string) (string, []string) {
 			plainStatements = append(plainStatements, ms)
 		}
 	}
-	return strings.Join(plainStatements, ","), aggStatements
+	return strings.Join(plainStatements, ","), aggStatements, nil
 }
 
 func (t *NewColumnOperator) buildConfiguration(config string) (*NewColumnConfiguration, error) {

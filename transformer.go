@@ -33,6 +33,8 @@ func getOperator(step *types.TransformationStep) (types.TransformationOperator, 
 		return &operator.JSONOperator{}, nil
 	case types.Objectify:
 		return &operator.ObjectifyOperator{}, nil
+	case types.CumulativeSum:
+		return &operator.CumulativeSumOperator{}, nil
 	default:
 		return nil, errors.New("unknown operator")
 	}

@@ -22,6 +22,7 @@ const (
 	ChangeColumnType
 	JSON
 	Objectify
+	CumulativeSum
 )
 
 func (t TransformationOperatorType) String() string {
@@ -48,6 +49,8 @@ func (t TransformationOperatorType) String() string {
 		return "JSON"
 	case Objectify:
 		return "Objectify"
+	case CumulativeSum:
+		return "CumulativeSum"
 	}
 	return "Unknown"
 }

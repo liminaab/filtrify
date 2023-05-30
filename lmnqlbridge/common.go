@@ -39,6 +39,8 @@ var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
 	"minus":            &operator.MINUS{},
 	"multiply":         &operator.MULTIPLY{},
 	"divide":           &operator.DIVIDE{},
+	"length":           &operator.Length{},
+	"trim":             &operator.Trim{},
 }
 
 func GetOperators() map[string]expr.CustomFunc {
