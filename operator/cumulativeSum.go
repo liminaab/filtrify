@@ -34,6 +34,7 @@ func (t *CumulativeSumOperator) Transform(dataset *types.DataSet, config string,
 		for _, col := range row.Columns {
 			if col.ColumnName == typedConfig.Column {
 				if !col.CellValue.IsNumeric() {
+					newRow.Columns = append(newRow.Columns, col)
 					continue
 				}
 				cumulativeSum += col.CellValue.GetNumericVal()
