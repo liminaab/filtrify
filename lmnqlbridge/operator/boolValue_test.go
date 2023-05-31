@@ -12,7 +12,9 @@ func TestGetArgBooleanValue(t *testing.T) {
 	now := time.Now()
 	invalidDate := civil.Date{}
 	validDate := civil.Date{Year: 2023, Month: 5, Day: 31}
-	invalidTime := civil.Time{}
+	invalidTime := civil.Time{
+		Hour: 25,
+	}
 	validTime := civil.Time{Hour: 12, Minute: 0, Second: 0, Nanosecond: 0}
 
 	tests := []struct {
@@ -43,7 +45,8 @@ func TestGetArgBooleanValue(t *testing.T) {
 		{"mapBoolValueEmpty", value.NewMapBoolValue(make(map[string]bool)), false},
 		{"mapTimeValueEmpty", value.NewMapTimeValue(make(map[string]time.Time)), false},
 		{"structValueNil", value.NewStructValue(nil), false},
-		{"jsonValueEmpty", value.NewJsonValue(json.RawMessage{}), false},
+		{"jsonValueEmpty", value.NewJsonValue(json.RawMessage{}), true},
+		{"jsonValueNil", value.NewJsonValue(nil), false},
 		{"timeOnlyValueInvalid", value.NewTimeOnlyValue(invalidTime), false},
 		{"timeOnlyValueValid", value.NewTimeOnlyValue(validTime), true},
 		{"dateValueInvalid", value.NewDateValue(invalidDate), false},
