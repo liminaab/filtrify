@@ -744,7 +744,7 @@ func TestNewColumnPlusOperator(t *testing.T) {
 
 	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
-		assert.NoError(t, err, "filter operation failed")
+		assert.NoError(t, err, "newColumn operation failed")
 	}
 	// one header - 2 for filtered out rows
 	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
@@ -756,4 +756,149 @@ func TestNewColumnPlusOperator(t *testing.T) {
 		assert.Equal(t, float64(8), newCol.CellValue.DoubleValue, "new column wasn't processed correctly")
 	}
 
+}
+
+func TestNewColumnTrimOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "TRIM(`Instrument name`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.StringType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.True(t, newCol.CellValue.StringValue[0] != ' ', "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnLengthOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "LENGTH(`Instrument name`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		instCol := test.GetColumn(r, "Instrument name")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.LongType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, int64(len(instCol.CellValue.StringValue)), newCol.CellValue.LongValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnAndOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "`EU Sanction listed` AND true AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		origCol := test.GetColumn(r, "EU Sanction listed")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.BoolType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, origCol.CellValue.BoolValue && true, newCol.CellValue.BoolValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnOROperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "`EU Sanction listed` OR true AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		origCol := test.GetColumn(r, "EU Sanction listed")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.BoolType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, origCol.CellValue.BoolValue || true, newCol.CellValue.BoolValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnPlusDaysOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "PLUSDAYS(`Active From`, 3) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		instCol := test.GetColumn(r, "Active From")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.TimestampType, newCol.CellValue.DataType, "new column processed incorrectly")
+		expectedTime := instCol.CellValue.TimestampValue.AddDate(0, 0, 3)
+		assert.Equal(t, expectedTime, newCol.CellValue.TimestampValue, "new column wasn't processed correctly")
+	}
 }

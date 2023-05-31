@@ -42,8 +42,9 @@ var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
 	"length":           &operator.Length{},
 	"trim":             &operator.Trim{},
 	"plusdays":         &operator.Plusdays{},
-	"and":              &operator.AND{},
-	"or":               &operator.OR{},
+	// we are removing it for now - qlbridge has built in and or functions
+	//"and":              &operator.AND{},
+	//"or":               &operator.OR{},
 }
 
 func GetOperators() map[string]expr.CustomFunc {
