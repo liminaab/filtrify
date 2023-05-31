@@ -6,6 +6,7 @@ replace github.com/araddon/qlbridge => github.com/bahadirbb/qlbridge v0.0.23
 
 require (
 	cloud.google.com/go v0.38.0
+	github.com/araddon/dateparse v0.0.0-20190622164848-0fb0a474d195
 	github.com/araddon/gou v0.0.0-20211019181548-e7d08105776c
 	github.com/araddon/qlbridge v0.0.2
 	github.com/stretchr/testify v1.4.0
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/araddon/dateparse v0.0.0-20190622164848-0fb0a474d195 // indirect
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/dchest/siphash v1.2.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

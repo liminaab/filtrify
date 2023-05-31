@@ -39,6 +39,12 @@ var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
 	"minus":            &operator.MINUS{},
 	"multiply":         &operator.MULTIPLY{},
 	"divide":           &operator.DIVIDE{},
+	"length":           &operator.Length{},
+	"trim":             &operator.Trim{},
+	"plusdays":         &operator.Plusdays{},
+	// we are removing it for now - qlbridge has built in and or functions
+	//"and":              &operator.AND{},
+	//"or":               &operator.OR{},
 }
 
 func GetOperators() map[string]expr.CustomFunc {
@@ -51,4 +57,8 @@ func LoadLiminaOperators() {
 			expr.FuncAdd(key, op)
 		}
 	})
+}
+
+func InjectFunction(key string, op expr.CustomFunc) {
+	expr.FuncAdd(key, op)
 }
