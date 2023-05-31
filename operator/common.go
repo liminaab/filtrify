@@ -169,26 +169,9 @@ func buildHeaders(newDataset *types.DataSet, oldDataset *types.DataSet) map[stri
 			// let's find the best column type
 			// because we might have some nil values
 			// it doesn't mean column type is always nil
-			oldHeader, found := oldDataset.Headers[bestColumn.ColumnName]
-			if !found {
-				oldHeader = &types.Header{}
-			}
-			newHeader, found := newDataset.Headers[bestColumn.ColumnName]
-			if !found {
-				newHeader = &types.Header{}
-			}
 			builtHeader := &types.Header{
 				ColumnName: bestColumn.ColumnName,
 				DataType:   bestColumn.CellValue.DataType,
-				Metadata:   newHeader.Metadata,
-			}
-			if builtHeader.Metadata == nil {
-				builtHeader.Metadata = map[string]interface{}{}
-			}
-			for k, v := range oldHeader.Metadata {
-				if _, ok := builtHeader.Metadata[k]; !ok {
-					builtHeader.Metadata[k] = v
-				}
 			}
 			headers[bestColumn.ColumnName] = builtHeader
 		}

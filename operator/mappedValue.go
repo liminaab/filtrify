@@ -13,11 +13,10 @@ type MappedValueOperator struct {
 }
 
 type MappedValueConfiguration struct {
-	MappedColumnName string                 `json:"mappedColumnName"`
-	NewColumnName    string                 `json:"newColumnName"`
-	NewColumnMeta    map[string]interface{} `json:"newColumnMeta"`
-	TargetDataset    string                 `json:"targetDataset"`
-	TargetData       [][]string             `json:"targetData"`
+	MappedColumnName string     `json:"mappedColumnName"`
+	NewColumnName    string     `json:"newColumnName"`
+	TargetDataset    string     `json:"targetDataset"`
+	TargetData       [][]string `json:"targetData"`
 }
 
 func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
@@ -93,18 +92,6 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, o
 			return nil, errors.New("internal join error")
 		}
 		lastCol.ColumnName = typedConfig.NewColumnName
-	}
-
-	if len(typedConfig.NewColumnMeta) > 0 {
-		header, found := transformedSet.Headers[typedConfig.NewColumnName]
-		if !found {
-			header = &types.Header{
-				ColumnName: typedConfig.NewColumnName,
-				DataType:   tds.Headers["Value"].DataType,
-			}
-			transformedSet.Headers[typedConfig.NewColumnName] = header
-		}
-		header.Metadata = typedConfig.NewColumnMeta
 	}
 
 	transformedSet.Headers = buildHeaders(transformedSet, dataset)
