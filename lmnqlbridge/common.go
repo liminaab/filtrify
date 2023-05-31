@@ -41,6 +41,9 @@ var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
 	"divide":           &operator.DIVIDE{},
 	"length":           &operator.Length{},
 	"trim":             &operator.Trim{},
+	"plusdays":         &operator.Plusdays{},
+	"and":              &operator.AND{},
+	"or":               &operator.OR{},
 }
 
 func GetOperators() map[string]expr.CustomFunc {
@@ -53,4 +56,8 @@ func LoadLiminaOperators() {
 			expr.FuncAdd(key, op)
 		}
 	})
+}
+
+func InjectFunction(key string, op expr.CustomFunc) {
+	expr.FuncAdd(key, op)
 }

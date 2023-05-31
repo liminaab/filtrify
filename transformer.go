@@ -3,10 +3,14 @@ package filtrify
 import (
 	"errors"
 	"fmt"
+	"github.com/araddon/qlbridge/expr"
+	"github.com/liminaab/filtrify/lmnqlbridge"
 
 	"github.com/liminaab/filtrify/operator"
 	"github.com/liminaab/filtrify/types"
 )
+
+var injectedOperators = make(map[types.TransformationOperatorType]types.TransformationOperator)
 
 func getOperator(step *types.TransformationStep) (types.TransformationOperator, error) {
 
@@ -36,8 +40,14 @@ func getOperator(step *types.TransformationStep) (types.TransformationOperator, 
 	case types.CumulativeSum:
 		return &operator.CumulativeSumOperator{}, nil
 	default:
-		return nil, errors.New("unknown operator")
+		operator, ok := injectedOperators[step.Operator]
+		if !ok {
+			return nil, fmt.Errorf("unknown operator %s", step.Operator)
+		}
+		return operator, nil
 	}
+
+	return nil, errors.New("unknown operator")
 }
 
 func validateStep(step *types.TransformationStep) error {
@@ -75,6 +85,14 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	}
 
 	return transformedData, nil
+}
+
+func InjectOperator(operatorCode types.TransformationOperatorType, operator types.TransformationOperator) {
+	injectedOperators[operatorCode] = operator
+}
+
+func InjectSQLFunction(key string, op expr.CustomFunc) {
+	lmnqlbridge.InjectFunction(key, op)
 }
 
 func Transform(dataset *types.DataSet, transformations []*types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
