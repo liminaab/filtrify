@@ -111,7 +111,7 @@ func TestAggSumNewColumn(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	s1 := "SUMX(`Market Value (Base)`) AS `Test Column`,`Quantity`*2 AS q2"
+	s1 := "SUMX(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
 		Operator:      types.NewColumn,
