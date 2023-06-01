@@ -1077,3 +1077,32 @@ func TestNewColumnTimeOnlyMedianOperator(t *testing.T) {
 		assert.Equal(t, expectedTime, newCol.CellValue.TimestampValue, "new column wasn't processed correctly")
 	}
 }
+
+func TestNewColumnLongMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`somedata`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		// 2021-12-16
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.LongType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, int64(3), newCol.CellValue.LongValue, "new column wasn't processed correctly")
+	}
+}
