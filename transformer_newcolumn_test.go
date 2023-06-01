@@ -1,6 +1,7 @@
 package filtrify_test
 
 import (
+	"cloud.google.com/go/civil"
 	"strings"
 	"testing"
 	"time"
@@ -900,5 +901,208 @@ func TestNewColumnPlusDaysOperator(t *testing.T) {
 		assert.Equal(t, types.TimestampType, newCol.CellValue.DataType, "new column processed incorrectly")
 		expectedTime := instCol.CellValue.TimestampValue.AddDate(0, 0, 3)
 		assert.Equal(t, expectedTime, newCol.CellValue.TimestampValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnDoubleMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`Quantity`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.DoubleType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, float64(2), newCol.CellValue.DoubleValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnDoubleWithNilMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`Quantity`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.DoubleType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, float64(2.30), newCol.CellValue.DoubleValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnStringMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`Instrument name`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.StringType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, "c", newCol.CellValue.StringValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnTimeMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`Active From`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		// 2020-05-01 12:00:00
+		expectedTime := time.Date(2020, 5, 1, 12, 0, 0, 0, time.UTC)
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.TimestampType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, expectedTime, newCol.CellValue.TimestampValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnDateMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`Maturity Date`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		// 2021-12-16
+		expectedDate, _ := civil.ParseDate("2021-12-16")
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.DateType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, expectedDate.In(time.UTC), newCol.CellValue.TimestampValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnTimeOnlyMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`Hour`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		// 2021-12-16
+		expectedTime := time.Date(0, 0, 0, 10, 0, 0, 0, time.UTC)
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.TimeOfDayType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, expectedTime, newCol.CellValue.TimestampValue, "new column wasn't processed correctly")
+	}
+}
+
+func TestNewColumnLongMedianOperator(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "MEDIAN(`somedata`) AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "newColumn operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		// 2021-12-16
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		assert.Equal(t, types.LongType, newCol.CellValue.DataType, "new column processed incorrectly")
+		assert.Equal(t, int64(3), newCol.CellValue.LongValue, "new column wasn't processed correctly")
 	}
 }
