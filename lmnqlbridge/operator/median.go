@@ -138,7 +138,7 @@ func (m *median) Result() interface{} {
 	}
 }
 func (m *median) Merge(a *aggr.AggPartial) {
-
+	fmt.Errorf("merge is not supported by median aggregator")
 }
 func (m *median) Reset() { m.vals = make([]value.Value, 0) }
 
