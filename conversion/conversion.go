@@ -216,12 +216,10 @@ func getNextTypeToParse(t types.CellDataType) types.CellDataType {
 	case types.BoolType:
 		return types.StringType
 	case types.StringType:
-		return types.NilType
-	case types.NilType:
-		return types.NilType
+		return types.StringType
 	}
 
-	return types.NilType
+	return types.StringType
 }
 
 func estimateColumnType(rawData [][]string, colIndex int) types.CellDataType {
@@ -281,7 +279,7 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 				cell, err = ParseToCell(row[ci], cellTypes[ci])
 			} else {
 				cell = &types.CellValue{
-					DataType: types.NilType,
+					DataType: types.StringType,
 				}
 			}
 			if err != nil {
