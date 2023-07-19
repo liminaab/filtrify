@@ -338,21 +338,6 @@ func convertJavaLayoutToGoLayout(javaLayout string) (string, error) {
 		}
 		goLayout = strings.ReplaceAll(goLayout, javaStr, goStr)
 	}
-
-	// Check if the resulting layout contains any unrecognized format strings
-	unrecognized := []string{}
-	for _, r := range goLayout {
-		if r == ' ' || r == 't' || r == 'T' {
-			continue
-		}
-		if strings.IndexRune("2006-01-02T15:04:05.999999999Z07:00", r) == -1 {
-			unrecognized = append(unrecognized, string(r))
-		}
-	}
-	if len(unrecognized) > 0 {
-		return "", errors.New("unrecognized format string: " + strings.Join(unrecognized, ","))
-	}
-
 	return goLayout, nil
 }
 
