@@ -216,27 +216,30 @@ func getNextTypeToParse(t types.CellDataType) types.CellDataType {
 	case types.BoolType:
 		return types.StringType
 	case types.StringType:
-		return types.NilType
-	case types.NilType:
-		return types.NilType
+		return types.StringType
 	}
 
-	return types.NilType
+	return types.StringType
 }
 
 func estimateColumnType(rawData [][]string, colIndex int) types.CellDataType {
 	currentType := types.TimestampType
+	isAllEmpty := true
 	for i := 0; i < len(rawData); i++ {
 		cellData := rawData[i][colIndex]
 		// no need to try this cell
 		if len(cellData) == 0 {
 			continue
 		}
+		isAllEmpty = false
 		_, err := ParseToCell(cellData, currentType)
 		if err != nil {
 			currentType = getNextTypeToParse(currentType)
 			i = -1
 		}
+	}
+	if isAllEmpty {
+		return types.StringType
 	}
 	return currentType
 }
