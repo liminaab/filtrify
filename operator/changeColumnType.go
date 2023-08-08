@@ -575,14 +575,14 @@ func doubleToString(input interface{}, config ConversionConfiguration) interface
 		decimalPlaces = config.StringNumeric.NumberOfDecimals
 	}
 	convertedNumber := p.Sprintf("%."+strconv.Itoa(decimalPlaces)+"f", input)
-	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
+	if config.StringNumeric != nil {
 		convertedNumber = strings.ReplaceAll(convertedNumber, ",", tempThousandPlaceholder)
 	}
 	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
 		convertedNumber = strings.ReplaceAll(convertedNumber, ".", tempDecimalPlaceholder)
 	}
 	// we are doing this in 2 steps - otherwise thousand and decimal seperator might be swapped
-	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
+	if config.StringNumeric != nil {
 		convertedNumber = strings.ReplaceAll(convertedNumber, tempThousandPlaceholder, config.StringNumeric.ThousandSeperator)
 	}
 	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 {
