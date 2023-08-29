@@ -2,7 +2,7 @@ module github.com/liminaab/filtrify
 
 go 1.18
 
-replace github.com/araddon/qlbridge => github.com/bahadirbb/qlbridge v0.0.23
+replace github.com/araddon/qlbridge => github.com/bahadirbb/qlbridge v0.0.24
 
 require (
 	cloud.google.com/go v0.38.0
