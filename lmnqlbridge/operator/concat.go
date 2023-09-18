@@ -20,12 +20,8 @@ func (m *Concat) Validate(n *expr.FuncNode) (expr.EvaluatorFunc, error) {
 }
 
 func concatEval(ctx expr.EvalContext, vals []value.Value) (value.Value, bool) {
-	sep, ok := value.ValueToString(vals[len(vals)-1])
-	if !ok {
-		return value.EmptyStringValue, false
-	}
 	args := make([]string, 0)
-	for i := 0; i < len(vals)-1; i++ {
+	for i := 0; i < len(vals); i++ {
 		switch valTyped := vals[i].(type) {
 		case value.SliceValue:
 			svals := make([]string, len(valTyped.Val()))
@@ -56,5 +52,5 @@ func concatEval(ctx expr.EvalContext, vals []value.Value) (value.Value, bool) {
 	if len(args) == 0 {
 		return value.EmptyStringValue, false
 	}
-	return value.NewStringValue(strings.Join(args, sep)), true
+	return value.NewStringValue(strings.Join(args, "")), true
 }
