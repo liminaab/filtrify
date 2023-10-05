@@ -48,7 +48,7 @@ func (t *LookupOperator) createColIndex(ds *types.DataSet) map[*types.DataRow]ma
 	return index
 }
 
-func (t *LookupOperator) copyColumn(col *types.DataColumn, config *LookupConfiguration) *types.DataColumn {
+func (t *LookupOperator) copyColumn(orgDataset *types.DataSet, col *types.DataColumn, config *LookupConfiguration) *types.DataColumn {
 
 	cellVal := &types.CellValue{
 		DataType: col.CellValue.DataType,
@@ -75,7 +75,7 @@ func (t *LookupOperator) copyColumn(col *types.DataColumn, config *LookupConfigu
 	}
 
 	newCol := &types.DataColumn{
-		ColumnName: t.getRightColumnName(col, config),
+		ColumnName: t.getRightColumnName(orgDataset, col, config),
 		CellValue:  cellVal,
 	}
 
@@ -91,14 +91,34 @@ func (t *LookupOperator) isRightMatchColumn(col *types.DataColumn, config *Looku
 	return false
 }
 
-func (t *LookupOperator) getRightColumnName(col *types.DataColumn, config *LookupConfiguration) string {
+func (t *LookupOperator) getRightColumnName(orgDataset *types.DataSet, col *types.DataColumn, config *LookupConfiguration) string {
+	var columnName string
 	if config.RemoveRightDatasetPrefix {
-		return col.ColumnName
+		columnName = col.ColumnName
+	} else {
+		columnName = fmt.Sprintf("%s.%s", config.TargetDataset, col.ColumnName)
 	}
-	return fmt.Sprintf("%s.%s", config.TargetDataset, col.ColumnName)
+	counter := 1
+	for {
+		exists := false
+		// let's check if this name already exists
+		for _, val := range orgDataset.Headers {
+			if val.ColumnName == columnName {
+				exists = true
+				break
+			}
+		}
+		if exists {
+			columnName = fmt.Sprintf("%s_%d", columnName, counter)
+			counter++
+		} else {
+			break
+		}
+	}
+	return columnName
 }
 
-func (t *LookupOperator) mergeRows(left *types.DataRow, right *types.DataRow, config *LookupConfiguration) *types.DataRow {
+func (t *LookupOperator) mergeRows(orgDataset *types.DataSet, left *types.DataRow, right *types.DataRow, config *LookupConfiguration) *types.DataRow {
 	targetLength := len(left.Columns) + len(right.Columns)
 	if config.RemoveRightMatchColumn {
 		targetLength -= len(config.Columns)
@@ -131,14 +151,14 @@ func (t *LookupOperator) mergeRows(left *types.DataRow, right *types.DataRow, co
 				continue
 			}
 		}
-		newRow.Columns[len(left.Columns)+colCounter] = t.copyColumn(c, config)
+		newRow.Columns[len(left.Columns)+colCounter] = t.copyColumn(orgDataset, c, config)
 		colCounter++
 	}
 
 	return newRow
 }
 
-func (t *LookupOperator) mergeNilRow(left *types.DataRow, rightTemplate *types.DataRow, config *LookupConfiguration) *types.DataRow {
+func (t *LookupOperator) mergeNilRow(orgDataset *types.DataSet, left *types.DataRow, rightTemplate *types.DataRow, config *LookupConfiguration) *types.DataRow {
 	targetLength := len(left.Columns) + len(rightTemplate.Columns)
 	if config.RemoveRightMatchColumn {
 		targetLength -= len(config.Columns)
@@ -172,7 +192,7 @@ func (t *LookupOperator) mergeNilRow(left *types.DataRow, rightTemplate *types.D
 			}
 		}
 		newRow.Columns[len(left.Columns)+colCounter] = &types.DataColumn{
-			ColumnName: t.getRightColumnName(c, config),
+			ColumnName: t.getRightColumnName(orgDataset, c, config),
 			CellValue:  &types.CellValue{DataType: types.NilType},
 		}
 		colCounter++
@@ -216,10 +236,10 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 		}
 		var newRow *types.DataRow = nil
 		if matchRow != nil {
-			newRow = t.mergeRows(lr, matchRow, config)
+			newRow = t.mergeRows(left, lr, matchRow, config)
 		} else {
 			// we need to do a nil merge
-			newRow = t.mergeNilRow(lr, refRow, config)
+			newRow = t.mergeNilRow(left, lr, refRow, config)
 		}
 		mergedSet.Rows[li] = newRow
 
