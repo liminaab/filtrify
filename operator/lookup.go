@@ -18,12 +18,18 @@ type JoinColumn struct {
 	Right string `json:"right"`
 }
 
+type LookupFilter struct {
+	Value  string `json:"value"`
+	Filter string `json:"filter"`
+}
+
 type LookupConfiguration struct {
-	TargetDataset            string        `json:"targetDataset"`
-	Columns                  []*JoinColumn `json:"columns"`
-	RemoveRightMatchColumn   bool          `json:"removeRightMatchColumn"`
-	RemoveRightDatasetPrefix bool          `json:"removeRightDatasetPrefix"`
-	SelectedColumns          []string      `json:"selectedColumns"`
+	TargetDataset            string                  `json:"targetDataset"`
+	Columns                  []*JoinColumn           `json:"columns"`
+	RemoveRightMatchColumn   bool                    `json:"removeRightMatchColumn"`
+	RemoveRightDatasetPrefix bool                    `json:"removeRightDatasetPrefix"`
+	SelectedColumns          []string                `json:"selectedColumns"`
+	TargetDatasetFilters     map[string]LookupFilter `json:"targetDatasetFilters"`
 }
 
 func (t *LookupOperator) GetColumn(r *types.DataRow, col string) *types.DataColumn {
@@ -281,8 +287,23 @@ func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherS
 		}
 	}
 
+	filteredSet := tds
+	if len(typedConfig.TargetDatasetFilters) > 0 {
+		filterOp := &FilterOperator{}
+		// before merging the data - let's do a filter for the target dataset if it exists
+		for _, filter := range typedConfig.TargetDatasetFilters {
+			if len(filter.Filter) == 0 {
+				continue
+			}
+			filteredSet, err = filterOp.Transform(filteredSet, filter.Filter, nil)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	// wow we are ready to join those tables
-	mergedSet := t.mergeSets(dataset, tds, typedConfig)
+	mergedSet := t.mergeSets(dataset, filteredSet, typedConfig)
 	mergedSet.Headers = buildHeaders(mergedSet, dataset)
 	return mergedSet, nil
 }
