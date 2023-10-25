@@ -21,6 +21,16 @@ type NewColumnConfiguration struct {
 	GroupBy   string `json:"groupby"`
 }
 
+func (t *NewColumnOperator) findSelectedColumnName(config *NewColumnConfiguration) *string {
+	index := strings.LastIndex(config.Statement, " AS `")
+	if index < 0 {
+		return nil
+	}
+	subText := config.Statement[index+4:]
+	selectedColumnName := strings.ReplaceAll(subText, "`", "")
+	return &selectedColumnName
+}
+
 func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
 
 	typedConfig, err := t.buildConfiguration(config)
@@ -30,6 +40,18 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 
 	headers, columnTypeMap := extractHeadersAndTypeMap(dataset)
 	plainAggs := make([]*types.DataColumn, 0)
+
+	// let's check what is the name of the final result column
+	// we need to make sure it doesn't exist in our dataset
+	// if it does we need to return error
+	selectedColName := t.findSelectedColumnName(typedConfig)
+	if selectedColName != nil {
+		for _, h := range headers {
+			if strings.EqualFold(h, *selectedColName) {
+				return nil, errors.New("column already exists")
+			}
+		}
+	}
 
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
