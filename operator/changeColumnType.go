@@ -482,6 +482,8 @@ func intToString(input interface{}, config ConversionConfiguration) interface{} 
 	convertedNumber := p.Sprintf("%d", input)
 	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
 		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.ThousandSeperator)
+	} else {
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", "")
 	}
 	return convertedNumber
 }
@@ -536,6 +538,8 @@ func longToString(input interface{}, config ConversionConfiguration) interface{}
 	convertedNumber := p.Sprintf("%d", input)
 	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
 		convertedNumber = strings.ReplaceAll(convertedNumber, ",", config.StringNumeric.ThousandSeperator)
+	} else {
+		convertedNumber = strings.ReplaceAll(convertedNumber, ",", "")
 	}
 	return convertedNumber
 }
