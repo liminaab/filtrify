@@ -55,6 +55,9 @@ func executeSQLQuery(q string, dataset *types.DataSet, existingColumnTypeMap map
 }
 
 func extractHeadersAndTypeMap(dataset *types.DataSet) ([]string, map[string]types.CellDataType) {
+	if len(dataset.Rows) == 0 {
+		return []string{}, make(map[string]types.CellDataType)
+	}
 	columnTypeMap := make(map[string]types.CellDataType)
 	columnLength := len(dataset.Rows[0].Columns)
 	cols := make([]string, columnLength)

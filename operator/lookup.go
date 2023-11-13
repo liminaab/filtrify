@@ -214,6 +214,12 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 	rightIndex := t.createColIndex(right)
 	leftIndex := t.createColIndex(left)
 
+	if len(right.Rows) == 0 {
+		// no data on right - we can't merge it
+		// TODO maybe create empty columns for right?
+		return left
+	}
+
 	refRow := right.Rows[0]
 	for li, lr := range left.Rows {
 		leftJoinColumns := make([]*types.DataColumn, len(config.Columns))
