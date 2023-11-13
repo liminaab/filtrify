@@ -128,8 +128,8 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 			// let's try to parse this into a float
 			// if it fails we return the original error
 			// if it succeeds we return the result
-			val, err := strconv.ParseFloat(*selectedStatement, 64)
-			if err == nil {
+			val, floatErr := strconv.ParseFloat(*selectedStatement, 64)
+			if floatErr == nil {
 				// ok let's add this value to all of the rows
 				// now we need to merge result with plain aggregations
 				for _, r := range dataset.Rows {
