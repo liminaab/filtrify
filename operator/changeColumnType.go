@@ -48,6 +48,7 @@ type NumericDateConfiguration struct {
 
 type StringDateConfiguration struct {
 	DateFormat string `json:"dateFormat"`
+	Timezone   string `json:"timezone"`
 }
 
 type conversionFunc func(I interface{}, config ConversionConfiguration) interface{}
@@ -679,6 +680,14 @@ func commonStringToTime(input string, config ConversionConfiguration, defaultFor
 	if err != nil {
 		fmt.Printf("error parsing time %v with format %v", input, format)
 		return time.Time{}
+	}
+	if len(config.StringDate.Timezone) > 0 {
+		l, err := time.LoadLocation(config.StringDate.Timezone)
+		if err != nil {
+			fmt.Print("Unable to load timezone: " + config.StringDate.Timezone)
+		} else {
+			t = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), l)
+		}
 	}
 	return t
 }
