@@ -78,7 +78,9 @@ func processTransformation(dataset *types.DataSet, step *types.TransformationSte
 	if !state {
 		return nil, errors.New("invalid configuration")
 	}
-
+	if len(dataset.Rows) == 0 {
+		return dataset, nil
+	}
 	transformedData, err := op.Transform(dataset, step.Configuration, otherSets)
 	if err != nil {
 		return nil, err
@@ -98,6 +100,10 @@ func InjectSQLFunction(key string, op expr.CustomFunc) {
 func Transform(dataset *types.DataSet, transformations []*types.TransformationStep, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
 	newData := dataset
 	var err error
+	if len(dataset.Rows) == 0 {
+		return newData, nil
+	}
+
 	for i, ts := range transformations {
 		newData, err = processTransformation(newData, ts, otherSets)
 		// let's wrap this error message to give more details
