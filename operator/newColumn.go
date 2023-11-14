@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/araddon/qlbridge/expr"
@@ -29,6 +30,15 @@ func (t *NewColumnOperator) findSelectedColumnName(config *NewColumnConfiguratio
 	subText := config.Statement[index+4:]
 	selectedColumnName := strings.ReplaceAll(subText, "`", "")
 	return &selectedColumnName
+}
+
+func (t *NewColumnOperator) getSelectedStatement(config *NewColumnConfiguration) *string {
+	index := strings.LastIndex(config.Statement, " AS `")
+	if index < 0 {
+		return nil
+	}
+	selectedStatement := config.Statement[:index]
+	return &selectedStatement
 }
 
 func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
@@ -110,6 +120,32 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 
 	result, err := executeSQLQuery(fullQuery, dataset, columnTypeMap)
 	if err != nil {
+		// TODO properly fix this in qlbridge
+		// this is a really ugly workaround to select floats
+		// right now the qlbridge driver doesn't support selecting float64
+		selectedStatement := t.getSelectedStatement(typedConfig)
+		if selectedStatement != nil {
+			// let's try to parse this into a float
+			// if it fails we return the original error
+			// if it succeeds we return the result
+			val, floatErr := strconv.ParseFloat(*selectedStatement, 64)
+			if floatErr == nil {
+				// ok let's add this value to all of the rows
+				// now we need to merge result with plain aggregations
+				for _, r := range dataset.Rows {
+					r.Columns = append(r.Columns, &types.DataColumn{
+						ColumnName: *selectedColName,
+						CellValue: &types.CellValue{
+							DataType:    types.DoubleType,
+							DoubleValue: val,
+						},
+					})
+				}
+				dataset.Headers = buildHeaders(dataset, dataset)
+				return dataset, nil
+			}
+		}
+
 		return nil, err
 	}
 
