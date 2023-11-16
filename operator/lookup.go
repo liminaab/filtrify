@@ -235,7 +235,7 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 			foundMatch := true
 			// we need to try find if those values are equal?
 			for i := range leftJoinColumns {
-				if !leftJoinColumns[i].CellValue.Equals(rightJoinColumns[i].CellValue) {
+				if !leftJoinColumns[i].CellValue.EqualsAsText(rightJoinColumns[i].CellValue) {
 					foundMatch = false
 				}
 			}

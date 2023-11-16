@@ -299,6 +299,18 @@ func (v *CellValue) Equals(other *CellValue) bool {
 	return false
 }
 
+func (v *CellValue) EqualsAsText(other *CellValue) bool {
+	if v == nil || other == nil {
+		return false
+	}
+
+	if v.DataType == other.DataType {
+		return v.Equals(other)
+	}
+	// if they don't have the same data type - we will convert them to string and compare
+	return v.ToString() == other.ToString()
+}
+
 // func (v CellValue) Add(other CellValue) (CellValue, error)      {}
 // func (v CellValue) Subtract(other CellValue) (CellValue, error) {}
 // func (v CellValue) Multiply(other CellValue) (CellValue, error) {}
