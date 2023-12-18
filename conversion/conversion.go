@@ -24,6 +24,8 @@ const minTimestampValMiliseconds int64 = 946684800000
 // 2100-01-01
 const maxTimestampValMiliseconds int64 = 4102444800000
 
+type ConversionMap map[string]bool
+
 var dateTimeFormats map[string]types.CellDataType = map[string]types.CellDataType{
 	// datetime
 	time.RFC3339:                   types.TimestampType,
@@ -49,9 +51,9 @@ var dateTimeFormats map[string]types.CellDataType = map[string]types.CellDataTyp
 	"Jan-02-06":        types.DateType,
 	"Jan-02-2006":      types.DateType,
 	// "06",
-	"Mon":     types.DateType,
+	"Mon":        types.DateType,
 	"Monday	": types.DateType,
-	"Jan-06":  types.DateType,
+	"Jan-06":     types.DateType,
 	// time
 	"15:04":       types.TimeOfDayType,
 	"15:04:05":    types.TimeOfDayType,
@@ -244,7 +246,7 @@ func estimateColumnType(rawData [][]string, colIndex int) types.CellDataType {
 	return currentType
 }
 
-func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool) (*types.DataSet, error) {
+func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool, conversionMap ConversionMap) (*types.DataSet, error) {
 	// let's try
 	data, headers, err := extractHeaders(rawData, firstLineIsHeader)
 	if err != nil {
@@ -254,7 +256,15 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 	cellTypes := make([]types.CellDataType, len(headers))
 	typedHeaders := make(map[string]*types.Header)
 	for i := range headers {
-		if convertDataTypes {
+		shouldConvert := convertDataTypes
+		if shouldConvert && conversionMap != nil {
+			convert, found := conversionMap[headers[i]]
+			if found {
+				shouldConvert = convert
+			}
+		}
+
+		if shouldConvert {
 			cellTypes[i] = estimateColumnType(data, i)
 		} else {
 			cellTypes[i] = types.StringType
