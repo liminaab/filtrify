@@ -372,7 +372,7 @@ func getLongConversionTests() []conversionTest {
 		{
 			name:   "long_to_string_3",
 			data:   getDatasetForConversion(types.CellValue{DataType: types.LongType, LongValue: 1123}),
-			want:   "1,123",
+			want:   "1123",
 			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.StringType}),
 		},
 		{
@@ -431,7 +431,7 @@ func getIntConversionTests() []conversionTest {
 		{
 			name:   "int_to_string_3",
 			data:   getDatasetForConversion(types.CellValue{DataType: types.IntType, IntValue: 1123}),
-			want:   "1,123",
+			want:   "1123",
 			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.StringType}),
 		},
 		{
