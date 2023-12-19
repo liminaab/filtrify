@@ -6,5 +6,5 @@ import (
 )
 
 func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool) (*types.DataSet, error) {
-	return conversion.ConvertToTypedData(rawData, firstLineIsHeader, convertDataTypes)
+	return conversion.ConvertToTypedData(rawData, firstLineIsHeader, convertDataTypes, nil)
 }

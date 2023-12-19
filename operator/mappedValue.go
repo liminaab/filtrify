@@ -38,7 +38,9 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, o
 	if len(typedConfig.TargetData) > 0 {
 		// let's append static headers to our data
 		typedConfig.TargetData = append([][]string{{"Key", "Value"}}, typedConfig.TargetData...)
-		tds, err = conversion.ConvertToTypedData(typedConfig.TargetData, true, true)
+		// let's make sure key is always text type
+		conversionMap := conversion.ConversionMap{"Key": false}
+		tds, err = conversion.ConvertToTypedData(typedConfig.TargetData, true, true, conversionMap)
 		if err != nil {
 			return nil, err
 		}
