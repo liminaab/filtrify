@@ -158,6 +158,115 @@ type DataColumn struct {
 	ColumnName string
 	CellValue  *CellValue
 }
+
+func NewBoolDataColumn(val *bool, name string) *DataColumn {
+	if val == nil {
+		return &DataColumn{
+			ColumnName: name,
+			CellValue: &CellValue{
+				DataType: NilType,
+			},
+		}
+	}
+	return &DataColumn{
+		ColumnName: name,
+		CellValue: &CellValue{
+			DataType:  BoolType,
+			BoolValue: *val,
+		},
+	}
+}
+
+func NewIntDataColumn(val *int32, name string) *DataColumn {
+	if val == nil {
+		return &DataColumn{
+			ColumnName: name,
+			CellValue: &CellValue{
+				DataType: NilType,
+			},
+		}
+	}
+	return &DataColumn{
+		ColumnName: name,
+		CellValue: &CellValue{
+			DataType: IntType,
+			IntValue: *val,
+		},
+	}
+}
+
+func NewLongDataColumn(val *int64, name string) *DataColumn {
+	if val == nil {
+		return &DataColumn{
+			ColumnName: name,
+			CellValue: &CellValue{
+				DataType: NilType,
+			},
+		}
+	}
+	return &DataColumn{
+		ColumnName: name,
+		CellValue: &CellValue{
+			DataType:  LongType,
+			LongValue: *val,
+		},
+	}
+}
+
+func NewDoubleDataColumn(val *float64, name string) *DataColumn {
+	if val == nil {
+		return &DataColumn{
+			ColumnName: name,
+			CellValue: &CellValue{
+				DataType: NilType,
+			},
+		}
+	}
+	return &DataColumn{
+		ColumnName: name,
+		CellValue: &CellValue{
+			DataType:    DoubleType,
+			DoubleValue: *val,
+		},
+	}
+}
+
+func NewTimestampDataColumn(val *int64, name string) *DataColumn {
+	if val == nil {
+		return &DataColumn{
+			ColumnName: name,
+			CellValue: &CellValue{
+				DataType: NilType,
+			},
+		}
+	}
+	return &DataColumn{
+		ColumnName: name,
+		CellValue: &CellValue{
+			DataType:       TimestampType,
+			TimestampValue: time.Unix(*val, 0),
+		},
+	}
+}
+
+func NewStringDataColumn(val *string, name string) *DataColumn {
+	if val == nil {
+		return &DataColumn{
+			ColumnName: name,
+			CellValue: &CellValue{
+				DataType: NilType,
+			},
+		}
+	}
+	return &DataColumn{
+		ColumnName: name,
+		CellValue: &CellValue{
+			DataType:    StringType,
+			StringValue: *val,
+		},
+	}
+}
+
 type CellValue struct {
 	DataType       CellDataType
 	IntValue       int32
