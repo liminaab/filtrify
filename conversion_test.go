@@ -48,9 +48,9 @@ func TestDateConversion(t *testing.T) {
 
 func TestDateTimeConversion(t *testing.T) {
 	data := [][]string{
-		{"2020-01-01 12:20:04", "01/01/2020 12:20:04"},
-		{"2020-01-08 12:20:04", "01/08/2020 12:20:04"},
-		{"2020-01-13 12:20:04", "01/13/2020 12:20:04"},
+		{"2020-01-01 12:20:04", "01/01/2020 12:20:04", "09/01/2020 12:20:04"},
+		{"2020-01-08 12:20:04", "01/08/2020 12:20:04", "01/08/2020 12:20:04"},
+		{"2020-01-13 12:20:04", "01/13/2020 12:20:04", "02/16/2020 12:20:04"},
 	}
 	ds, err := filtrify.ConvertToTypedData(data, false, true)
 	assert.True(t, err == nil, "no error: %v", err)
@@ -74,8 +74,12 @@ func TestTimeOnlyConversion(t *testing.T) {
 	assert.True(t, len(ds.Rows) == 3, "invalid row count in conversion")
 
 	for _, r := range ds.Rows {
-		for _, c := range r.Columns {
-			assert.True(t, c.CellValue.DataType == types.TimeOfDayType, "invalid conversion type should be timestamp but it is %s. val: %s", c.CellValue.DataType.String(), test.CellDataToString(c.CellValue))
+		for i, c := range r.Columns {
+			if i == 1 {
+				assert.True(t, c.CellValue.DataType == types.StringType, "invalid conversion type should be string but it is %s. val: %s", c.CellValue.DataType.String(), test.CellDataToString(c.CellValue))
+			} else {
+				assert.True(t, c.CellValue.DataType == types.TimeOfDayType, "invalid conversion type should be timestamp but it is %s. val: %s", c.CellValue.DataType.String(), test.CellDataToString(c.CellValue))
+			}
 		}
 	}
 }

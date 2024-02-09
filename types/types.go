@@ -10,6 +10,11 @@ import (
 type TransformationOperatorType int64
 type CellDataType int64
 
+type CellParsingInfo struct {
+	DataType CellDataType
+	Info     interface{}
+}
+
 const (
 	Filter TransformationOperatorType = iota
 	NewColumn
