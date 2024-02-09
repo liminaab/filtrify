@@ -22,7 +22,7 @@ func DataRow(columns ...*types.DataColumn) *types.DataRow {
 }
 
 func NewColumn(name string, val string, targetType types.CellDataType) (*types.DataColumn, error) {
-	cell, err := conversion.ParseToCell(val, targetType)
+	cell, _, err := conversion.ParseToCell(val, targetType, nil)
 	if err != nil {
 		return nil, err
 	}
