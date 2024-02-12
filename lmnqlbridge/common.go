@@ -46,6 +46,7 @@ var operators map[string]expr.CustomFunc = map[string]expr.CustomFunc{
 	"replace":          &operator.Replace{},
 	"date":             &operator.Date{},
 	"datetimeutc":      &operator.DateTimeUTC{},
+	"isblank":          &operator.IsBlank{},
 	// we are removing it for now - qlbridge has built in and or functions
 	//"and":              &operator.AND{},
 	//"or":               &operator.OR{},

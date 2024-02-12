@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	_ "github.com/araddon/qlbridge/qlbdriver"
 	"github.com/liminaab/filtrify/types"
@@ -39,6 +40,85 @@ func parsePercentage(data string) (float64, error) {
 	return 0, errors.New("invalid percentage format")
 }
 
+func (t *FilterOperator) getDynamicDateTime(c *Criteria) (string, error) {
+	// t-1d
+	// t-1w
+	pattern := c.Value
+	targetTime := time.Now()
+
+	if len(pattern) < 3 {
+		return targetTime.Format("2006-01-02 15:04:05"), nil
+	}
+	sign := pattern[1:2]
+	amount, err := strconv.Atoi(pattern[2:])
+	if err != nil {
+		return "", err
+	}
+	if sign == "-" {
+		targetTime = targetTime.AddDate(0, 0, -amount)
+	} else if sign == "+" {
+		targetTime = targetTime.AddDate(0, 0, amount)
+	} else {
+		return "", errors.New("invalid date pattern")
+	}
+	return targetTime.Format("2006-01-02 15:04:05"), nil
+}
+
+func (t *FilterOperator) buildTimestampQuery(c *Criteria) (string, error) {
+	if strings.HasPrefix(c.Value, "t") || strings.HasPrefix(c.Value, "T") {
+		// it means this is a dynamic date
+		// let's process this
+		// this is a dynamic date
+		// we need to find out the date
+		dynamicDate, err := t.getDynamicDateTime(c)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, dynamicDate), nil
+	}
+
+	return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, c.Value), nil
+}
+
+func (t *FilterOperator) getDynamicDate(c *Criteria) (string, error) {
+	// t-1d
+	// t-1w
+	pattern := c.Value
+	targetTime := time.Now()
+	if len(pattern) < 3 {
+		return targetTime.Format("2006-01-02"), nil
+	}
+	sign := pattern[1:2]
+	amount, err := strconv.Atoi(pattern[2:])
+	if err != nil {
+		return "", err
+	}
+	if sign == "-" {
+		targetTime = targetTime.AddDate(0, 0, -amount)
+	} else if sign == "+" {
+		targetTime = targetTime.AddDate(0, 0, amount)
+	} else {
+		return "", errors.New("invalid date pattern")
+	}
+	return targetTime.Format("2006-01-02"), nil
+}
+
+func (t *FilterOperator) buildDateQuery(c *Criteria) (string, error) {
+	if strings.HasPrefix(c.Value, "t") || strings.HasPrefix(c.Value, "T") {
+		// it means this is a dynamic date
+		// let's process this
+		// this is a dynamic date
+		// we need to find out the date
+		dynamicDate, err := t.getDynamicDate(c)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, dynamicDate), nil
+	}
+
+	return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, c.Value), nil
+}
+
 func (t *FilterOperator) buildComparisonQuery(c *Criteria, colType types.CellDataType) (string, error) {
 	switch colType {
 	case types.IntType, types.LongType:
@@ -57,8 +137,9 @@ func (t *FilterOperator) buildComparisonQuery(c *Criteria, colType types.CellDat
 		}
 		return fmt.Sprintf("`%s` %s %f", c.FieldName, c.Operator, i), nil
 	case types.TimestampType:
-		// TODO define format smartly - think about this
-		return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, c.Value), nil
+		return t.buildTimestampQuery(c)
+	case types.DateType:
+		return t.buildDateQuery(c)
 	default:
 		return "", errors.New("invalid comparison on filter query")
 	}
@@ -92,9 +173,9 @@ func (t *FilterOperator) buildEqualsQuery(c *Criteria, colType types.CellDataTyp
 		return fmt.Sprintf("`%s` %s %d", c.FieldName, c.Operator, i), nil
 	case types.TimestampType:
 		// TODO define format smartly - think about this
-		return fmt.Sprintf("`%s` %s todatetime('%s')", c.FieldName, c.Operator, c.Value), nil
+		return t.buildTimestampQuery(c)
 	case types.DateType:
-		return fmt.Sprintf("`%s` %s todate('%s')", c.FieldName, c.Operator, c.Value), nil
+		return t.buildDateQuery(c)
 	case types.TimeOfDayType:
 		return fmt.Sprintf("`%s` %s totime('%s')", c.FieldName, c.Operator, c.Value), nil
 	case types.StringType:
