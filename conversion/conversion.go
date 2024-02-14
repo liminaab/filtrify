@@ -26,6 +26,20 @@ const maxTimestampValMiliseconds int64 = 4102444800000
 
 type ConversionMap map[string]bool
 
+var wellknownFormats = []string{
+	time.RFC3339,
+	"2006-01-02T15:04:05",
+	"2006-01-02T15:04:05-0700",
+	"2 Jan 2006 15:04:05",
+	"2 Jan 2006 15:04",
+	"Mon, 2 Jan 2006 15:04:05 MST",
+	"January 02, 2006",
+	"02 January 2006",
+	"02-Jan-2006",
+	"Jan-02-06",
+	"Jan-02-2006",
+}
+
 var dateTimeFormats map[string]types.CellDataType = map[string]types.CellDataType{
 	// datetime
 	time.RFC3339:                   types.TimestampType,
@@ -255,7 +269,7 @@ func checkIfTimestamp(rawData [][]string, colIndex int) (bool, types.CellDataTyp
 			continue
 		}
 		isAllEmpty = false
-		_, info, err := ParseToCell(cellData, types.TimestampType, parseInfo)
+		cellVal, info, err := ParseToCell(cellData, types.TimestampType, parseInfo)
 		if err != nil {
 			if numberOfFormatChanges > maxFormatChangeCount {
 				// let's prevent an infinite loop - we can't parse this
@@ -279,6 +293,7 @@ func checkIfTimestamp(rawData [][]string, colIndex int) (bool, types.CellDataTyp
 				return false, types.StringType, nil
 			}
 		} else {
+			currentType = cellVal.DataType
 			anySuccess = true
 		}
 		parseInfo = info
@@ -286,6 +301,51 @@ func checkIfTimestamp(rawData [][]string, colIndex int) (bool, types.CellDataTyp
 	if isAllEmpty {
 		return false, types.StringType, nil
 	}
+
+	if currentType == types.TimeOfDayType {
+		// this is not a timestamp we don't need to predict days for this
+		return true, currentType, parseInfo
+	}
+
+	textLayout, ok := parseInfo.(string)
+	if !ok {
+		return false, types.StringType, nil
+	}
+	// let's check if this is a string date or something like unixtimestamp
+	if len(textLayout) == 0 {
+		// a timestamp - let's return it
+		return true, currentType, parseInfo
+	}
+	for _, layout := range wellknownFormats {
+		if layout == textLayout {
+			// at this point we don't need to determine if the format is correct
+			// we have a match
+			return true, currentType, parseInfo
+		}
+	}
+
+	// at this point we need to check if our format is correct for sure
+	// to do this - we are going to check for a day that is bigger than 12
+	// so we can be sure we are not parsing a month as a day
+	anyDayBiggerThan12 := false
+	for i := 0; i < len(rawData); i++ {
+		cellData := rawData[i][colIndex]
+		// no need to try this cell
+		if len(cellData) == 0 {
+			continue
+		}
+		t, _, _, _ := parseTimeData(cellData, parseInfo)
+		if t.Day() > 12 {
+			// ok we can trust our format prediction
+			anyDayBiggerThan12 = true
+			break
+		}
+	}
+	if !anyDayBiggerThan12 {
+		// we can't predict this for sure - let's skip this
+		return false, types.StringType, nil
+	}
+
 	return true, currentType, parseInfo
 }
 
