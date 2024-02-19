@@ -235,20 +235,29 @@ func ParseToCell(data string, enforceType types.CellDataType, parseInfo interfac
 // bool
 // string
 func getNextTypeToParse(t types.CellDataType) types.CellDataType {
+	// we are no more auto parsing number types
 	switch t {
 	case types.TimestampType:
-		return types.IntType
-	case types.IntType:
-		return types.LongType
-	case types.LongType:
-		return types.DoubleType
-	case types.DoubleType:
 		return types.BoolType
 	case types.BoolType:
 		return types.StringType
 	case types.StringType:
 		return types.StringType
 	}
+	//switch t {
+	//case types.TimestampType:
+	//	return types.IntType
+	//case types.IntType:
+	//	return types.LongType
+	//case types.LongType:
+	//	return types.DoubleType
+	//case types.DoubleType:
+	//	return types.BoolType
+	//case types.BoolType:
+	//	return types.StringType
+	//case types.StringType:
+	//	return types.StringType
+	//}
 
 	return types.StringType
 }
@@ -354,7 +363,7 @@ func estimateColumnType(rawData [][]string, colIndex int) (types.CellDataType, i
 	if parsed {
 		return colType, timestampParseInfo
 	}
-	currentType := types.IntType
+	currentType := types.BoolType
 	isAllEmpty := true
 	var parseInfo interface{}
 	for i := 0; i < len(rawData); i++ {

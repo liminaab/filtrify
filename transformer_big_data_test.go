@@ -61,7 +61,13 @@ func TestBigDataFilter(t *testing.T) {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	changeColumnTypeUnitsSold := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Units Sold":{"targetType":1}}}`,
+	}
 	steps := []*types.TransformationStep{
+		&changeColumnTypeUnitsSold,
 		{
 			Operator:      types.Filter,
 			Configuration: string(filterConfText),
@@ -186,6 +192,15 @@ func TestBigDataAverageAggregate(t *testing.T) {
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Units Sold":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(plainData, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	conf := &operator.AggregateConfiguration{
 		Select: []*operator.AggregateSelect{
 			{
@@ -205,7 +220,7 @@ func TestBigDataAverageAggregate(t *testing.T) {
 	}
 
 	start = time.Now()
-	aggregatedData, err := filtrify.Transform(plainData, []*types.TransformationStep{step}, nil)
+	aggregatedData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{step}, nil)
 	assert.NoError(t, err, "new aggregation column operation failed")
 	opTime := time.Since(start)
 	t.Log(fmt.Printf("Average took %s", opTime))
@@ -220,8 +235,8 @@ func TestBigDataAverageAggregate(t *testing.T) {
 	batchCheckAggFields(t, nil, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{true})
 	batchCheckAggFields(t, nil, aggregatedData, fieldsToCheck, []string{"Region"}, []interface{}{nil})
 
-	expectedFalseAggMarket := calculateAVGValueForAgg(t, plainData, "Units Sold", []string{"Region"}, []interface{}{"Middle East and North Africa"})
-	expectedTrueAggMarket := calculateAVGValueForAgg(t, plainData, "Units Sold", []string{"Region"}, []interface{}{"Central America and the Caribbean"})
+	expectedFalseAggMarket := calculateAVGValueForAgg(t, plainDataConverted, "Units Sold", []string{"Region"}, []interface{}{"Middle East and North Africa"})
+	expectedTrueAggMarket := calculateAVGValueForAgg(t, plainDataConverted, "Units Sold", []string{"Region"}, []interface{}{"Central America and the Caribbean"})
 
 	CheckAggrResults(t, aggregatedData, []string{"Region"}, []interface{}{"Middle East and North Africa"}, map[string]interface{}{"Units Sold": expectedFalseAggMarket})
 	CheckAggrResults(t, aggregatedData, []string{"Region"}, []interface{}{"Central America and the Caribbean"}, map[string]interface{}{"Units Sold": expectedTrueAggMarket})

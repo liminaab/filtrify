@@ -20,13 +20,13 @@ func TestSimpleConversionWithoutHeader(t *testing.T) {
 	assert.True(t, len(firstRow.Columns) == 4, "invalid column count")
 
 	intCell := firstRow.Columns[0]
-	assert.True(t, intCell.CellValue.DataType == types.IntType, "invalid conversion type should be int")
+	assert.True(t, intCell.CellValue.DataType == types.StringType, "invalid conversion type should be string")
 	textCell := firstRow.Columns[1]
 	assert.True(t, textCell.CellValue.DataType == types.StringType, "invalid conversion type should be string")
 	timeCell := firstRow.Columns[2]
 	assert.True(t, timeCell.CellValue.DataType == types.TimestampType, "invalid conversion type should be timestamp")
-	doubleCell := firstRow.Columns[3]
-	assert.True(t, doubleCell.CellValue.DataType == types.DoubleType, "invalid conversion type should be double")
+	stringCell := firstRow.Columns[3]
+	assert.True(t, stringCell.CellValue.DataType == types.StringType, "invalid conversion type should be string")
 }
 
 func TestDateConversion(t *testing.T) {
@@ -104,11 +104,11 @@ func TestConversionUAT1(t *testing.T) {
 		assert.Equal(t, "Instrument Type", cols[1].ColumnName, "invalid column name on conversion")
 		assert.Equal(t, types.StringType, cols[1].CellValue.DataType, "invalid column type on conversion. expected string but it is %s. val: %s", cols[1].CellValue.DataType.String(), test.CellDataToString(cols[1].CellValue))
 		assert.Equal(t, "Quantity", cols[2].ColumnName, "invalid column name on conversion")
-		assert.Equal(t, types.DoubleType, cols[2].CellValue.DataType, "invalid column type on conversion. expected double but it is %s. val: %s", cols[2].CellValue.DataType.String(), test.CellDataToString(cols[2].CellValue))
+		assert.Equal(t, types.StringType, cols[2].CellValue.DataType, "invalid column type on conversion. expected string but it is %s. val: %s", cols[2].CellValue.DataType.String(), test.CellDataToString(cols[2].CellValue))
 		assert.Equal(t, "Market Value (Base)", cols[3].ColumnName, "invalid column name on conversion")
-		assert.Equal(t, types.DoubleType, cols[3].CellValue.DataType, "invalid column type on conversion. expected double but it is %s. val: %s", cols[3].CellValue.DataType.String(), test.CellDataToString(cols[3].CellValue))
+		assert.Equal(t, types.StringType, cols[3].CellValue.DataType, "invalid column type on conversion. expected string but it is %s. val: %s", cols[3].CellValue.DataType.String(), test.CellDataToString(cols[3].CellValue))
 		assert.Equal(t, "Exposure %", cols[4].ColumnName, "invalid column name on conversion")
-		assert.Equal(t, types.DoubleType, cols[4].CellValue.DataType, "invalid column type on conversion. expected string but it is %s. val: %s", cols[4].CellValue.DataType.String(), test.CellDataToString(cols[4].CellValue))
+		assert.Equal(t, types.StringType, cols[4].CellValue.DataType, "invalid column type on conversion. expected string but it is %s. val: %s", cols[4].CellValue.DataType.String(), test.CellDataToString(cols[4].CellValue))
 		assert.Equal(t, "Maturity Date", cols[5].ColumnName, "invalid column name on conversion")
 		if cols[5].CellValue.DataType != types.NilType {
 			assert.Equal(t, types.DateType, cols[5].CellValue.DataType, "invalid column type on conversion. expected timestamp but it is %s. val: %s", cols[5].CellValue.DataType.String(), test.CellDataToString(cols[5].CellValue))

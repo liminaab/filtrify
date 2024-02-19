@@ -45,7 +45,12 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"balance":{"targetType":1}}}`,
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType, filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -63,6 +68,14 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 
 func TestHandleNegativeWhereCriteria(t *testing.T) {
 	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -84,7 +97,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -102,6 +115,14 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 
 func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Market Value (Base)":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -123,7 +144,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -141,6 +162,14 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 
 func TestHandlePercentageWhereCriteria(t *testing.T) {
 	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Exposure %":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -162,7 +191,7 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 	}
 	filterStep1.Configuration = string(b1)
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{filterStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{filterStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
