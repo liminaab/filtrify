@@ -28,6 +28,15 @@ func TestChangeColumnType(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(data, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	conf := &operator.ChangeColumnTypeConfiguration{
 		Columns: map[string]operator.ConversionConfiguration{
 			"Quantity": {
@@ -44,13 +53,13 @@ func TestChangeColumnType(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	firstCol := test.GetColumn(data.Rows[0], "Quantity")
+	firstCol := test.GetColumn(plainDataConverted.Rows[0], "Quantity")
 	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "Quantity"))
 	if firstCol.CellValue.DataType != types.DoubleType {
 		assert.Fail(t, "Type conversion init failed")
 	}
 
-	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	sortedData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}

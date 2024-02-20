@@ -52,7 +52,36 @@ func TestDateConversion(t *testing.T) {
 		row := result.Rows[i]
 		assert.Equal(1, len(row.Columns))
 		col := row.Columns[0]
+		// those rows can't be parsed as date - because it is not clear which is month and which is day
+		assert.Equal(types.StringType, col.CellValue.DataType)
+	}
+}
+
+var sampleDateTable2 = [][]string{
+	{"Date"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+	{"02/13/2024"},
+}
+
+func TestDateConversion2(t *testing.T) {
+	assert := assert2.New(t)
+	result, err := ConvertToTypedData(sampleDateTable2, true, true, nil)
+	assert.Nil(err)
+	assert.Equal(len(sampleDateTable)-1, len(result.Rows))
+	for i := 0; i < len(sampleDateTable)-1; i++ {
+		row := result.Rows[i]
+		assert.Equal(1, len(row.Columns))
+		col := row.Columns[0]
 		assert.Equal(types.DateType, col.CellValue.DataType)
-		assert.Equal("02/08/2024", col.CellValue.TimestampValue.Format("02/01/2006"))
+		assert.Equal("02/13/2024", col.CellValue.TimestampValue.Format("01/02/2006"))
 	}
 }

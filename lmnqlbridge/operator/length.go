@@ -18,6 +18,12 @@ func (m *Length) Validate(n *expr.FuncNode) (expr.EvaluatorFunc, error) {
 }
 
 func lengthEval(ctx expr.EvalContext, vals []value.Value) (value.Value, bool) {
+	if vals[0].Nil() {
+		return value.NewIntValue(0), true
+	}
+	if vals[0].Type() == value.NilType {
+		return value.NewIntValue(0), true
+	}
 	val, ok := value.ValueToString(vals[0])
 	if !ok {
 		return value.NewIntValue(0), false

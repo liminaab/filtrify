@@ -49,6 +49,15 @@ func TestMathematicalNewColumn(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	s1 := "`Quantity`+1 AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
@@ -56,7 +65,7 @@ func TestMathematicalNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -79,6 +88,19 @@ func TestCombiningNewColumn(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	changeColumnType2 := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Exposure %":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType, &changeColumnType2}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	s1 := "`Quantity`*`Exposure %` AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
@@ -86,7 +108,7 @@ func TestCombiningNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
 	}
@@ -191,7 +213,14 @@ func TestFirstNewColumn(t *testing.T) {
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
-
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Market Value (Base)":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
 	s1 := "first(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
@@ -199,7 +228,7 @@ func TestFirstNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -219,6 +248,15 @@ func TestLastNewColumn(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Market Value (Base)":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	s1 := "last(`Market Value (Base)`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
@@ -226,7 +264,7 @@ func TestLastNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -910,6 +948,15 @@ func TestNewColumnDoubleMedianOperator(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	s1 := "MEDIAN(`Quantity`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
@@ -917,7 +964,7 @@ func TestNewColumnDoubleMedianOperator(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "newColumn operation failed")
 	}
@@ -938,6 +985,15 @@ func TestNewColumnDoubleWithNilMedianOperator(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	s1 := "MEDIAN(`Quantity`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
@@ -945,7 +1001,7 @@ func TestNewColumnDoubleWithNilMedianOperator(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "newColumn operation failed")
 	}
@@ -1084,6 +1140,14 @@ func TestNewColumnLongMedianOperator(t *testing.T) {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"somedata":{"targetType":1}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
 	s1 := "MEDIAN(`somedata`) AS `Test Column`"
 
 	newColStep1 := &types.TransformationStep{
@@ -1091,7 +1155,7 @@ func TestNewColumnLongMedianOperator(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
-	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "newColumn operation failed")
 	}

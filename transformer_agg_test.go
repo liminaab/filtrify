@@ -263,6 +263,15 @@ func TestAverageAggregate(t *testing.T) {
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
+
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Market Value (Base)":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(plainData, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
 	conf := &operator.AggregateConfiguration{
 		Select: []*operator.AggregateSelect{
 			{
@@ -306,9 +315,9 @@ func TestAverageAggregate(t *testing.T) {
 	batchCheckAggFields(t, expectedTrueFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{true})
 	batchCheckAggFields(t, expectedNilFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
 
-	expectedFalseAggMarket := calculateAVGValueForAgg(t, plainData, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{false})
-	expectedTrueAggMarket := calculateAVGValueForAgg(t, plainData, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{true})
-	expectedNilAggMarket := calculateAVGValueForAgg(t, plainData, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{nil})
+	expectedFalseAggMarket := calculateAVGValueForAgg(t, plainDataConverted, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{false})
+	expectedTrueAggMarket := calculateAVGValueForAgg(t, plainDataConverted, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{true})
+	expectedNilAggMarket := calculateAVGValueForAgg(t, plainDataConverted, "Market Value (Base)", []string{"EU Sanction listed"}, []interface{}{nil})
 
 	CheckAggrResults(t, aggregatedData, []string{"EU Sanction listed"}, []interface{}{false}, map[string]interface{}{"Market Value (Base)": expectedFalseAggMarket})
 	CheckAggrResults(t, aggregatedData, []string{"EU Sanction listed"}, []interface{}{true}, map[string]interface{}{"Market Value (Base)": expectedTrueAggMarket})
@@ -323,6 +332,20 @@ func TestWeightedAverageAggregate(t *testing.T) {
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
+
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Market Value (Base)":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	changeColumnType2 := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(plainData, []*types.TransformationStep{&changeColumnType, &changeColumnType2}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
 	conf := &operator.AggregateConfiguration{
 		Select: []*operator.AggregateSelect{
 			{
@@ -341,7 +364,7 @@ func TestWeightedAverageAggregate(t *testing.T) {
 		Configuration: string(b1),
 	}
 
-	aggregatedData, err := filtrify.Transform(plainData, []*types.TransformationStep{step}, nil)
+	aggregatedData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{step}, nil)
 	if err != nil {
 		assert.NoError(t, err, "new aggregation column operation failed")
 	}
@@ -367,9 +390,9 @@ func TestWeightedAverageAggregate(t *testing.T) {
 	batchCheckAggFields(t, expectedNilFieldOutputs, aggregatedData, fieldsToCheck, []string{"EU Sanction listed"}, []interface{}{nil})
 
 	weightedFields := []string{"Market Value (Base)", "Quantity"}
-	expectedFalseAggMarket := calculateWeightedAVGValueForAgg(t, plainData, weightedFields, []string{"EU Sanction listed"}, []interface{}{false})
-	expectedTrueAggMarket := calculateWeightedAVGValueForAgg(t, plainData, weightedFields, []string{"EU Sanction listed"}, []interface{}{true})
-	expectedNilAggMarket := calculateWeightedAVGValueForAgg(t, plainData, weightedFields, []string{"EU Sanction listed"}, []interface{}{nil})
+	expectedFalseAggMarket := calculateWeightedAVGValueForAgg(t, plainDataConverted, weightedFields, []string{"EU Sanction listed"}, []interface{}{false})
+	expectedTrueAggMarket := calculateWeightedAVGValueForAgg(t, plainDataConverted, weightedFields, []string{"EU Sanction listed"}, []interface{}{true})
+	expectedNilAggMarket := calculateWeightedAVGValueForAgg(t, plainDataConverted, weightedFields, []string{"EU Sanction listed"}, []interface{}{nil})
 
 	CheckAggrResults(t, aggregatedData, []string{"EU Sanction listed"}, []interface{}{false}, map[string]interface{}{"Market Value (Base)": expectedFalseAggMarket})
 	CheckAggrResults(t, aggregatedData, []string{"EU Sanction listed"}, []interface{}{true}, map[string]interface{}{"Market Value (Base)": expectedTrueAggMarket})
