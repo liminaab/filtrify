@@ -22,6 +22,68 @@ var TestData [][]string = [][]string{
 	{"USD Cash", "Cash Account", "5,000,000.00", "5000000.0", "20%", "", "", "2020-01-01 12:00:00"},
 }
 
+var TestData2 [][]string = [][]string{
+	{"a", "b"},
+	{"1", "2"},
+	{"3", "4"},
+	{"5", "6"},
+	{"7", "8"},
+	{"9", "test"},
+}
+
+func TestSkipConversionIfFails(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(TestData2, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	tr := true
+	conf := &operator.ChangeColumnTypeConfiguration{
+		Columns: map[string]operator.ConversionConfiguration{
+			"a": {
+				TargetType: types.LongType,
+			},
+			"b": {
+				TargetType:            types.LongType,
+				SkipConversionIfFails: &tr,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: string(b1),
+	}
+
+	firstCol := test.GetColumn(data.Rows[0], "a")
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "Quantity"))
+	if firstCol.CellValue.DataType != types.StringType {
+		assert.Fail(t, "Type conversion init failed")
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "convert column operation failed")
+	}
+
+	for _, row := range sortedData.Rows {
+		firstCol = test.GetColumn(row, "b")
+		assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "b"))
+		if firstCol.CellValue.DataType != types.StringType {
+			assert.Fail(t, "Type conversion failed")
+		}
+		firstCol = test.GetColumn(row, "a")
+		assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "b"))
+		if firstCol.CellValue.DataType != types.LongType {
+			assert.Fail(t, "Type conversion failed")
+		}
+	}
+
+}
+
 func TestChangeColumnType(t *testing.T) {
 	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
 	if err != nil {

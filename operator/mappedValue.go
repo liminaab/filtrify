@@ -44,6 +44,26 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, o
 		if err != nil {
 			return nil, err
 		}
+		// we are no longer auto parsing numbers - so let's try to convert Value to a number
+		changeColumnType := &ChangeColumnTypeOperator{}
+		tr := true
+		config := ChangeColumnTypeConfiguration{
+			Columns: map[string]ConversionConfiguration{
+				"Value": {
+					TargetType:            types.LongType,
+					SkipConversionIfFails: &tr,
+				},
+			},
+		}
+		textConf, err := json.Marshal(config)
+		if err != nil {
+			return nil, err
+		}
+
+		convertedDataset, err := changeColumnType.Transform(tds, string(textConf), nil)
+		if err == nil {
+			tds = convertedDataset
+		}
 		typedConfig.TargetDataset = RandStringBytesMaskImprSrcUnsafe(10)
 		otherSets[typedConfig.TargetDataset] = tds
 	} else {
