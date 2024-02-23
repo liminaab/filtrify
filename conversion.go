@@ -5,6 +5,6 @@ import (
 	"github.com/liminaab/filtrify/types"
 )
 
-func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool) (*types.DataSet, error) {
-	return conversion.ConvertToTypedData(rawData, firstLineIsHeader, convertDataTypes, nil)
+func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool, convertNumbers bool) (*types.DataSet, error) {
+	return conversion.ConvertToTypedData(rawData, firstLineIsHeader, convertDataTypes, nil, convertNumbers)
 }

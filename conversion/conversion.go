@@ -234,8 +234,24 @@ func ParseToCell(data string, enforceType types.CellDataType, parseInfo interfac
 // float
 // bool
 // string
-func getNextTypeToParse(t types.CellDataType) types.CellDataType {
+func getNextTypeToParse(t types.CellDataType, convertNumbers bool) types.CellDataType {
 	// we are no more auto parsing number types
+	if convertNumbers {
+		switch t {
+		case types.TimestampType:
+			return types.IntType
+		case types.IntType:
+			return types.LongType
+		case types.LongType:
+			return types.DoubleType
+		case types.DoubleType:
+			return types.BoolType
+		case types.BoolType:
+			return types.StringType
+		case types.StringType:
+			return types.StringType
+		}
+	}
 	switch t {
 	case types.TimestampType:
 		return types.BoolType
@@ -244,21 +260,6 @@ func getNextTypeToParse(t types.CellDataType) types.CellDataType {
 	case types.StringType:
 		return types.StringType
 	}
-	//switch t {
-	//case types.TimestampType:
-	//	return types.IntType
-	//case types.IntType:
-	//	return types.LongType
-	//case types.LongType:
-	//	return types.DoubleType
-	//case types.DoubleType:
-	//	return types.BoolType
-	//case types.BoolType:
-	//	return types.StringType
-	//case types.StringType:
-	//	return types.StringType
-	//}
-
 	return types.StringType
 }
 
@@ -358,12 +359,15 @@ func checkIfTimestamp(rawData [][]string, colIndex int) (bool, types.CellDataTyp
 	return true, currentType, parseInfo
 }
 
-func estimateColumnType(rawData [][]string, colIndex int) (types.CellDataType, interface{}) {
+func estimateColumnType(rawData [][]string, colIndex int, convertNumbers bool) (types.CellDataType, interface{}) {
 	parsed, colType, timestampParseInfo := checkIfTimestamp(rawData, colIndex)
 	if parsed {
 		return colType, timestampParseInfo
 	}
 	currentType := types.BoolType
+	if convertNumbers {
+		currentType = types.IntType
+	}
 	isAllEmpty := true
 	var parseInfo interface{}
 	for i := 0; i < len(rawData); i++ {
@@ -375,7 +379,7 @@ func estimateColumnType(rawData [][]string, colIndex int) (types.CellDataType, i
 		isAllEmpty = false
 		_, info, err := ParseToCell(cellData, currentType, parseInfo)
 		if err != nil {
-			currentType = getNextTypeToParse(currentType)
+			currentType = getNextTypeToParse(currentType, convertNumbers)
 			i = -1
 		}
 		parseInfo = info
@@ -386,7 +390,7 @@ func estimateColumnType(rawData [][]string, colIndex int) (types.CellDataType, i
 	return currentType, parseInfo
 }
 
-func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool, conversionMap ConversionMap) (*types.DataSet, error) {
+func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataTypes bool, conversionMap ConversionMap, convertNumbers bool) (*types.DataSet, error) {
 	// let's try
 	data, headers, err := extractHeaders(rawData, firstLineIsHeader)
 	if err != nil {
@@ -405,7 +409,7 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 		}
 
 		if shouldConvert {
-			cellType, parseInfo := estimateColumnType(data, i)
+			cellType, parseInfo := estimateColumnType(data, i, convertNumbers)
 			cellTypes[i] = types.CellParsingInfo{
 				DataType: cellType,
 				Info:     parseInfo,
