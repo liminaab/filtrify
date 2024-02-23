@@ -40,7 +40,7 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSet, config string, o
 		typedConfig.TargetData = append([][]string{{"Key", "Value"}}, typedConfig.TargetData...)
 		// let's make sure key is always text type
 		conversionMap := conversion.ConversionMap{"Key": false}
-		tds, err = conversion.ConvertToTypedData(typedConfig.TargetData, true, true, conversionMap)
+		tds, err = conversion.ConvertToTypedData(typedConfig.TargetData, true, true, conversionMap, true)
 		if err != nil {
 			return nil, err
 		}
