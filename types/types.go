@@ -254,6 +254,24 @@ func NewTimestampDataColumn(val *int64, name string) *DataColumn {
 	}
 }
 
+func NewDateDataColumn(val *int64, name string) *DataColumn {
+	if val == nil {
+		return &DataColumn{
+			ColumnName: name,
+			CellValue: &CellValue{
+				DataType: NilType,
+			},
+		}
+	}
+	return &DataColumn{
+		ColumnName: name,
+		CellValue: &CellValue{
+			DataType:       DateType,
+			TimestampValue: time.Unix(*val, 0),
+		},
+	}
+}
+
 func NewStringDataColumn(val *string, name string) *DataColumn {
 	if val == nil {
 		return &DataColumn{
