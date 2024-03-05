@@ -13,12 +13,12 @@ import (
 )
 
 func TestBasicMappedValue(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UATMappedValueTestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UATMappedValueTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	mappedSet, err := filtrify.ConvertToTypedData(test.UATMappedValueMapTestDataFormatted, true, true)
+	mappedSet, err := filtrify.ConvertToTypedData(test.UATMappedValueMapTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -80,12 +80,12 @@ func TestBasicMappedValue(t *testing.T) {
 }
 
 func TestEmbeddedDataMappedValue(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UATMappedValueTestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UATMappedValueTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	mappedSet, err := filtrify.ConvertToTypedData(test.UATMappedValueMapTestDataFormatted, true, true)
+	mappedSet, err := filtrify.ConvertToTypedData(test.UATMappedValueMapTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}

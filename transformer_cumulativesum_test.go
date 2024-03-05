@@ -11,7 +11,7 @@ import (
 )
 
 func TestBasicCumulativeSum(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
