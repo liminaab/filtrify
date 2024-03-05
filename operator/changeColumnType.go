@@ -153,6 +153,9 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config C
 			DataType: types.NilType,
 		},
 	}
+	if col.CellValue.DataType == types.NilType {
+		return nilColumn, nil
+	}
 	targetMap, found := conversionMap[col.CellValue.DataType]
 	if !found {
 		return nilColumn, errors.New("invalid source type")
