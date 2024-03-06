@@ -137,7 +137,7 @@ func parseTimeData(data string, parseInfo interface{}) (*time.Time, types.CellDa
 		// we already have parse info
 		// let's try to parse it
 		layout, ok := parseInfo.(string)
-		if ok {
+		if ok && len(layout) > 0 {
 			t, err := time.Parse(layout, data)
 			if err != nil {
 				return nil, types.NilType, "", err
