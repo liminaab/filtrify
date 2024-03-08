@@ -735,7 +735,7 @@ func commonStringToTime(input string, config ConversionConfiguration, defaultFor
 		fmt.Printf("error parsing time %v with format %v", input, format)
 		return time.Time{}, errors.New("conversion failed")
 	}
-	if len(config.StringDate.Timezone) > 0 {
+	if config.StringDate != nil && len(config.StringDate.Timezone) > 0 {
 		l, err := time.LoadLocation(config.StringDate.Timezone)
 		if err != nil {
 			fmt.Print("Unable to load timezone: " + config.StringDate.Timezone)
