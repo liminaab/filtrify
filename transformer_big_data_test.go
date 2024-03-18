@@ -44,7 +44,7 @@ func TestBigDataFilter(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
@@ -96,7 +96,7 @@ func TestBigDataSort(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
@@ -159,7 +159,7 @@ func TestBigDataAggAvgNewColumn(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")
@@ -187,7 +187,7 @@ func TestBigDataAverageAggregate(t *testing.T) {
 	}
 	plainCSV := GetBigSalesData(t)
 	start := time.Now()
-	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true)
+	plainData, err := filtrify.ConvertToTypedData(plainCSV, true, true, true)
 	conversionTime := time.Since(start)
 	t.Log(fmt.Printf("Conversion took %s", conversionTime))
 	assert.NoError(t, err, "basic data conversion failed")

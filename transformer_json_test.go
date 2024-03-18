@@ -13,7 +13,7 @@ import (
 )
 
 func TestJSON(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -53,7 +53,7 @@ func TestJSON(t *testing.T) {
 }
 
 func TestJSONReplacesExistingColumns(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}

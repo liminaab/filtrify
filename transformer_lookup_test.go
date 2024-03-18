@@ -171,12 +171,12 @@ func verifyJoin(t *testing.T, left *types.DataSet, right *types.DataSet, joined 
 }
 
 func TestBasicLookup(t *testing.T) {
-	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -215,12 +215,12 @@ func TestBasicLookup(t *testing.T) {
 }
 
 func TestBasicLookupWithSelectedColumns(t *testing.T) {
-	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -260,12 +260,12 @@ func TestBasicLookupWithSelectedColumns(t *testing.T) {
 }
 
 func TestMultiMatchLookup(t *testing.T) {
-	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -305,12 +305,12 @@ func TestMultiMatchLookup(t *testing.T) {
 }
 
 func TestMultiConditionsLookup(t *testing.T) {
-	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true)
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
 
-	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true)
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}

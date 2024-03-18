@@ -11,7 +11,7 @@ import (
 )
 
 func TestFilterInvalidColumn2(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}

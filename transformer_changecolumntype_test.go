@@ -32,7 +32,7 @@ var TestData2 [][]string = [][]string{
 }
 
 func TestSkipConversionIfFails(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(TestData2, true, true)
+	data, err := filtrify.ConvertToTypedData(TestData2, true, true, false)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -85,7 +85,7 @@ func TestSkipConversionIfFails(t *testing.T) {
 }
 
 func TestChangeColumnType(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -134,7 +134,7 @@ func TestChangeColumnType(t *testing.T) {
 }
 
 func TestChangeColumnType2(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(TestData, true, true)
+	data, err := filtrify.ConvertToTypedData(TestData, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}

@@ -23,7 +23,7 @@ var basicData [][]string = [][]string{
 }
 
 func TestBasicSingleWhereCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(basicData, true, true)
+	ds, err := filtrify.ConvertToTypedData(basicData, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -67,7 +67,7 @@ func TestBasicSingleWhereCriteria(t *testing.T) {
 }
 
 func TestHandleNegativeWhereCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -114,7 +114,7 @@ func TestHandleNegativeWhereCriteria(t *testing.T) {
 }
 
 func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -161,7 +161,7 @@ func TestHandleNumericalPrecisionWhereCriteria(t *testing.T) {
 }
 
 func TestHandlePercentageWhereCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -200,7 +200,7 @@ func TestHandlePercentageWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListWhereCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -239,7 +239,7 @@ func TestHandleListWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListAndNestedWhereCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -290,7 +290,7 @@ func TestHandleListAndNestedWhereCriteria(t *testing.T) {
 }
 
 func TestHandleListAndNested2WhereCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -365,7 +365,7 @@ func TestHandleListAndNested2WhereCriteria(t *testing.T) {
 }
 
 func TestIsNullCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -409,7 +409,7 @@ func TestIsNullCriteria(t *testing.T) {
 }
 
 func TestIsNotNullCriteria(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -453,7 +453,7 @@ func TestIsNotNullCriteria(t *testing.T) {
 }
 
 func TestFilterInvalidColumn(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -486,7 +486,7 @@ func TestFilterInvalidColumn(t *testing.T) {
 }
 
 func TestFilterDateType(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted2, true, true)
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted2, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -521,7 +521,7 @@ func TestFilterDateType(t *testing.T) {
 }
 
 func TestFilterTimeType(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted2, true, true)
+	plainData, err := filtrify.ConvertToTypedData(SEQTestDataFormatted2, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
