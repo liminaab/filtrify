@@ -13,7 +13,7 @@ import (
 )
 
 func TestBasicNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -44,7 +44,7 @@ func TestBasicNewColumn(t *testing.T) {
 }
 
 func TestMathematicalNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -83,7 +83,7 @@ func TestMathematicalNewColumn(t *testing.T) {
 }
 
 func TestCombiningNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -129,7 +129,7 @@ func TestCombiningNewColumn(t *testing.T) {
 }
 
 func TestAggSumNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -155,7 +155,7 @@ func TestAggSumNewColumn(t *testing.T) {
 }
 
 func TestAggAvgNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -182,7 +182,7 @@ func TestAggAvgNewColumn(t *testing.T) {
 }
 
 func TestAggWeightedAvgNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -209,7 +209,7 @@ func TestAggWeightedAvgNewColumn(t *testing.T) {
 }
 
 func TestFirstNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -243,7 +243,7 @@ func TestFirstNewColumn(t *testing.T) {
 }
 
 func TestLastNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -279,7 +279,7 @@ func TestLastNewColumn(t *testing.T) {
 }
 
 func TestMaxColNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -306,7 +306,7 @@ func TestMaxColNewColumn(t *testing.T) {
 }
 
 func TestMinColNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -333,7 +333,7 @@ func TestMinColNewColumn(t *testing.T) {
 }
 
 func TestManualStringConcatNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -367,7 +367,7 @@ func TestManualStringConcatNewColumn(t *testing.T) {
 }
 
 func TestManualStringNonTextConcatNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -409,7 +409,7 @@ func TestManualStringNonTextConcatNewColumn(t *testing.T) {
 }
 
 func TestLeftNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -443,7 +443,7 @@ func TestLeftNewColumn(t *testing.T) {
 }
 
 func TestRightNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -477,7 +477,7 @@ func TestRightNewColumn(t *testing.T) {
 }
 
 func TestLeftRightNestedNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -515,7 +515,7 @@ func TestLeftRightNestedNewColumn(t *testing.T) {
 }
 
 func TestSplitNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -545,7 +545,7 @@ func TestSplitNewColumn(t *testing.T) {
 }
 
 func TestSimpleIFNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -578,7 +578,7 @@ func TestSimpleIFNewColumn(t *testing.T) {
 }
 
 func TestIFWithConditionNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -619,7 +619,7 @@ func TestIFWithConditionNewColumn(t *testing.T) {
 }
 
 func TestIFWithMultipleConditionsNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -665,7 +665,7 @@ func TestIFWithMultipleConditionsNewColumn(t *testing.T) {
 }
 
 func TestIFContainsNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -699,7 +699,7 @@ func TestIFContainsNewColumn(t *testing.T) {
 }
 
 func TestIFNotContainsNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -733,7 +733,7 @@ func TestIFNotContainsNewColumn(t *testing.T) {
 }
 
 func TestNestedIFNewColumn(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -769,7 +769,7 @@ func TestNestedIFNewColumn(t *testing.T) {
 }
 
 func TestNewColumnPlusOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -798,7 +798,7 @@ func TestNewColumnPlusOperator(t *testing.T) {
 }
 
 func TestNewColumnTrimOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -826,7 +826,7 @@ func TestNewColumnTrimOperator(t *testing.T) {
 }
 
 func TestNewColumnLengthOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -855,7 +855,7 @@ func TestNewColumnLengthOperator(t *testing.T) {
 }
 
 func TestNewColumnAndOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -884,7 +884,7 @@ func TestNewColumnAndOperator(t *testing.T) {
 }
 
 func TestNewColumnOROperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -913,7 +913,7 @@ func TestNewColumnOROperator(t *testing.T) {
 }
 
 func TestNewColumnPlusDaysOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -943,7 +943,7 @@ func TestNewColumnPlusDaysOperator(t *testing.T) {
 }
 
 func TestNewColumnDoubleMedianOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT2TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -980,7 +980,7 @@ func TestNewColumnDoubleMedianOperator(t *testing.T) {
 }
 
 func TestNewColumnDoubleWithNilMedianOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -1017,7 +1017,7 @@ func TestNewColumnDoubleWithNilMedianOperator(t *testing.T) {
 }
 
 func TestNewColumnStringMedianOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -1045,7 +1045,7 @@ func TestNewColumnStringMedianOperator(t *testing.T) {
 }
 
 func TestNewColumnTimeMedianOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -1075,7 +1075,7 @@ func TestNewColumnTimeMedianOperator(t *testing.T) {
 }
 
 func TestNewColumnDateMedianOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -1105,7 +1105,7 @@ func TestNewColumnDateMedianOperator(t *testing.T) {
 }
 
 func TestNewColumnTimeOnlyMedianOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -1135,7 +1135,7 @@ func TestNewColumnTimeOnlyMedianOperator(t *testing.T) {
 }
 
 func TestNewColumnLongMedianOperator(t *testing.T) {
-	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true)
+	ds, err := filtrify.ConvertToTypedData(test.UAT3TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
