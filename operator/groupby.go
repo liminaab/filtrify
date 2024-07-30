@@ -10,7 +10,7 @@ import (
 type GroupByOperator struct {
 }
 
-const groupLevelColName = "Group Level"
+const GroupLevelColName = "Group Level"
 
 type GroupByConfiguration struct {
 	Select  []*AggregateSelect `json:"select"`
@@ -20,7 +20,7 @@ type GroupByConfiguration struct {
 func (t *GroupByOperator) addGroupLevel(data *types.DataSet, level int32) {
 	for _, row := range data.Rows {
 		levelColumn := &types.DataColumn{
-			ColumnName: groupLevelColName,
+			ColumnName: GroupLevelColName,
 			CellValue: &types.CellValue{
 				DataType: types.IntType,
 				IntValue: level,
@@ -141,13 +141,13 @@ func (t *GroupByOperator) mergeDatasets(to *datasetToMerge, from *datasetToMerge
 		}
 		processedColumns := make(map[string]bool)
 		currentCol := 0
-		groupLevelCol := r.GetColumn(groupLevelColName)
+		groupLevelCol := r.GetColumn(GroupLevelColName)
 		if groupLevelCol == nil {
 			return nil
 		}
 		colOrderedDataSet.Rows[i].Columns[currentCol] = groupLevelCol
 		currentCol++
-		processedColumns[groupLevelColName] = true
+		processedColumns[GroupLevelColName] = true
 		for _, c := range from.GroupedBy {
 			theCol := r.GetColumn(c)
 			if theCol == nil {
