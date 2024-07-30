@@ -73,19 +73,12 @@ func buildLiminaAggSelectStatement(selectAgg *AggregateSelect, index int) (strin
 	return sb.String(), nil
 }
 
-func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
-	typedConfig, err := t.buildConfiguration(config)
-	if err != nil {
-		return nil, err
-	}
-
+func (t *AggregateOperator) TransformWithConfig(dataset *types.DataSet, typedConfig *AggregateConfiguration, _ map[string]*types.DataSet) (*types.DataSet, error) {
 	headers, columnTypeMap := extractHeadersAndTypeMap(dataset)
-
 	headerSelectMap := make(map[string][]*AggregateSelect)
 	for _, h := range headers {
 		headerSelectMap[h] = nil
 	}
-
 	for _, sel := range typedConfig.Select {
 		if len(sel.Columns) < 1 {
 			return nil, errors.New("invalid configuration")
@@ -96,7 +89,6 @@ func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ m
 		}
 		headerSelectMap[colToRemoveFromUsualSelect] = append(headerSelectMap[colToRemoveFromUsualSelect], sel)
 	}
-
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
 	// we need to remove this column from header if this is already being selected
@@ -150,17 +142,21 @@ func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ m
 			}
 		}
 	}
-	if err != nil {
-		return nil, err
-	}
 	fullQuery := sb.String()
-
 	result, err := executeSQLQuery(fullQuery, dataset, columnTypeMap)
 	if err != nil {
 		return nil, err
 	}
 	result.Headers = buildHeaders(result, dataset)
 	return result, nil
+}
+
+func (t *AggregateOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
+	typedConfig, err := t.buildConfiguration(config)
+	if err != nil {
+		return nil, err
+	}
+	return t.TransformWithConfig(dataset, typedConfig, nil)
 }
 
 func (t *AggregateOperator) buildConfiguration(config string) (*AggregateConfiguration, error) {

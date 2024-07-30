@@ -15,13 +15,7 @@ type RemoveColumnConfiguration struct {
 	Columns []string `json:"columns"`
 }
 
-func (t *RemoveColumnOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
-
-	typedConfig, err := t.buildConfiguration(config)
-	if err != nil {
-		return nil, err
-	}
-
+func (t *RemoveColumnOperator) TransformWithConfig(dataset *types.DataSet, typedConfig *RemoveColumnConfiguration, _ map[string]*types.DataSet) (*types.DataSet, error) {
 	newDataset := types.DataSet{
 		Rows: make([]*types.DataRow, len(dataset.Rows)),
 	}
@@ -47,6 +41,14 @@ func (t *RemoveColumnOperator) Transform(dataset *types.DataSet, config string, 
 
 	newDataset.Headers = buildHeaders(&newDataset, dataset)
 	return &newDataset, nil
+}
+
+func (t *RemoveColumnOperator) Transform(dataset *types.DataSet, config string, _ map[string]*types.DataSet) (*types.DataSet, error) {
+	typedConfig, err := t.buildConfiguration(config)
+	if err != nil {
+		return nil, err
+	}
+	return t.TransformWithConfig(dataset, typedConfig, nil)
 }
 
 func (t *RemoveColumnOperator) buildConfiguration(config string) (*RemoveColumnConfiguration, error) {

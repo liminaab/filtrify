@@ -28,6 +28,7 @@ const (
 	JSON
 	Objectify
 	CumulativeSum
+	GroupBy = 13
 )
 
 func (t TransformationOperatorType) String() string {
@@ -38,6 +39,8 @@ func (t TransformationOperatorType) String() string {
 		return "NewColumn"
 	case Aggregate:
 		return "Aggregate"
+	case GroupBy:
+		return "GroupBy"
 	case Lookup:
 		return "Lookup"
 	case MappedValue:
@@ -157,6 +160,15 @@ func (t *DataSet) ToRawData() [][]string {
 
 type DataRow struct {
 	Columns []*DataColumn
+}
+
+func (t *DataRow) GetColumn(name string) *DataColumn {
+	for _, c := range t.Columns {
+		if c.ColumnName == name {
+			return c
+		}
+	}
+	return nil
 }
 
 type DataColumn struct {
