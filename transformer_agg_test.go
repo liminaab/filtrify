@@ -209,7 +209,7 @@ func batchCheckAggFields(t *testing.T, expectedFieldVals map[string]interface{},
 }
 
 func TestBasicAggregate(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -259,7 +259,7 @@ func TestBasicAggregate(t *testing.T) {
 }
 
 func TestAverageAggregate(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -328,7 +328,7 @@ func TestAverageAggregate(t *testing.T) {
 }
 
 func TestWeightedAverageAggregate(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -403,7 +403,7 @@ func TestWeightedAverageAggregate(t *testing.T) {
 }
 
 func TestMultipleGroupByColumns(t *testing.T) {
-	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true)
+	plainData, err := filtrify.ConvertToTypedData(test.UATAggregateTestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}

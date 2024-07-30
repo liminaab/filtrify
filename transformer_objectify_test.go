@@ -13,7 +13,7 @@ import (
 )
 
 func TestObjectify(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -49,7 +49,7 @@ func TestObjectify(t *testing.T) {
 }
 
 func TestObjectifySilentlySkipsUnknownColumns(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
@@ -83,7 +83,7 @@ func TestObjectifySilentlySkipsUnknownColumns(t *testing.T) {
 }
 
 func TestObjectifyReplacesExistingColumns(t *testing.T) {
-	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true)
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
 		assert.NoError(t, err, "basic data conversion failed")
 	}
