@@ -182,9 +182,12 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config C
 		return nilColumn, nil
 	}
 	convertedData, err := conversionF(sourceData, config)
-	if err != nil && config.SkipConversionIfFails != nil && *config.SkipConversionIfFails {
+	if err != nil && (config.SkipConversionIfFails == nil || *config.SkipConversionIfFails) {
 		return *col, err
 	}
+	//if err != nil && config.SkipConversionIfFails != nil && *config.SkipConversionIfFails {
+	//	return *col, err
+	//}
 	convertedColumn := types.DataColumn{
 		ColumnName: col.ColumnName,
 		CellValue: &types.CellValue{
