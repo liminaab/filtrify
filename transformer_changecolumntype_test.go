@@ -69,19 +69,26 @@ func TestSkipConversionIfFails(t *testing.T) {
 		assert.NoError(t, err, "convert column operation failed")
 	}
 
-	for _, row := range sortedData.Rows {
+	for i, row := range sortedData.Rows {
 		firstCol = test.GetColumn(row, "b")
 		assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "b"))
-		if firstCol.CellValue.DataType != types.StringType {
-			assert.Fail(t, "Type conversion failed")
+		// according to the new code - it should only set last row as nil type
+		if i == len(sortedData.Rows)-1 {
+			if firstCol.CellValue.DataType != types.NilType {
+				assert.Fail(t, "Type conversion failed")
+			}
+		} else {
+			if firstCol.CellValue.DataType != types.LongType {
+				assert.Fail(t, "Type conversion failed")
+			}
 		}
+
 		firstCol = test.GetColumn(row, "a")
 		assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "b"))
 		if firstCol.CellValue.DataType != types.LongType {
 			assert.Fail(t, "Type conversion failed")
 		}
 	}
-
 }
 
 func TestChangeColumnType(t *testing.T) {
