@@ -153,6 +153,9 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *types.DataColumn, config C
 			DataType: types.NilType,
 		},
 	}
+	if col.CellValue.DataType == types.NilType {
+		return nilColumn, nil
+	}
 	targetMap, found := conversionMap[col.CellValue.DataType]
 	if !found {
 		return nilColumn, errors.New("invalid source type")
@@ -212,20 +215,25 @@ func (t *ChangeColumnTypeOperator) TransformInternal(dataset *types.DataSet, typ
 		Rows: make([]*types.DataRow, len(dataset.Rows)),
 	}
 
-	for _, row := range dataset.Rows {
-		for _, col := range row.Columns {
-			newType, found := typedConfig.Columns[col.ColumnName]
-			if !found {
-				continue
-			}
-			_, err := t.convertColumn(col, newType)
-			if err != nil {
-				// this means conversion has failed
-				// let's skip conversion for this column
-				delete(typedConfig.Columns, col.ColumnName)
-			}
-		}
-	}
+	/*
+		Joakim
+		Maybe it's better to convert all cells that work, and then just set to null on the ones where it doesn't work
+		otherwise one invalid row would blow up an entire import/export run and there is no way around it. If only the row with the problem gets a null value instead it's easier to work around
+	*/
+	//for _, row := range dataset.Rows {
+	//	for _, col := range row.Columns {
+	//		newType, found := typedConfig.Columns[col.ColumnName]
+	//		if !found {
+	//			continue
+	//		}
+	//		_, err := t.convertColumn(col, newType)
+	//		if err != nil {
+	//			// this means conversion has failed
+	//			// let's skip conversion for this column
+	//			delete(typedConfig.Columns, col.ColumnName)
+	//		}
+	//	}
+	//}
 
 	for i, row := range dataset.Rows {
 		newRow := types.DataRow{
@@ -237,8 +245,18 @@ func (t *ChangeColumnTypeOperator) TransformInternal(dataset *types.DataSet, typ
 				newRow.Columns = append(newRow.Columns, col)
 				continue
 			}
-			newCol, _ := t.convertColumn(col, newType)
-			newRow.Columns = append(newRow.Columns, &newCol)
+			newCol, err := t.convertColumn(col, newType)
+			if err != nil {
+				// let's push nil here as the value
+				newRow.Columns = append(newRow.Columns, &types.DataColumn{
+					ColumnName: col.ColumnName,
+					CellValue: &types.CellValue{
+						DataType: types.NilType,
+					},
+				})
+			} else {
+				newRow.Columns = append(newRow.Columns, &newCol)
+			}
 		}
 		newDataset.Rows[i] = &newRow
 	}
@@ -732,7 +750,7 @@ func commonStringToTime(input string, config ConversionConfiguration, defaultFor
 		fmt.Printf("error parsing time %v with format %v", input, format)
 		return time.Time{}, errors.New("conversion failed")
 	}
-	if len(config.StringDate.Timezone) > 0 {
+	if config.StringDate != nil && len(config.StringDate.Timezone) > 0 {
 		l, err := time.LoadLocation(config.StringDate.Timezone)
 		if err != nil {
 			fmt.Print("Unable to load timezone: " + config.StringDate.Timezone)

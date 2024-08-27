@@ -137,7 +137,7 @@ func parseTimeData(data string, parseInfo interface{}) (*time.Time, types.CellDa
 		// we already have parse info
 		// let's try to parse it
 		layout, ok := parseInfo.(string)
-		if ok {
+		if ok && len(layout) > 0 {
 			t, err := time.Parse(layout, data)
 			if err != nil {
 				return nil, types.NilType, "", err
@@ -273,6 +273,9 @@ func checkIfTimestamp(rawData [][]string, colIndex int) (bool, types.CellDataTyp
 	var parseInfo interface{}
 	numberOfFormatChanges := 0
 	for i := 0; i < len(rawData); i++ {
+		if len(rawData[i]) <= colIndex {
+			continue
+		}
 		cellData := rawData[i][colIndex]
 		// no need to try this cell
 		if len(cellData) == 0 {
@@ -371,6 +374,9 @@ func estimateColumnType(rawData [][]string, colIndex int, convertNumbers bool) (
 	isAllEmpty := true
 	var parseInfo interface{}
 	for i := 0; i < len(rawData); i++ {
+		if len(rawData[i]) <= colIndex {
+			continue
+		}
 		cellData := rawData[i][colIndex]
 		// no need to try this cell
 		if len(cellData) == 0 {
@@ -441,7 +447,7 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 			typedCols[ci] = &types.DataColumn{}
 			typedCols[ci].ColumnName = headers[ci]
 			var cell *types.CellValue
-			if len(row[ci]) > 0 {
+			if len(row) > ci && len(row[ci]) > 0 {
 				cell, _, err = ParseToCell(row[ci], cellTypes[ci].DataType, cellTypes[ci].Info)
 			} else {
 				cell = &types.CellValue{
