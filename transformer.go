@@ -21,6 +21,8 @@ func getOperator(step *types.TransformationStep) (types.TransformationOperator, 
 		return &operator.NewColumnOperator{}, nil
 	case types.Aggregate:
 		return &operator.AggregateOperator{}, nil
+	case types.GroupBy:
+		return &operator.GroupByOperator{}, nil
 	case types.Lookup:
 		return &operator.LookupOperator{}, nil
 	case types.MappedValue:

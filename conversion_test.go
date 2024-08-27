@@ -69,7 +69,7 @@ func TestTimeOnlyConversion(t *testing.T) {
 		{"12:20:04", "16:45:04", "12:20:04", "12:20:04"},
 		{"12:20:04", "12:20", "12:20:59", "12:20:04"},
 	}
-	ds, err := filtrify.ConvertToTypedData(data, false, true, false)
+	ds, err := filtrify.ConvertToTypedData(data, false, true, true)
 	assert.True(t, err == nil, "no error: %v", err)
 	assert.True(t, len(ds.Rows) == 3, "invalid row count in conversion")
 
