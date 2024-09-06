@@ -625,6 +625,24 @@ func getStringConversionTests() []conversionTest {
 			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DoubleType, StringNumeric: &operator.StringNumericConfiguration{ThousandSeperator: " "}}),
 		},
 		{
+			name:   "string_to_double_4",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "40 132 123,93"}),
+			want:   float64(40132123.93),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DoubleType, StringNumeric: &operator.StringNumericConfiguration{ThousandSeperator: " ", DecimalSymbol: ","}}),
+		},
+		{
+			name:   "string_to_double_5 handle no-break space",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "40 751 620,8"}),
+			want:   float64(40751620.8),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DoubleType, StringNumeric: &operator.StringNumericConfiguration{ThousandSeperator: " ", DecimalSymbol: ","}}),
+		},
+		{
+			name:   "string_to_double_6 should trim spaces",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: " 1,233,333.1 "}),
+			want:   float64(1233333.1),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DoubleType, StringNumeric: &operator.StringNumericConfiguration{ThousandSeperator: ",", DecimalSymbol: "."}}),
+		},
+		{
 			name:   "string_to_bool_1",
 			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "TrUe"}),
 			want:   true,

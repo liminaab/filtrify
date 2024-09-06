@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -776,10 +777,18 @@ func stringToTimeofDay(input interface{}, config ConversionConfiguration) (inter
 	return commonStringToTime(convertedInput, config, "15:04:05")
 }
 
+var removeWhitespaceRegex = regexp.MustCompile(`[\s\x{00A0}]+`)
+
 func commonStringToNumeric(input string, config ConversionConfiguration) (float64, error) {
+	input = strings.TrimSpace(input)
 	if config.StringNumeric != nil && len(config.StringNumeric.ThousandSeperator) > 0 {
 		// let's throw away thousand seperator
-		input = strings.Replace(input, config.StringNumeric.ThousandSeperator, "", -1)
+		// no break space should also be removed if space is the thousand separator
+		if config.StringNumeric.ThousandSeperator == " " {
+			input = removeWhitespaceRegex.ReplaceAllString(input, "")
+		} else {
+			input = strings.Replace(input, config.StringNumeric.ThousandSeperator, "", -1)
+		}
 	}
 	if config.StringNumeric != nil && len(config.StringNumeric.DecimalSymbol) > 0 && config.StringNumeric.DecimalSymbol != "." {
 		input = strings.Replace(input, config.StringNumeric.DecimalSymbol, ".", 1)
