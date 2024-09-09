@@ -16,7 +16,7 @@ var sampleData = [][]string{
 
 func TestBasicConversion(t *testing.T) {
 	assert := assert2.New(t)
-	result, err := ConvertToTypedData(sampleData, true, true, nil)
+	result, err := ConvertToTypedData(sampleData, true, true, nil, true)
 	assert.Nil(err)
 	assert.Equal(4, len(result.Rows))
 	for i := 0; i < 4; i++ {
@@ -45,7 +45,7 @@ var sampleDateTable = [][]string{
 
 func TestDateConversion(t *testing.T) {
 	assert := assert2.New(t)
-	result, err := ConvertToTypedData(sampleDateTable, true, true, nil)
+	result, err := ConvertToTypedData(sampleDateTable, true, true, nil, true)
 	assert.Nil(err)
 	assert.Equal(len(sampleDateTable)-1, len(result.Rows))
 	for i := 0; i < len(sampleDateTable)-1; i++ {
@@ -74,7 +74,7 @@ var sampleDateTable2 = [][]string{
 
 func TestDateConversion2(t *testing.T) {
 	assert := assert2.New(t)
-	result, err := ConvertToTypedData(sampleDateTable2, true, true, nil)
+	result, err := ConvertToTypedData(sampleDateTable2, true, true, nil, true)
 	assert.Nil(err)
 	assert.Equal(len(sampleDateTable)-1, len(result.Rows))
 	for i := 0; i < len(sampleDateTable)-1; i++ {

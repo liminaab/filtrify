@@ -109,7 +109,7 @@ func main() {
 		panic(err)
 	}
 	wallets = append([][]string{walletHeaders}, wallets...)
-	ds, err := filtrify.ConvertToTypedData(wallets, true, true)
+	ds, err := filtrify.ConvertToTypedData(wallets, true, true, true)
 	if err != nil {
 		panic(err.Error())
 	}
