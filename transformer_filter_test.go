@@ -2,6 +2,7 @@ package filtrify_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/liminaab/filtrify"
@@ -553,4 +554,57 @@ func TestFilterTimeType(t *testing.T) {
 	assert.Len(t, newData.Rows, 1, "filtering by time failed")
 	maturityDate := test.GetColumn(newData.Rows[0], "Active From")
 	assert.Equal(t, types.TimeOfDayType, maturityDate.CellValue.DataType, "filtering by time failed")
+}
+
+func TestBasicWhereCriteriaWithRowKey(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(basicData, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	filterStep1 := &types.TransformationStep{
+		Operator: types.Filter,
+	}
+	conf1 := operator.FilterConfiguration{
+		FilterCriteria: &operator.FilterCriteria{
+			Criteria: &operator.Criteria{
+				FieldName: "balance",
+				Operator:  ">",
+				Value:     "300",
+			},
+		},
+	}
+	b1, err := json.Marshal(conf1)
+	if err != nil {
+		panic(err.Error())
+	}
+	filterStep1.Configuration = string(b1)
+
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"balance":{"targetType":1}}}`,
+	}
+
+	for i := range ds.Rows {
+		key := fmt.Sprintf("row-%d", i)
+		ds.Rows[i].Key = &key
+	}
+
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{&changeColumnType, filterStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "filter operation failed")
+		return
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(basicData)-3, "Basic filtering operation failed")
+	for _, r := range newData.Rows {
+		for _, c := range r.Columns {
+			if c.ColumnName != "balance" {
+				continue
+			}
+			assert.Greater(t, c.CellValue.LongValue, int64(300), "balance filtering has failed")
+		}
+
+		assert.NotNil(t, r.Key, "Key assignment failed on filter operator")
+	}
+
 }

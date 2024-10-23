@@ -2,6 +2,7 @@ package filtrify_test
 
 import (
 	"cloud.google.com/go/civil"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -24,6 +25,40 @@ func TestBasicNewColumn(t *testing.T) {
 		Operator:      types.NewColumn,
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
+	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	if err != nil {
+		assert.NoError(t, err, "filter operation failed")
+	}
+	// one header - 2 for filtered out rows
+	assert.Len(t, newData.Rows, len(ds.Rows), "Basic new column operation failed. invalid number of rows")
+
+	for _, r := range newData.Rows {
+		newCol := test.GetColumn(r, "Test Column")
+		assert.NotNil(t, newCol, "test column was not found")
+		instTypeCol := test.GetColumn(r, "Instrument Type")
+		assert.NotNil(t, instTypeCol, "column was not found")
+		assert.Equal(t, instTypeCol.CellValue.DataType, newCol.CellValue.DataType, "new column wasn't copied")
+		assert.Equal(t, instTypeCol.CellValue.StringValue, newCol.CellValue.StringValue, "new column wasn't copied properly")
+	}
+}
+
+func TestBasicNewColumnWithRowKey(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "`Instrument Type` AS `Test Column`"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+
+	for i := range ds.Rows {
+		key := fmt.Sprintf("row-%d", i)
+		ds.Rows[i].Key = &key
+	}
 
 	newData, err := filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
@@ -41,6 +76,9 @@ func TestBasicNewColumn(t *testing.T) {
 		assert.Equal(t, instTypeCol.CellValue.StringValue, newCol.CellValue.StringValue, "new column wasn't copied properly")
 	}
 
+	for _, r := range newData.Rows {
+		assert.NotNil(t, r.Key, "Key assignment failed on newColumn operator")
+	}
 }
 
 func TestMathematicalNewColumn(t *testing.T) {
@@ -65,6 +103,11 @@ func TestMathematicalNewColumn(t *testing.T) {
 		Configuration: "{\"statement\": \"" + s1 + "\"}",
 	}
 
+	for i := range plainDataConverted.Rows {
+		key := fmt.Sprintf("row-%d", i)
+		plainDataConverted.Rows[i].Key = &key
+	}
+
 	newData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{newColStep1}, nil)
 	if err != nil {
 		assert.NoError(t, err, "filter operation failed")
@@ -78,6 +121,10 @@ func TestMathematicalNewColumn(t *testing.T) {
 		assert.NotNil(t, quantityCol, "column was not found")
 		assert.Equal(t, quantityCol.CellValue.DataType, newCol.CellValue.DataType, "new column wasn't copied")
 		assert.Equal(t, quantityCol.CellValue.DoubleValue+1, newCol.CellValue.DoubleValue, "new column wasn't copied properly")
+	}
+
+	for _, r := range newData.Rows {
+		assert.NotNil(t, r.Key, "Key assignment failed on newColumn operator")
 	}
 
 }

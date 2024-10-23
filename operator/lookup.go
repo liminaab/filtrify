@@ -133,6 +133,7 @@ func (t *LookupOperator) mergeRows(orgDataset *types.DataSet, left *types.DataRo
 		targetLength = len(left.Columns) + len(config.SelectedColumns)
 	}
 	newRow := &types.DataRow{
+		Key:     left.Key,
 		Columns: make([]*types.DataColumn, targetLength),
 	}
 	for i, c := range left.Columns {
@@ -173,6 +174,7 @@ func (t *LookupOperator) mergeNilRow(orgDataset *types.DataSet, left *types.Data
 		targetLength = len(left.Columns) + len(config.SelectedColumns)
 	}
 	newRow := &types.DataRow{
+		Key:     left.Key,
 		Columns: make([]*types.DataColumn, targetLength),
 	}
 	for i, c := range left.Columns {

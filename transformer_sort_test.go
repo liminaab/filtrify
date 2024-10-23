@@ -67,6 +67,70 @@ func TestSort(t *testing.T) {
 	}
 }
 
+func TestSortWithRowKey(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: "Market Value (Base)",
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	for i := range data.Rows {
+		key := fmt.Sprintf("row-%d", i)
+		data.Rows[i].Key = &key
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "new aggregation column operation failed")
+	}
+
+	var lastVal *float64 = nil
+	firstCol := test.GetColumn(sortedData.Rows[0], "Market Value (Base)")
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "Market Value (Base)"))
+	if firstCol.CellValue.DataType != types.NilType {
+		lastVal = &firstCol.CellValue.DoubleValue
+	}
+	for _, r := range sortedData.Rows {
+		marketValColumm := test.GetColumn(r, "Market Value (Base)")
+		assert.NotNil(t, marketValColumm, fmt.Sprintf("%s column was not found", "Market Value (Base)"))
+
+		if lastVal == nil && marketValColumm.CellValue.DataType != types.NilType {
+			assert.Fail(t, "descending sort failed. numbers can't appear after nil values")
+		}
+
+		if lastVal != nil {
+			assert.LessOrEqual(t, marketValColumm.CellValue.DoubleValue, *lastVal, "descending order failed")
+		}
+
+		if marketValColumm.CellValue.DataType == types.NilType {
+			lastVal = nil
+		} else if lastVal == nil {
+			lastVal = &marketValColumm.CellValue.DoubleValue
+		}
+
+	}
+
+	for _, r := range sortedData.Rows {
+		assert.NotNil(t, r.Key, "Key assignment failed on sortColumn operator")
+	}
+}
+
 func TestMultipleSort(t *testing.T) {
 	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {

@@ -15,8 +15,9 @@ func New(rows []*types.DataRow) *types.DataSet {
 	}
 }
 
-func DataRow(columns ...*types.DataColumn) *types.DataRow {
+func DataRow(key *string, columns ...*types.DataColumn) *types.DataRow {
 	return &types.DataRow{
+		Key:     key,
 		Columns: columns,
 	}
 }

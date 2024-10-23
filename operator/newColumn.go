@@ -67,6 +67,7 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 	sb.WriteString("SELECT ")
 	// we can't select original columns if there is a group by statement
 	if typedConfig.GroupBy == "" {
+		headers, columnTypeMap, dataset = addKeyRowToDataset(headers, columnTypeMap, dataset)
 		sb.WriteString(buildSelectStatement(headers))
 
 		// we need to execute multiple queries here
@@ -142,6 +143,7 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 					})
 				}
 				dataset.Headers = buildHeaders(dataset, dataset)
+				dataset = removeAndAssignRowKey(dataset)
 				return dataset, nil
 			}
 		}
@@ -155,6 +157,7 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSet, config string, _ m
 	}
 
 	result.Headers = buildHeaders(result, dataset)
+	result = removeAndAssignRowKey(result)
 	return result, nil
 }
 
