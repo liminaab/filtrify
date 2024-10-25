@@ -34,9 +34,11 @@ const (
 
 func addKeyRowToDataset(headers []string, colTypeMap map[string]types.CellDataType, dataset *types.DataSet) ([]string, map[string]types.CellDataType, *types.DataSet) {
 	headers = append(headers, liminaKeyColumn)
-	dataset.Headers[liminaKeyColumn] = &types.Header{
-		ColumnName: liminaKeyColumn,
-		DataType:   types.StringType,
+	if dataset.Headers != nil {
+		dataset.Headers[liminaKeyColumn] = &types.Header{
+			ColumnName: liminaKeyColumn,
+			DataType:   types.StringType,
+		}
 	}
 	// let's append rowKey to each row
 	for i, r := range dataset.Rows {
@@ -62,6 +64,9 @@ func removeAndAssignRowKey(resultDataSet *types.DataSet) *types.DataSet {
 			}
 		}
 		resultDataSet.Rows[i] = newRow
+	}
+	if resultDataSet.Headers != nil {
+		delete(resultDataSet.Headers, liminaKeyColumn)
 	}
 	return resultDataSet
 }
