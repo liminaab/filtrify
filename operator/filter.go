@@ -351,9 +351,12 @@ func (t *FilterOperator) Transform(dataset *types.DataSet, config string, _ map[
 	return newDataset, nil
 }
 
+const liminaKeyColumn = "reserved_limina_row_key"
+
 func (t *FilterOperator) TransformTyped(dataset *types.DataSet, typedConfig *FilterConfiguration) (*types.DataSet, error) {
 
 	headers, colTypeMap := extractHeadersAndTypeMap(dataset)
+	headers, colTypeMap, dataset = addKeyRowToDataset(headers, colTypeMap, dataset)
 
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
@@ -368,7 +371,13 @@ func (t *FilterOperator) TransformTyped(dataset *types.DataSet, typedConfig *Fil
 	sb.WriteString(whereClause)
 	fullQuery := sb.String()
 
-	return executeSQLQuery(fullQuery, dataset, colTypeMap)
+	resultDataSet, err := executeSQLQuery(fullQuery, dataset, colTypeMap)
+	if err != nil {
+		return nil, err
+	}
+	// we need to remove the limina_key and add it back to the dataset
+	resultDataSet = removeAndAssignRowKey(resultDataSet)
+	return resultDataSet, nil
 }
 
 func (t *FilterOperator) buildConfiguration(config string) (*FilterConfiguration, error) {

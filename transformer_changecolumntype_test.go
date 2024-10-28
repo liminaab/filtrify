@@ -695,3 +695,61 @@ func TestChangeColumnTypeCombinations(t *testing.T) {
 		})
 	}
 }
+
+func TestChangeColumnTypeWithRowKey(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	for i := range data.Rows {
+		key := fmt.Sprintf("row-%d", i)
+		data.Rows[i].Key = &key
+	}
+
+	changeColumnType := types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: `{"columns":{"Quantity":{"targetType":4,"stringNumericConfiguration":{"decimalSymbol":".","thousandSeperator":"","numberOfDecimals":0}}}}`,
+	}
+	plainDataConverted, err := filtrify.Transform(data, []*types.TransformationStep{&changeColumnType}, nil)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	conf := &operator.ChangeColumnTypeConfiguration{
+		Columns: map[string]operator.ConversionConfiguration{
+			"Quantity": {
+				TargetType: types.StringType,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.ChangeColumnType,
+		Configuration: string(b1),
+	}
+
+	firstCol := test.GetColumn(plainDataConverted.Rows[0], "Quantity")
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "Quantity"))
+	if firstCol.CellValue.DataType != types.DoubleType {
+		assert.Fail(t, "Type conversion init failed")
+	}
+
+	sortedData, err := filtrify.Transform(plainDataConverted, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "new aggregation column operation failed")
+	}
+
+	firstCol = test.GetColumn(sortedData.Rows[0], "Quantity")
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", "Quantity"))
+	if firstCol.CellValue.DataType != types.StringType {
+		assert.Fail(t, "Type conversion failed")
+	}
+
+	for _, r := range sortedData.Rows {
+		assert.NotNil(t, r.Key, "Key assignment failed on changeColumnType operator")
+	}
+}

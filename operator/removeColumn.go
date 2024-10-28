@@ -22,6 +22,7 @@ func (t *RemoveColumnOperator) TransformWithConfig(dataset *types.DataSet, typed
 
 	for i, row := range dataset.Rows {
 		newRow := types.DataRow{
+			Key:     row.Key,
 			Columns: make([]*types.DataColumn, 0),
 		}
 		for _, col := range row.Columns {

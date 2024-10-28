@@ -32,6 +32,7 @@ func (t *ObjectifyOperator) Transform(dataset *types.DataSet, config string, _ m
 	}
 	for i, row := range dataset.Rows {
 		newRow := types.DataRow{
+			Key:     row.Key,
 			Columns: make([]*types.DataColumn, 0),
 		}
 		objectColumnMap := make(map[string]interface{})

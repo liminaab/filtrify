@@ -159,6 +159,7 @@ func (t *DataSet) ToRawData() [][]string {
 }
 
 type DataRow struct {
+	Key     *string
 	Columns []*DataColumn
 }
 

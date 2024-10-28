@@ -32,6 +32,7 @@ func (t *JSONOperator) Transform(dataset *types.DataSet, config string, _ map[st
 	}
 	for i, row := range dataset.Rows {
 		newRow := types.DataRow{
+			Key:     row.Key,
 			Columns: make([]*types.DataColumn, 0),
 		}
 		jsonColumnMap := make(map[string]string)

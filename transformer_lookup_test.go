@@ -351,3 +351,56 @@ func TestMultiConditionsLookup(t *testing.T) {
 	// now we need to make sure join was successful
 	verifyJoin(t, lookupData, instrumentSet, joinedData, conf)
 }
+
+func TestBasicLookupWithRowKey(t *testing.T) {
+	lookupData, err := filtrify.ConvertToTypedData(test.UATLookupTestDataFormatted, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	instrumentSet, err := filtrify.ConvertToTypedData(test.UATLookupJoinTestDataFormatted, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+	conf := &operator.LookupConfiguration{
+		TargetDataset: "Instrument Data",
+		Columns: []*operator.JoinColumn{
+			{
+				Left:  "Instrument ID",
+				Right: "Instrument ID",
+			},
+		},
+		RemoveRightMatchColumn:   false,
+		RemoveRightDatasetPrefix: false,
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Lookup,
+		Configuration: string(b1),
+	}
+
+	for i := range lookupData.Rows {
+		key := fmt.Sprintf("row-%d", i)
+		lookupData.Rows[i].Key = &key
+	}
+
+	joinSet := map[string]*types.DataSet{
+		"Instrument Data": instrumentSet,
+	}
+	joinedData, err := filtrify.Transform(lookupData, []*types.TransformationStep{step}, joinSet)
+	if err != nil {
+		assert.NoError(t, err, "new aggregation column operation failed")
+	}
+
+	assert.Len(t, joinedData.Rows, len(lookupData.Rows), "join failed. invalid number of rows")
+
+	// now we need to make sure join was successful
+	verifyJoin(t, lookupData, instrumentSet, joinedData, conf)
+
+	for _, r := range joinedData.Rows {
+		assert.NotNil(t, r.Key, "Key assignment failed on lookup operator")
+	}
+}

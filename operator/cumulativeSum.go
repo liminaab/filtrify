@@ -29,6 +29,7 @@ func (t *CumulativeSumOperator) Transform(dataset *types.DataSet, config string,
 	var cumulativeSum float64 = 0
 	for i, row := range dataset.Rows {
 		newRow := types.DataRow{
+			Key:     row.Key,
 			Columns: make([]*types.DataColumn, 0),
 		}
 		for _, col := range row.Columns {

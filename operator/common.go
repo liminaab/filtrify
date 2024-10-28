@@ -32,6 +32,45 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
+func addKeyRowToDataset(headers []string, colTypeMap map[string]types.CellDataType, dataset *types.DataSet) ([]string, map[string]types.CellDataType, *types.DataSet) {
+	headers = append(headers, liminaKeyColumn)
+	if dataset.Headers != nil {
+		dataset.Headers[liminaKeyColumn] = &types.Header{
+			ColumnName: liminaKeyColumn,
+			DataType:   types.StringType,
+		}
+	}
+	// let's append rowKey to each row
+	for i, r := range dataset.Rows {
+		dataset.Rows[i].Columns = append(r.Columns, types.NewStringDataColumn(r.Key, liminaKeyColumn))
+	}
+	colTypeMap[liminaKeyColumn] = types.StringType
+	return headers, colTypeMap, dataset
+}
+
+func removeAndAssignRowKey(resultDataSet *types.DataSet) *types.DataSet {
+	for i, r := range resultDataSet.Rows {
+		newRow := &types.DataRow{
+			Columns: make([]*types.DataColumn, 0),
+		}
+		for _, c := range r.Columns {
+			if c.ColumnName == liminaKeyColumn {
+				if c.CellValue.DataType == types.StringType {
+					val := c.CellValue.StringValue
+					newRow.Key = &val
+				}
+			} else {
+				newRow.Columns = append(newRow.Columns, c)
+			}
+		}
+		resultDataSet.Rows[i] = newRow
+	}
+	if resultDataSet.Headers != nil {
+		delete(resultDataSet.Headers, liminaKeyColumn)
+	}
+	return resultDataSet
+}
+
 func executeSQLQuery(q string, dataset *types.DataSet, existingColumnTypeMap map[string]types.CellDataType) (*types.DataSet, error) {
 	exit := make(chan bool)
 	inMemoryDataSource := lmnqlbridge.NewLmnInMemDataSource(exit)

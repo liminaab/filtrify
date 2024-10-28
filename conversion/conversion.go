@@ -441,6 +441,8 @@ func ConvertToTypedData(rawData [][]string, firstLineIsHeader bool, convertDataT
 	for ri, row := range data {
 		typedCols := make([]*types.DataColumn, len(headers))
 		typedRow := &types.DataRow{
+			// since this is an auto generated row - we don't know the key
+			Key:     nil,
 			Columns: typedCols,
 		}
 		for ci, _ := range headers {
