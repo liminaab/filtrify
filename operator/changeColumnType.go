@@ -416,7 +416,16 @@ func commonTimeToString(t time.Time, config ConversionConfiguration, defaultForm
 			format = f
 		}
 	}
-	return t.Format(format), nil
+	targetTimezone := time.UTC
+	if config.StringDate != nil && len(config.StringDate.Timezone) > 0 {
+		l, err := time.LoadLocation(config.StringDate.Timezone)
+		if err != nil {
+			fmt.Print("Unable to load timezone: " + config.StringDate.Timezone)
+		} else {
+			targetTimezone = l
+		}
+	}
+	return t.In(targetTimezone).Format(format), nil
 }
 
 func timeToString(input interface{}, config ConversionConfiguration) (interface{}, error) {

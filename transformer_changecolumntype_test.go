@@ -221,7 +221,18 @@ type conversionTest struct {
 }
 
 func getDateTimeConversionTests() []conversionTest {
+
+	targetTime := time.Date(2021, 3, 18, 16, 45, 9, 0, time.UTC)
+	stockholmLocation, _ := time.LoadLocation("Europe/Stockholm")
+	expectedOutput := targetTime.In(stockholmLocation).Format("2006-01-02 15:04:05")
+
 	return []conversionTest{
+		{
+			name:   "datetime_to_string_with_timezone",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.TimestampType, TimestampValue: time.Date(2021, 3, 18, 16, 45, 9, 0, time.UTC)}),
+			want:   expectedOutput,
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.StringType, StringDate: &operator.StringDateConfiguration{DateFormat: "yyyy-MM-dd hh:mm:ss", Timezone: "Europe/Stockholm"}}),
+		},
 		{
 			name:   "datetime_to_string_1",
 			data:   getDatasetForConversion(types.CellValue{DataType: types.TimestampType, TimestampValue: time.Date(2021, 3, 18, 16, 45, 9, 0, time.UTC)}),
