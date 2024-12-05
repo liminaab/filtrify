@@ -65,9 +65,7 @@ func (t *SortOperator) CompareColumns(col1 *types.DataColumn, col2 *types.DataCo
 		} else if cell1.LongValue < cell2.LongValue {
 			result = -1
 		}
-	case types.TimestampType:
-	case types.DateType:
-	case types.TimeOfDayType:
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
 		if cell1.TimestampValue.After(cell2.TimestampValue) {
 			result = 1
 		} else if cell1.TimestampValue.Before(cell2.TimestampValue) {
