@@ -309,6 +309,46 @@ func TestSortWithDateTime(t *testing.T) {
 	}
 }
 
+func TestSortWithDateTimeWantedData(t *testing.T) {
+	data := test.UAT1TestDataSet
+	orderedColumn := "Active From"
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: orderedColumn,
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "sort column operation failed")
+	}
+
+	wantTimes := []time.Time{
+		time.Date(2021, 04, 06, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 11, 22, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 03, 01, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
+	}
+
+	for i, r := range sortedData.Rows {
+		sortedColValue := test.GetColumn(r, orderedColumn)
+		assert.NotNil(t, sortedColValue, fmt.Sprintf("%s column was not found", orderedColumn))
+		assert.Equal(t, wantTimes[i].In(time.UTC).Format(time.RFC3339), sortedColValue.CellValue.TimestampValue.In(time.UTC).Format(time.RFC3339), "descending order failed")
+	}
+}
+
 func TestSortWithDateTimeOnHardcodedData(t *testing.T) {
 	data := test.UAT1TestDataSet
 	orderedColumn := "Active From"
