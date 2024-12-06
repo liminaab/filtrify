@@ -309,6 +309,60 @@ func TestSortWithDateTime(t *testing.T) {
 	}
 }
 
+func TestSortWithDateTimeOnHardcodedData(t *testing.T) {
+	data := test.UAT1TestDataSet
+	orderedColumn := "Active From"
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: orderedColumn,
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "sort column operation failed")
+	}
+
+	var lastVal *time.Time = nil
+	firstCol := test.GetColumn(sortedData.Rows[0], orderedColumn)
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", orderedColumn))
+	if firstCol.CellValue.DataType != types.NilType {
+		lastVal = &firstCol.CellValue.TimestampValue
+	}
+	for _, r := range sortedData.Rows {
+		sortedColValue := test.GetColumn(r, orderedColumn)
+		assert.NotNil(t, sortedColValue, fmt.Sprintf("%s column was not found", orderedColumn))
+
+		if lastVal == nil && sortedColValue.CellValue.DataType != types.NilType {
+			assert.Fail(t, "descending sort failed. numbers can't appear after nil values")
+		}
+
+		if lastVal != nil {
+			isAfter := lastVal.After(sortedColValue.CellValue.TimestampValue)
+			isSame := lastVal.Equal(sortedColValue.CellValue.TimestampValue)
+			assert.True(t, isAfter || isSame, "descending order failed")
+		}
+
+		if sortedColValue.CellValue.DataType == types.NilType {
+			lastVal = nil
+		} else if lastVal == nil {
+			lastVal = &sortedColValue.CellValue.TimestampValue
+		}
+
+	}
+}
+
 func TestMultipleSort(t *testing.T) {
 	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {

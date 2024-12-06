@@ -34,6 +34,346 @@ var UAT1TestDataFormatted [][]string = [][]string{
 	{"USD Cash", "Cash Account", "5000000.00", "5000000.0", "20%", "", "", "2020-01-01 12:00:00"},
 }
 
+var UAT1TestDataSet *types.DataSet = &types.DataSet{
+	Headers: types.HeaderMap{
+		"Instrument name": &types.Header{
+			ColumnName: "Instrument name",
+			DataType:   types.StringType,
+		},
+		"Instrument Type": &types.Header{
+			ColumnName: "Instrument Type",
+			DataType:   types.StringType,
+		},
+		"Quantity": &types.Header{
+			ColumnName: "Quantity",
+			DataType:   types.DoubleType,
+		},
+		"Market Value (Base)": &types.Header{
+			ColumnName: "Market Value (Base)",
+			DataType:   types.DoubleType,
+		},
+		"Exposure %": &types.Header{
+			ColumnName: "Exposure %",
+			DataType:   types.StringType,
+		},
+		"Maturity Date": &types.Header{
+			ColumnName: "Maturity Date",
+			DataType:   types.DateType,
+		},
+		"EU Sanction listed": &types.Header{
+			ColumnName: "EU Sanction listed",
+			DataType:   types.BoolType,
+		},
+		"Active From": &types.Header{
+			ColumnName: "Active From",
+			DataType:   types.TimestampType,
+		},
+	},
+	Rows: []*types.DataRow{
+		{
+			Key: nil,
+			Columns: []*types.DataColumn{
+				{
+					ColumnName: "Instrument name",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "ERIC B SS Equity",
+					},
+				},
+				{
+					ColumnName: "Instrument Type",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "Equity",
+					},
+				},
+				{
+					ColumnName: "Quantity",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 175000.00,
+					},
+				},
+				{
+					ColumnName: "Market Value (Base)",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 2000000.00,
+					},
+				},
+				{
+					ColumnName: "Exposure %",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "8%",
+					},
+				},
+				{
+					ColumnName: "Maturity Date",
+					CellValue: &types.CellValue{
+						DataType: types.NilType,
+					},
+				},
+				{
+					ColumnName: "EU Sanction listed",
+					CellValue: &types.CellValue{
+						DataType:  types.BoolType,
+						BoolValue: true,
+					},
+				},
+				{
+					ColumnName: "Active From",
+					CellValue: &types.CellValue{
+						DataType:       types.TimestampType,
+						TimestampValue: time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
+					},
+				},
+			},
+		},
+		{
+			Key: nil,
+			Columns: []*types.DataColumn{
+				{
+					ColumnName: "Instrument name",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "AMZN US Equity",
+					},
+				},
+				{
+					ColumnName: "Instrument Type",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "Equity",
+					},
+				},
+				{
+					ColumnName: "Quantity",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 1500.00,
+					},
+				},
+				{
+					ColumnName: "Market Value (Base)",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 6000000.00,
+					},
+				},
+				{
+					ColumnName: "Exposure %",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "25%",
+					},
+				},
+				{
+					ColumnName: "Maturity Date",
+					CellValue: &types.CellValue{
+						DataType: types.NilType,
+					},
+				},
+				{
+					ColumnName: "EU Sanction listed",
+					CellValue: &types.CellValue{
+						DataType:  types.BoolType,
+						BoolValue: false,
+					},
+				},
+				{
+					ColumnName: "Active From",
+					CellValue: &types.CellValue{
+						DataType:       types.TimestampType,
+						TimestampValue: time.Date(2020, 03, 01, 12, 00, 00, 0, time.UTC),
+					},
+				},
+			},
+		},
+		{
+			Key: nil,
+			Columns: []*types.DataColumn{
+				{
+					ColumnName: "Instrument name",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "T 0 12/31/21",
+					},
+				},
+				{
+					ColumnName: "Instrument Type",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "Bill",
+					},
+				},
+				{
+					ColumnName: "Quantity",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 9000000.00,
+					},
+				},
+				{
+					ColumnName: "Market Value (Base)",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 8750000.00,
+					},
+				},
+				{
+					ColumnName: "Exposure %",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "30%",
+					},
+				},
+				{
+					ColumnName: "Maturity Date",
+					CellValue: &types.CellValue{
+						DataType:       types.DateType,
+						TimestampValue: time.Date(2021, 12, 31, 0, 0, 0, 0, time.UTC),
+					},
+				},
+				{
+					ColumnName: "EU Sanction listed",
+					CellValue: &types.CellValue{
+						DataType:  types.BoolType,
+						BoolValue: false,
+					},
+				},
+				{
+					ColumnName: "Active From",
+					CellValue: &types.CellValue{
+						DataType:       types.TimestampType,
+						TimestampValue: time.Date(2020, 11, 22, 12, 00, 00, 0, time.UTC),
+					},
+				},
+			},
+		},
+		{
+			Key: nil,
+			Columns: []*types.DataColumn{
+				{
+					ColumnName: "Instrument name",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "ESZ1",
+					},
+				},
+				{
+					ColumnName: "Instrument Type",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "Index Future",
+					},
+				},
+				{
+					ColumnName: "Quantity",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: -10.00,
+					},
+				},
+				{
+					ColumnName: "Market Value (Base)",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: -495000.00,
+					},
+				},
+				{
+					ColumnName: "Exposure %",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "17%",
+					},
+				},
+				{
+					ColumnName: "Maturity Date",
+					CellValue: &types.CellValue{
+						DataType:       types.DateType,
+						TimestampValue: time.Date(2021, 12, 16, 0, 0, 0, 0, time.UTC),
+					},
+				},
+				{
+					ColumnName: "EU Sanction listed",
+					CellValue: &types.CellValue{
+						DataType:  types.BoolType,
+						BoolValue: false,
+					},
+				},
+				{
+					ColumnName: "Active From",
+					CellValue: &types.CellValue{
+						DataType:       types.TimestampType,
+						TimestampValue: time.Date(2021, 04, 06, 12, 00, 00, 0, time.UTC),
+					},
+				},
+			},
+		},
+		{
+			Key: nil,
+			Columns: []*types.DataColumn{
+				{
+					ColumnName: "Instrument name",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "USD Cash",
+					},
+				},
+				{
+					ColumnName: "Instrument Type",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "Cash Account",
+					},
+				},
+				{
+					ColumnName: "Quantity",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 5000000.00,
+					},
+				},
+				{
+					ColumnName: "Market Value (Base)",
+					CellValue: &types.CellValue{
+						DataType:    types.DoubleType,
+						DoubleValue: 5000000.00,
+					},
+				},
+				{
+					ColumnName: "Exposure %",
+					CellValue: &types.CellValue{
+						DataType:    types.StringType,
+						StringValue: "20%",
+					},
+				},
+				{
+					ColumnName: "Maturity Date",
+					CellValue: &types.CellValue{
+						DataType: types.NilType,
+					},
+				},
+				{
+					ColumnName: "EU Sanction listed",
+					CellValue: &types.CellValue{
+						DataType: types.NilType,
+					},
+				},
+				{
+					ColumnName: "Active From",
+					CellValue: &types.CellValue{
+						DataType:       types.TimestampType,
+						TimestampValue: time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
+					},
+				},
+			},
+		},
+	},
+}
+
 var UAT1TestDataFormattedWithDate [][]string = [][]string{
 	{"Instrument name", "Instrument Type", "Quantity", "Market Value (Base)", "Exposure %", "Maturity Date", "EU Sanction listed", "Active From"},
 	{"ERIC B SS Equity", "Equity", "175000.00", "2000000.00", "8%", "", "true", "2020-01-01"},
