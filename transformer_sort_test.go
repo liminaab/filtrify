@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/liminaab/filtrify"
 	"github.com/liminaab/filtrify/operator"
@@ -128,6 +129,277 @@ func TestSortWithRowKey(t *testing.T) {
 
 	for _, r := range sortedData.Rows {
 		assert.NotNil(t, r.Key, "Key assignment failed on sortColumn operator")
+	}
+}
+
+func TestSortWithTime(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormattedWithTime, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	orderedColumn := "Active From"
+
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: orderedColumn,
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "sort column operation failed")
+	}
+
+	var lastVal *time.Time = nil
+	firstCol := test.GetColumn(sortedData.Rows[0], orderedColumn)
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", orderedColumn))
+	if firstCol.CellValue.DataType != types.NilType {
+		lastVal = &firstCol.CellValue.TimestampValue
+	}
+	for _, r := range sortedData.Rows {
+		sortedColValue := test.GetColumn(r, orderedColumn)
+		assert.NotNil(t, sortedColValue, fmt.Sprintf("%s column was not found", orderedColumn))
+
+		if lastVal == nil && sortedColValue.CellValue.DataType != types.NilType {
+			assert.Fail(t, "descending sort failed. numbers can't appear after nil values")
+		}
+
+		if lastVal != nil {
+			isAfter := lastVal.After(sortedColValue.CellValue.TimestampValue)
+			isSame := lastVal.Equal(sortedColValue.CellValue.TimestampValue)
+			assert.True(t, isAfter || isSame, "descending order failed")
+		}
+
+		if sortedColValue.CellValue.DataType == types.NilType {
+			lastVal = nil
+		} else if lastVal == nil {
+			lastVal = &sortedColValue.CellValue.TimestampValue
+		}
+
+	}
+}
+
+func TestSortWithDate(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormattedWithDate, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	orderedColumn := "Active From"
+
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: orderedColumn,
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "sort column operation failed")
+	}
+
+	var lastVal *time.Time = nil
+	firstCol := test.GetColumn(sortedData.Rows[0], orderedColumn)
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", orderedColumn))
+	if firstCol.CellValue.DataType != types.NilType {
+		lastVal = &firstCol.CellValue.TimestampValue
+	}
+	for _, r := range sortedData.Rows {
+		sortedColValue := test.GetColumn(r, orderedColumn)
+		assert.NotNil(t, sortedColValue, fmt.Sprintf("%s column was not found", orderedColumn))
+
+		if lastVal == nil && sortedColValue.CellValue.DataType != types.NilType {
+			assert.Fail(t, "descending sort failed. numbers can't appear after nil values")
+		}
+
+		if lastVal != nil {
+			isAfter := lastVal.After(sortedColValue.CellValue.TimestampValue)
+			isSame := lastVal.Equal(sortedColValue.CellValue.TimestampValue)
+			assert.True(t, isAfter || isSame, "descending order failed")
+		}
+
+		if sortedColValue.CellValue.DataType == types.NilType {
+			lastVal = nil
+		} else if lastVal == nil {
+			lastVal = &sortedColValue.CellValue.TimestampValue
+		}
+
+	}
+}
+
+func TestSortWithDateTime(t *testing.T) {
+	data, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	orderedColumn := "Active From"
+
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: orderedColumn,
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "sort column operation failed")
+	}
+
+	var lastVal *time.Time = nil
+	firstCol := test.GetColumn(sortedData.Rows[0], orderedColumn)
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", orderedColumn))
+	if firstCol.CellValue.DataType != types.NilType {
+		lastVal = &firstCol.CellValue.TimestampValue
+	}
+	for _, r := range sortedData.Rows {
+		sortedColValue := test.GetColumn(r, orderedColumn)
+		assert.NotNil(t, sortedColValue, fmt.Sprintf("%s column was not found", orderedColumn))
+
+		if lastVal == nil && sortedColValue.CellValue.DataType != types.NilType {
+			assert.Fail(t, "descending sort failed. numbers can't appear after nil values")
+		}
+
+		if lastVal != nil {
+			isAfter := lastVal.After(sortedColValue.CellValue.TimestampValue)
+			isSame := lastVal.Equal(sortedColValue.CellValue.TimestampValue)
+			assert.True(t, isAfter || isSame, "descending order failed")
+		}
+
+		if sortedColValue.CellValue.DataType == types.NilType {
+			lastVal = nil
+		} else if lastVal == nil {
+			lastVal = &sortedColValue.CellValue.TimestampValue
+		}
+
+	}
+}
+
+func TestSortWithDateTimeWantedData(t *testing.T) {
+	data := test.UAT1TestDataSet
+	orderedColumn := "Active From"
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: orderedColumn,
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "sort column operation failed")
+	}
+
+	wantTimes := []time.Time{
+		time.Date(2021, 04, 06, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 11, 22, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 03, 01, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
+		time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
+	}
+
+	for i, r := range sortedData.Rows {
+		sortedColValue := test.GetColumn(r, orderedColumn)
+		assert.NotNil(t, sortedColValue, fmt.Sprintf("%s column was not found", orderedColumn))
+		assert.Equal(t, wantTimes[i].In(time.UTC).Format(time.RFC3339), sortedColValue.CellValue.TimestampValue.In(time.UTC).Format(time.RFC3339), "descending order failed")
+	}
+}
+
+func TestSortWithDateTimeOnHardcodedData(t *testing.T) {
+	data := test.UAT1TestDataSet
+	orderedColumn := "Active From"
+	conf := &operator.SortConfiguration{
+		OrderBy: []*operator.OrderConfiguration{
+			{
+				ColumnName: orderedColumn,
+				Ascending:  false,
+			},
+		},
+	}
+	b1, err := json.Marshal(conf)
+	if err != nil {
+		panic(err.Error())
+	}
+	step := &types.TransformationStep{
+		Operator:      types.Sort,
+		Configuration: string(b1),
+	}
+
+	sortedData, err := filtrify.Transform(data, []*types.TransformationStep{step}, nil)
+	if err != nil {
+		assert.NoError(t, err, "sort column operation failed")
+	}
+
+	var lastVal *time.Time = nil
+	firstCol := test.GetColumn(sortedData.Rows[0], orderedColumn)
+	assert.NotNil(t, firstCol, fmt.Sprintf("%s column was not found", orderedColumn))
+	if firstCol.CellValue.DataType != types.NilType {
+		lastVal = &firstCol.CellValue.TimestampValue
+	}
+	for _, r := range sortedData.Rows {
+		sortedColValue := test.GetColumn(r, orderedColumn)
+		assert.NotNil(t, sortedColValue, fmt.Sprintf("%s column was not found", orderedColumn))
+
+		if lastVal == nil && sortedColValue.CellValue.DataType != types.NilType {
+			assert.Fail(t, "descending sort failed. numbers can't appear after nil values")
+		}
+
+		if lastVal != nil {
+			isAfter := lastVal.After(sortedColValue.CellValue.TimestampValue)
+			isSame := lastVal.Equal(sortedColValue.CellValue.TimestampValue)
+			assert.True(t, isAfter || isSame, "descending order failed")
+		}
+
+		if sortedColValue.CellValue.DataType == types.NilType {
+			lastVal = nil
+		} else if lastVal == nil {
+			lastVal = &sortedColValue.CellValue.TimestampValue
+		}
+
 	}
 }
 
