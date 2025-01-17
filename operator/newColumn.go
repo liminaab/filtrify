@@ -205,7 +205,7 @@ func (t *NewColumnOperator) splitStatements(statement string) []string {
 	for _, c := range statement {
 		switch c {
 		case '`':
-			if statementStack[len(statementStack)-1] == param_name {
+			if len(statementStack) > 0 && statementStack[len(statementStack)-1] == param_name {
 				statementStack = statementStack[:len(statementStack)-1]
 			} else {
 				statementStack = append(statementStack, param_name)
@@ -213,19 +213,19 @@ func (t *NewColumnOperator) splitStatements(statement string) []string {
 			statementBuilder.WriteRune(c)
 			break
 		case '(':
-			if statementStack[len(statementStack)-1] != param_name {
+			if len(statementStack) > 0 && statementStack[len(statementStack)-1] != param_name {
 				statementStack = append(statementStack, in_call)
 			}
 			statementBuilder.WriteRune(c)
 			break
 		case ')':
-			if statementStack[len(statementStack)-1] != param_name {
+			if len(statementStack) > 0 && statementStack[len(statementStack)-1] != param_name {
 				statementStack = statementStack[:len(statementStack)-1]
 			}
 			statementBuilder.WriteRune(c)
 			break
 		case ',':
-			if statementStack[len(statementStack)-1] == no_call {
+			if len(statementStack) > 0 && statementStack[len(statementStack)-1] == no_call {
 				statements = append(statements, statementBuilder.String())
 				statementBuilder.Reset()
 			} else {

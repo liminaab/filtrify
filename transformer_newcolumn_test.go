@@ -42,6 +42,22 @@ func TestBasicNewColumn(t *testing.T) {
 	}
 }
 
+func TestBasicNewColumnWithInvalidConfiguration(t *testing.T) {
+	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
+	if err != nil {
+		assert.NoError(t, err, "basic data conversion failed")
+	}
+
+	s1 := "CONCAT(COL(\"Account Name (Short)\"),\"_\",COL(\"ISIN\"),\"_\",COL(\"Coupon Rate\"),\"_\",COL(\"Ex-Date\")))"
+
+	newColStep1 := &types.TransformationStep{
+		Operator:      types.NewColumn,
+		Configuration: "{\"statement\": \"" + s1 + "\"}",
+	}
+	_, err = filtrify.Transform(ds, []*types.TransformationStep{newColStep1}, nil)
+	assert.NotNil(t, err, "newColumn operation should have failed")
+}
+
 func TestBasicNewColumnWithRowKey(t *testing.T) {
 	ds, err := filtrify.ConvertToTypedData(test.UAT1TestDataFormatted, true, true, true)
 	if err != nil {
