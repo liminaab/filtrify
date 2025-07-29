@@ -126,6 +126,7 @@ type TransformationOperator interface {
 type Header struct {
 	ColumnName string
 	DataType   CellDataType
+	Order      int64
 }
 
 type HeaderMap map[string]*Header
