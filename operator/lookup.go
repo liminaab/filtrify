@@ -162,6 +162,17 @@ func (t *LookupOperator) mergeRows(orgDataset *types.DataSet, left *types.DataRo
 		colCounter++
 	}
 
+	// if the configuration is invalid - some columns might be nil
+	// let's fill them with nil columns
+	for i := range newRow.Columns {
+		if newRow.Columns[i] == nil {
+			newRow.Columns[i] = &types.DataColumn{
+				ColumnName: fmt.Sprintf("column_%d", i),
+				CellValue:  &types.CellValue{DataType: types.NilType},
+			}
+		}
+	}
+
 	return newRow
 }
 

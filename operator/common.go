@@ -198,6 +198,9 @@ func buildHeaders(newDataset *types.DataSet, oldDataset *types.DataSet) map[stri
 		sampleRow := newDataset.Rows[0]
 		for ci := range sampleRow.Columns {
 			bestColumn := sampleRow.Columns[ci]
+			if bestColumn == nil || bestColumn.CellValue == nil {
+				continue
+			}
 			if bestColumn.CellValue.DataType == types.NilType {
 				for ri := range newDataset.Rows {
 					c := newDataset.Rows[ri].Columns[ci]
