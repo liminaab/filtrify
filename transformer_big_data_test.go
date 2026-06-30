@@ -18,10 +18,16 @@ var HUNDREDTHOUSANDROWS string = "https://eforexcel.com/wp/wp-content/uploads/20
 var ONEMILLIONROWS string = "https://eforexcel.com/wp/wp-content/uploads/2017/07/1000000%20Sales%20Records.zip"
 
 func GetBigSalesData(t *testing.T) [][]string {
-	err := test.DownloadZipFileIfNotExists(HUNDREDTHOUSANDROWS, "/tmp/salesrecords.zip", "/tmp/salesrecords.csv")
-	assert.NoError(t, err, "basic data download failed")
+	// The fixture is fetched from a third-party host; when it is unavailable
+	// (offline CI, dead/rate-limited URL) skip rather than continuing with an
+	// empty dataset, which previously panicked downstream in Transform(nil).
+	if err := test.DownloadZipFileIfNotExists(HUNDREDTHOUSANDROWS, "/tmp/salesrecords.zip", "/tmp/salesrecords.csv"); err != nil {
+		t.Skipf("skipping big-data test: could not download fixture from %s: %v", HUNDREDTHOUSANDROWS, err)
+	}
 	_, plainCSV, err := test.LoadCSVFileFromTestDataDir("/tmp/salesrecords.csv", false)
-	assert.NoError(t, err, "basic data load failed")
+	if err != nil {
+		t.Skipf("skipping big-data test: could not load fixture /tmp/salesrecords.csv: %v", err)
+	}
 	return plainCSV
 }
 
