@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 	"unsafe"
 
@@ -23,7 +25,29 @@ func init() {
 	lmnqlbridge.LoadLiminaOperators()
 }
 
-var src = rand.NewSource(time.Now().UnixNano())
+// src is shared process-wide. math/rand.Source is NOT safe for concurrent use,
+// so every read must hold srcMu — otherwise concurrent executeSQLQuery callers
+// (the REST and gRPC transform endpoints run on separate goroutines) race on its
+// internal state and can produce identical/correlated "random" schema names.
+var (
+	srcMu sync.Mutex
+	src   = rand.NewSource(time.Now().UnixNano())
+
+	// schemaNameSeq makes every executeSQLQuery schema name globally unique even
+	// if the random suffix ever repeats. All callers share the same global schema
+	// registry, so a duplicate name lets one call's deferred SchemaDrop tear down
+	// the schema another call is still querying — which silently returns an empty
+	// result set for the in-memory query (e.g. a derived column comes back blank).
+	schemaNameSeq uint64
+
+	// registryMu serialises the register -> query -> drop sequence in
+	// executeSQLQuery. qlbridge's schema registry (schema.DefaultRegistry) is a
+	// single process-global structure that is NOT safe for concurrent schema
+	// mutation vs. query: one query's SchemaDrop races another's table lookup over
+	// the shared database list. Unique schema names alone don't fix that, so the
+	// whole critical section must run under this lock.
+	registryMu sync.Mutex
+)
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyz123456789"
 const (
@@ -76,7 +100,16 @@ func executeSQLQuery(q string, dataset *types.DataSet, existingColumnTypeMap map
 	inMemoryDataSource := lmnqlbridge.NewLmnInMemDataSource(exit)
 
 	inMemoryDataSource.AddTable(defaultTableName, dataset)
-	schemaName := RandStringBytesMaskImprSrcUnsafe(15)
+	// Suffix with a process-global sequence so the name is unique even on a random
+	// collision; concurrent calls share the global schema registry and a reused
+	// name causes cross-call SchemaDrop interference (empty query results).
+	schemaName := RandStringBytesMaskImprSrcUnsafe(15) + strconv.FormatUint(atomic.AddUint64(&schemaNameSeq, 1), 36)
+
+	// Serialise the register -> query -> drop sequence: qlbridge's global schema
+	// registry is not concurrency-safe (see registryMu). Unlock runs after the
+	// deferred SchemaDrop below (defers are LIFO and this one is registered first).
+	registryMu.Lock()
+	defer registryMu.Unlock()
 
 	err := schema.RegisterSourceAsSchema(schemaName, inMemoryDataSource)
 	if err != nil {
@@ -116,6 +149,9 @@ func extractHeadersAndTypeMap(dataset *types.DataSet) ([]string, map[string]type
 
 func RandStringBytesMaskImprSrcUnsafe(n int) string {
 	b := make([]byte, n)
+	// math/rand.Source is not concurrency-safe; serialise access to the shared src.
+	srcMu.Lock()
+	defer srcMu.Unlock()
 	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
 	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
 		if remain == 0 {

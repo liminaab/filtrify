@@ -25,3 +25,10 @@ jobs:
 
       - name: Run unit tests
         run: go test ./...
+
+      # Race detector gate. The in-memory SQL operators (newColumn/filter/aggregate)
+      # share a process-global qlbridge schema registry, so concurrency regressions
+      # there are only caught under -race. -short skips the heavy big-data download
+      # tests while still running the concurrency regression test.
+      - name: Run race detector
+        run: go test -race -short ./...
