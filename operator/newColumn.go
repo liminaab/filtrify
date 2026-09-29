@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,94 @@ import (
 )
 
 type NewColumnOperator struct {
+}
+
+// backtickIdentRe matches a backtick-quoted identifier, e.g. `ColumnName`, as used to
+// reference a column inside a NewColumn statement.
+var backtickIdentRe = regexp.MustCompile("`([^`]+)`")
+
+// CollectNewColumnBatch scans steps for a maximal run of NewColumn steps (starting at
+// steps[0]) that can be executed as a single combined SQL SELECT instead of one
+// executeSQLQuery round-trip per step. Each round-trip re-scans and re-converts the full
+// (growing) dataset through qlbridge's in-memory SQL engine, so this turns an O(steps)
+// number of full-dataset passes into O(batches).
+//
+// A step ends the run (and is left for the caller to process on its own) when it has a
+// GroupBy, contains an aggregation, has a malformed or duplicate-name statement, or reads
+// a column produced by an earlier step already in this run: a single SQL SELECT evaluates
+// every column against the original row, not against sibling columns being computed in the
+// same statement, so such a step would silently see the wrong (pre-batch) value if merged.
+func CollectNewColumnBatch(steps []*types.TransformationStep) ([]*NewColumnConfiguration, []string) {
+	op := &NewColumnOperator{}
+	introduced := make(map[string]bool)
+
+	configs := make([]*NewColumnConfiguration, 0, len(steps))
+	statements := make([]string, 0, len(steps))
+	for _, step := range steps {
+		if step.Operator != types.NewColumn {
+			break
+		}
+		cfg, err := op.buildConfiguration(step.Configuration)
+		if err != nil || cfg.GroupBy != "" {
+			break
+		}
+		plainStatement, aggs, err := op.splitAggs(cfg.Statement)
+		if err != nil || len(aggs) > 0 {
+			break
+		}
+		selectedColName := op.findSelectedColumnName(cfg)
+		selectedStatement := op.getSelectedStatement(cfg)
+		if selectedColName == nil || selectedStatement == nil {
+			break
+		}
+		if introduced[strings.ToLower(*selectedColName)] {
+			// duplicate column name within this run - let the single-step path raise
+			// the proper "column already exists" error
+			break
+		}
+		conflict := false
+		for _, m := range backtickIdentRe.FindAllStringSubmatch(*selectedStatement, -1) {
+			if introduced[strings.ToLower(m[1])] {
+				conflict = true
+				break
+			}
+		}
+		if conflict {
+			break
+		}
+		configs = append(configs, cfg)
+		statements = append(statements, plainStatement)
+		introduced[strings.ToLower(*selectedColName)] = true
+	}
+
+	return configs, statements
+}
+
+// TransformNewColumnBatch executes a run of non-aggregating, non-groupby NewColumn
+// statements (as collected by CollectNewColumnBatch) as one SELECT, adding all of their
+// columns to dataset in a single pass instead of one executeSQLQuery call per statement.
+func TransformNewColumnBatch(dataset *types.DataSet, statements []string) (*types.DataSet, error) {
+	headers, columnTypeMap := extractHeadersAndTypeMap(dataset)
+	headers, columnTypeMap, dataset = addKeyRowToDataset(headers, columnTypeMap, dataset)
+
+	var sb strings.Builder
+	sb.WriteString("SELECT ")
+	sb.WriteString(buildSelectStatement(headers))
+	for _, statement := range statements {
+		sb.WriteString(", ")
+		sb.WriteString(statement)
+	}
+	sb.WriteString(" FROM ")
+	sb.WriteString(defaultTableName)
+
+	result, err := executeSQLQuery(sb.String(), dataset, columnTypeMap)
+	if err != nil {
+		return nil, err
+	}
+
+	result.Headers = buildHeaders(result, dataset)
+	result = removeAndAssignRowKey(result)
+	return result, nil
 }
 
 // TODO find better names for these variables

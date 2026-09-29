@@ -106,13 +106,26 @@ func Transform(dataset *types.DataSet, transformations []*types.TransformationSt
 		return newData, nil
 	}
 
-	for i, ts := range transformations {
+	for i := 0; i < len(transformations); {
+		ts := transformations[i]
+		if ts.Operator == types.NewColumn && len(newData.Rows) > 0 {
+			_, statements := operator.CollectNewColumnBatch(transformations[i:])
+			if len(statements) > 1 {
+				newData, err = operator.TransformNewColumnBatch(newData, statements)
+				if err != nil {
+					return nil, fmt.Errorf("could not apply transformation: %s (%s operator, step %d)", err.Error(), ts.Operator.String(), i)
+				}
+				i += len(statements)
+				continue
+			}
+		}
 		newData, err = processTransformation(newData, ts, otherSets)
 		// let's wrap this error message to give more details
 		if err != nil {
 			// wow we failed
 			return nil, fmt.Errorf("could not apply transformation: %s (%s operator, step %d)", err.Error(), ts.Operator.String(), i)
 		}
+		i++
 	}
 
 	return newData, nil
