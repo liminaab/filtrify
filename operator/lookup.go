@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	_ "github.com/araddon/qlbridge/qlbdriver"
 	"github.com/liminaab/filtrify/types"
@@ -220,6 +222,41 @@ func (t *LookupOperator) mergeNilRow(orgDataset *types.DataSet, left *types.Data
 	return newRow
 }
 
+// joinKeyOf builds a composite lookup key out of a row's join columns, matching
+// EqualsAsText's notion of equality closely enough for the common case (same-type or
+// cross-type-but-textually-equal values). Each part is length-prefixed so that
+// e.g. ["ab","c"] can never collide with ["a","bc"]. A NilType (or missing) column
+// makes the row unmatchable, mirroring Equals() which always returns false for
+// NilType even when comparing nil to nil.
+func (t *LookupOperator) joinKeyOf(index map[string]*types.DataColumn, names []string) (string, bool) {
+	var sb strings.Builder
+	for _, name := range names {
+		col, ok := index[name]
+		if !ok || col == nil || col.CellValue == nil || col.CellValue.DataType == types.NilType {
+			return "", false
+		}
+		part := t.canonicalCellText(col.CellValue)
+		sb.WriteString(strconv.Itoa(len(part)))
+		sb.WriteByte(':')
+		sb.WriteString(part)
+	}
+	return sb.String(), true
+}
+
+// canonicalCellText renders a cell to text for hashing. It matches CellValue.ToString()
+// except for timestamp-like types, which are normalized to UTC with nanosecond precision
+// so two representations of the same instant in different locations hash identically -
+// ToString()'s RFC3339 (no sub-second digits) can otherwise collide distinct instants or
+// split equal ones across zones.
+func (t *LookupOperator) canonicalCellText(v *types.CellValue) string {
+	switch v.DataType {
+	case types.TimestampType, types.DateType, types.TimeOfDayType:
+		return v.TimestampValue.UTC().Format(time.RFC3339Nano)
+	default:
+		return v.ToString()
+	}
+}
+
 func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, config *LookupConfiguration) *types.DataSet {
 	mergedSet := &types.DataSet{
 		Rows: make([]*types.DataRow, len(left.Rows)),
@@ -233,31 +270,32 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 		return left
 	}
 
+	rightNames := make([]string, len(config.Columns))
+	leftNames := make([]string, len(config.Columns))
+	for i, jc := range config.Columns {
+		rightNames[i] = jc.Right
+		leftNames[i] = jc.Left
+	}
+
+	// index the right side once by join key instead of rescanning it for every left row -
+	// this is what turns the join from O(len(left)*len(right)) into O(len(left)+len(right)).
+	// Only the first row per key is kept, matching the original loop's "first match wins" order.
+	rightByKey := make(map[string]*types.DataRow, len(right.Rows))
+	for _, rr := range right.Rows {
+		key, ok := t.joinKeyOf(rightIndex[rr], rightNames)
+		if !ok {
+			continue
+		}
+		if _, exists := rightByKey[key]; !exists {
+			rightByKey[key] = rr
+		}
+	}
+
 	refRow := right.Rows[0]
 	for li, lr := range left.Rows {
-		leftJoinColumns := make([]*types.DataColumn, len(config.Columns))
-		for i, jc := range config.Columns {
-			leftJoinColumns[i] = leftIndex[lr][jc.Left]
-		}
 		var matchRow *types.DataRow = nil
-		for _, rr := range right.Rows {
-			rightJoinColumns := make([]*types.DataColumn, len(config.Columns))
-			for i, jc := range config.Columns {
-				rightJoinColumns[i] = rightIndex[rr][jc.Right]
-			}
-			foundMatch := true
-			// we need to try find if those values are equal?
-			for i := range leftJoinColumns {
-				if !leftJoinColumns[i].CellValue.EqualsAsText(rightJoinColumns[i].CellValue) {
-					foundMatch = false
-				}
-			}
-			if foundMatch {
-				// we need to merge these 2 rows
-				matchRow = rr
-				// let's move to next row on left
-				break
-			}
+		if key, ok := t.joinKeyOf(leftIndex[lr], leftNames); ok {
+			matchRow = rightByKey[key]
 		}
 		var newRow *types.DataRow = nil
 		if matchRow != nil {
