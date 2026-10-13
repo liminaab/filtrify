@@ -248,9 +248,12 @@ func appendConverted(b array.Builder, v interface{}) error {
 	return nil
 }
 
+// convertColumn returns an owned reference: the caller must Release the
+// returned column once it has been handed off (or discard it on error).
 func (t *ChangeColumnTypeOperator) convertColumn(col *arrow.Column, config ConversionConfiguration) (arrow.Column, error) {
 	nullType := (&arrow.NullType{}).ID()
 	if col.DataType().ID() == nullType {
+		col.Retain() // the caller releases every column it gets back
 		return *col, nil
 	}
 
@@ -259,11 +262,11 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *arrow.Column, config Conve
 	sourceFiltrifyType := conversion.FiltrifyType(sourceArrowType)
 	targetMap, found := conversionMap[sourceFiltrifyType]
 	if !found {
-		return *col, errors.New("invalid source type")
+		return arrow.Column{}, errors.New("invalid source type")
 	}
 	conversionF, found := targetMap[config.TargetType]
 	if !found {
-		return *col, errors.New("invalid target type")
+		return arrow.Column{}, errors.New("invalid target type")
 	}
 
 	theBuilder := array.NewBuilder(memory.DefaultAllocator, targetArrowType)
@@ -289,7 +292,7 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *arrow.Column, config Conve
 			}
 			convertedData, err := conversionF(sourceData, config)
 			if err != nil && (config.SkipConversionIfFails == nil || *config.SkipConversionIfFails) {
-				return *col, err
+				return arrow.Column{}, err
 			}
 			// insert the convertedData
 			if convertedData == nil || err != nil {
@@ -298,7 +301,7 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *arrow.Column, config Conve
 				continue
 			}
 			if err := appendConverted(theBuilder, convertedData); err != nil {
-				return *col, err
+				return arrow.Column{}, err
 			}
 		}
 		newChunks = append(newChunks, theBuilder.NewArray()) // NewArray also resets the builder
@@ -320,12 +323,23 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *arrow.Column, config Conve
 
 func (t *ChangeColumnTypeOperator) TransformInternal(dataset *types.DataSetv2, typedConfig *ChangeColumnTypeConfiguration) (*types.DataSetv2, error) {
 	newColumns := make([]arrow.Column, dataset.NumCols())
+	// every column in newColumns is an owned reference - NewTable takes its own,
+	// so we hand ours back once we are done (or on the way out if we fail)
+	built := 0
+	defer func() {
+		for i := range built {
+			newColumns[i].Release()
+		}
+	}()
+
 	for i := range dataset.NumCols() {
 		curCol := dataset.Column(int(i))
 		curColName := curCol.Name()
 		config, exists := typedConfig.Columns[curColName]
 		if !exists {
+			curCol.Retain() // we release it below, so take a ref of our own
 			newColumns[i] = *curCol
+			built++
 			continue
 		}
 		convertedColumn, err := t.convertColumn(curCol, config)
@@ -333,6 +347,7 @@ func (t *ChangeColumnTypeOperator) TransformInternal(dataset *types.DataSetv2, t
 			return nil, err
 		}
 		newColumns[i] = convertedColumn
+		built++
 	}
 	fields := make([]arrow.Field, len(newColumns))
 	for i := range newColumns {
@@ -340,14 +355,13 @@ func (t *ChangeColumnTypeOperator) TransformInternal(dataset *types.DataSetv2, t
 	}
 	oldMetadata := dataset.Schema().Metadata()
 	schema := arrow.NewSchema(fields, &oldMetadata)
-	newTable := array.NewTable(schema, newColumns, dataset.NumRows())
+	newTable := array.NewTable(schema, newColumns, dataset.NumRows()) // retains each column
 	return &types.DataSetv2{
 		newTable,
 	}, nil
 }
 
 func (t *ChangeColumnTypeOperator) Transform(dataset *types.DataSetv2, config string, _ map[string]*types.DataSetv2) (*types.DataSetv2, error) {
-
 	typedConfig, err := t.buildConfiguration(config)
 	if err != nil {
 		return nil, err
