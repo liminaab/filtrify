@@ -5,7 +5,13 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/apache/arrow-go/v18/arrow"
 )
+
+type DataSetv2 struct {
+	arrow.Table
+}
 
 type TransformationOperatorType int64
 type CellDataType int64
