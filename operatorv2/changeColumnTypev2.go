@@ -152,36 +152,6 @@ func init() {
 	conversionMap[types.TimeOfDayType][types.DateType] = noopConversion
 }
 
-// sourceValue reads slot i of arr as the native Go type the conversionFuncs
-// expect. GetOneForMarshal is not usable here - it renders temporal values as
-// JSON strings, while the conversionFuncs assert on time.Time.
-func sourceValue(arr arrow.Array, i int) (interface{}, error) {
-	switch a := arr.(type) {
-	case *array.Int32:
-		return a.Value(i), nil
-	case *array.Int64:
-		return a.Value(i), nil
-	case *array.Float64:
-		return a.Value(i), nil
-	case *array.Boolean:
-		return a.Value(i), nil
-	case *array.String:
-		return a.Value(i), nil
-	case *array.LargeString:
-		return a.Value(i), nil
-	case *array.Timestamp:
-		unit := a.DataType().(*arrow.TimestampType).Unit
-		return a.Value(i).ToTime(unit), nil
-	case *array.Date32:
-		return a.Value(i).ToTime(), nil
-	case *array.Time64:
-		unit := a.DataType().(*arrow.Time64Type).Unit
-		return a.Value(i).ToTime(unit), nil
-	default:
-		return nil, fmt.Errorf("unsupported source array %T", arr)
-	}
-}
-
 // appendConverted writes a value produced by a conversionFunc into b, encoding
 // time.Time the same way the conversion package does when it reads raw data.
 func appendConverted(b array.Builder, v interface{}) error {

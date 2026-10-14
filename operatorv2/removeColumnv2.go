@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/apache/arrow-go/v18/arrow"
-	"github.com/apache/arrow-go/v18/arrow/array"
 	_ "github.com/araddon/qlbridge/qlbdriver"
 	"github.com/liminaab/filtrify/types"
 )
@@ -18,37 +16,14 @@ type RemoveColumnConfiguration struct {
 }
 
 func (t *RemoveColumnOperator) TransformWithConfig(dataset *types.DataSetv2, typedConfig *RemoveColumnConfiguration, _ map[string]*types.DataSetv2) (*types.DataSetv2, error) {
-	toRemove := make(map[string]bool, len(typedConfig.Columns))
+	var err error
 	for _, c := range typedConfig.Columns {
-		toRemove[c] = true
-	}
-
-	newColumns := make([]arrow.Column, 0, dataset.NumCols())
-	built := 0
-	defer func() {
-		for i := range built {
-			newColumns[i].Release()
+		dataset, err = dataset.RemoveColumn(c)
+		if err != nil {
+			return nil, err
 		}
-	}()
-
-	for i := range dataset.NumCols() {
-		col := dataset.Column(int(i))
-		if _, skip := toRemove[col.Name()]; skip {
-			continue
-		}
-		col.Retain()
-		newColumns = append(newColumns, *col)
-		built++
 	}
-
-	fields := make([]arrow.Field, len(newColumns))
-	for i := range newColumns {
-		fields[i] = newColumns[i].Field()
-	}
-	oldMetadata := dataset.Schema().Metadata()
-	schema := arrow.NewSchema(fields, &oldMetadata)
-	newTable := array.NewTable(schema, newColumns, dataset.NumRows())
-	return &types.DataSetv2{Table: newTable}, nil
+	return dataset, nil
 }
 
 func (t *RemoveColumnOperator) Transform(dataset *types.DataSetv2, config string, _ map[string]*types.DataSetv2) (*types.DataSetv2, error) {

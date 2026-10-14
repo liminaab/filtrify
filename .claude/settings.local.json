@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go version *)",
+      "Bash(go list *)",
+      "Bash(echo \"=== rc=$? ===\")",
+      "Bash(go mod *)",
+      "Bash(go build *)",
+      "Bash(go vet *)",
+      "Bash(echo \"=== vet rc=$? ===\")",
+      "Bash(go test *)",
+      "Bash(awk '{print NF\": \"$0}' FS=',' /Users/bahadirb/src/filtrify/testdata/limina_test_subscription)",
+      "Bash(python3 *)",
+      "Bash(gofmt -l types/)",
+      "Bash(go tool *)",
+      "Bash(awk '$3==\"0.0%\" || $3+0 < 70 {print}')",
+      "Bash(awk '$3==\"0.0%\"')",
+      "Bash(echo \"--- exit $?\")",
+      "Bash(awk '$0 ~ /arrow/ {s+=$2} END {print \"arrow symbol bytes:\", s/1024/1024, \"MiB\"}')",
+      "Bash(gofmt -l types/typesv3.go)",
+      "Bash(gofmt -w types/typesv3.go)",
+      "Bash(echo \"build exit=$?\")",
+      "Bash(perl -0pi -e 's/func newDataSetV3\\\\\\(rec arrow\\\\.RecordBatch, mem memory\\\\.Allocator\\\\\\) \\\\\\(\\\\*DataSetV3, error\\\\\\) \\\\{/func newDataSetV3\\(rec arrow.RecordBatch\\) \\(*DataSetV3, error\\) {/' types/typesv3.go)",
+      "Bash(perl -0pi -e 's/return newDataSetV3\\\\\\(rec, b\\\\.mem\\\\\\)/return newDataSetV3\\(rec\\)/' types/typesv3.go)",
+      "Bash(perl -0pi -e 's/ds, err := newDataSetV3\\\\\\(rec, memory\\\\.DefaultAllocator\\\\\\)/ds, err := newDataSetV3\\(rec\\)/' types/typesv3.go)",
+      "Bash(echo \"build=$?\")",
+      "Bash(go doc *)",
+      "Bash(go env *)",
+      "Bash(cd \"$\\(go env GOMODCACHE\\)/github.com/apache/arrow-go/v18@v18.8.0/arrow/array\")",
+      "Bash(grep -rn GetOneForMarshal __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/array)",
+      "Bash(grep -rn GetOneForMarshal __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/array/numeric.go __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/array/numericbuilder.gen.go)",
+      "Bash(grep -n GetOneForMarshal -A 20 __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/array/numeric_generic.go)",
+      "Bash(grep -rn 'Date32\\\\b' __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/array/numeric_generic.go)",
+      "Bash(grep -n 'func \\(t Timestamp\\) ToTime\\\\|func \\(t Time64\\) ToTime\\\\|func \\(d Date32\\) ToTime' -A 6 __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/datatype_fixedwidth.go)",
+      "Bash(grep -n 'func NewChunked' -A 25 __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/table.go)",
+      "Bash(grep -n 'func NewColumn' -A 30 __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/table.go)",
+      "Bash(grep -n 'func NewTable' -A 40 __CMDSUB_OUTPUT__/github.com/apache/arrow-go/v18@v18.8.0/arrow/array/table.go)",
+      "Bash(gofmt -l operatorv2/)"
+    ]
+  }
+}
