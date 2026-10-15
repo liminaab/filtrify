@@ -112,9 +112,6 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSetv2, config string, _
 		sb.WriteString(" GROUP BY ")
 		sb.WriteString(fmt.Sprintf("`%s`", typedConfig.GroupBy))
 	}
-	if err != nil {
-		return nil, err
-	}
 	fullQuery := sb.String()
 
 	result, err := executeSQLQuery(fullQuery, dataset, columnTypeMap)
@@ -142,12 +139,12 @@ func (t *NewColumnOperator) Transform(dataset *types.DataSetv2, config string, _
 	}
 
 	// now we need to merge result with plain aggregations
-	dataset, err = dataset.AddColumns(plainAggs...)
+	dataset, err = result.AddColumns(plainAggs...)
 	if err != nil {
 		return nil, err
 	}
 	//	result = removeAndAssignRowKey(result)
-	return result, nil
+	return dataset, nil
 }
 
 func (t *NewColumnOperator) executePlainAggregation(aggrStatement string, ds *types.DataSetv2, existingColumnTypeMap map[string]types.CellDataType) (*types.DataSetv2, error) {
