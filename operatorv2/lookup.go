@@ -501,7 +501,6 @@ func (t *LookupOperator) Transform(dataset *types.DataSetv2, config string, othe
 		}
 	}
 
-	// wow we are ready to join those tables
 	return t.mergeSets(dataset, filteredSet, typedConfig)
 }
 

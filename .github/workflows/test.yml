@@ -23,12 +23,28 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
+      # Everything is built with -tags=duckdb_arrow. DuckDB's Arrow interface is
+      # an opt-in dependency of duckdb-go and the operatorv2 package requires it,
+      # so a build without the tag is a hard compile error by design (see
+      # operatorv2/duckdb_disabled.go).
       - name: Run unit tests
-        run: go test ./...
+        run: go test -tags=duckdb_arrow ./...
 
       # Race detector gate. The in-memory SQL operators (newColumn/filter/aggregate)
       # share a process-global qlbridge schema registry, so concurrency regressions
       # there are only caught under -race. -short skips the heavy big-data download
       # tests while still running the concurrency regression test.
       - name: Run race detector
-        run: go test -race -short ./...
+        run: go test -tags=duckdb_arrow -race -short ./...
+
+      # The tag is mandatory, so guard that it stays mandatory: a tagless build
+      # must fail. Without this, someone could delete duckdb_disabled.go and
+      # nothing in CI would notice.
+      - name: Verify the build requires the duckdb_arrow tag
+        run: |
+          if go build ./... 2>/dev/null; then
+            echo "::error::go build ./... succeeded without -tags=duckdb_arrow;" \
+                 "the operatorv2 package is supposed to require it (see operatorv2/duckdb_disabled.go)"
+            exit 1
+          fi
+          echo "OK: building without -tags=duckdb_arrow fails as intended"

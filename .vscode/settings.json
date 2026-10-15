@@ -1,0 +1,8 @@
+{
+  "// note": "This module requires the duckdb_arrow build tag; without it gopls reports the operatorv2 package as having no packages / undefined symbols. See README.md.",
+  "gopls": {
+    "build.buildFlags": ["-tags=duckdb_arrow"]
+  },
+  "go.buildTags": "duckdb_arrow",
+  "go.testTags": "duckdb_arrow"
+}

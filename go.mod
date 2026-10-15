@@ -18,6 +18,14 @@ require (
 	github.com/andybalholm/brotli v1.2.3 // indirect
 	github.com/apache/thrift v0.24.0 // indirect
 	github.com/dchest/siphash v1.2.1 // indirect
+	github.com/duckdb/duckdb-go-bindings v0.10506.0 // indirect
+	github.com/duckdb/duckdb-go-bindings/lib/darwin-amd64 v0.10506.0 // indirect
+	github.com/duckdb/duckdb-go-bindings/lib/darwin-arm64 v0.10506.0 // indirect
+	github.com/duckdb/duckdb-go-bindings/lib/linux-amd64 v0.10506.0 // indirect
+	github.com/duckdb/duckdb-go-bindings/lib/linux-arm64 v0.10506.0 // indirect
+	github.com/duckdb/duckdb-go-bindings/lib/windows-amd64 v0.10506.0 // indirect
+	github.com/duckdb/duckdb-go/v2 v2.10506.0 // indirect
+	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
