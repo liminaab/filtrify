@@ -3,6 +3,7 @@
 # function is a stub that returns an error (see operatorv2/duckdb_disabled.go).
 TAGS := duckdb_arrow
 
+.PHONY: build
 build:
 	go build -tags=$(TAGS) -o bin/main main/main.go
 

@@ -1,6 +1,8 @@
 package types
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,10 +13,39 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/array"
 	"github.com/apache/arrow-go/v18/arrow/memory"
+	"github.com/apache/arrow-go/v18/parquet"
+	"github.com/apache/arrow-go/v18/parquet/compress"
+	"github.com/apache/arrow-go/v18/parquet/pqarrow"
 )
 
 type DataSetv2 struct {
 	arrow.Table
+}
+
+func (t *DataSetv2) SerializeToParquet() ([]byte, error) {
+	var buf bytes.Buffer
+	props := parquet.NewWriterProperties(
+		parquet.WithCompression(compress.Codecs.Snappy),
+	)
+	arrowProps := pqarrow.NewArrowWriterProperties(pqarrow.WithStoreSchema())
+	if err := pqarrow.WriteTable(t, &buf, 64*1024, props, arrowProps); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func NewDataSetFromParquet(b []byte) (*DataSetv2, error) {
+	table, err := pqarrow.ReadTable(
+		context.Background(),
+		bytes.NewReader(b),
+		parquet.NewReaderProperties(memory.DefaultAllocator),
+		pqarrow.ArrowReadProperties{Parallel: true, BatchSize: 64 * 1024},
+		memory.DefaultAllocator,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &DataSetv2{table}, nil
 }
 
 // AddColumns returns a new DataSetv2 holding every column of t followed by cols.
@@ -89,37 +120,12 @@ type valuer[T any] interface {
 	Value(i int) T
 }
 
-func (t *DataSetv2) ValuesOf[T any](col *arrow.Column) iter.Seq[*T] {
-	return func(yield func(*T) bool) {
-		for _, chunk := range col.Data().Chunks() {
-			arr, ok := chunk.(valuer[T])
-			if !ok {
-				var zero T
-				panic(fmt.Sprintf("arrowiter: column %q is %s, cannot read as %T",
-					col.Name(), col.DataType(), zero))
-			}
-			for i := 0; i < arr.Len(); i++ {
-				if arr.IsNull(i) {
-					if !yield(nil) {
-						return
-					}
-					continue
-				}
-				theVal := arr.Value(i)
-				if !yield(&theVal) {
-					return
-				}
-			}
-		}
-	}
-}
-
 func (t *DataSetv2) ValuesByName[T any](name string) iter.Seq[*T] {
 	col := t.GetColumn(name)
 	if col == nil {
 		return nil
 	}
-	return t.ValuesOf[T](col)
+	return t.Values[T](col)
 }
 
 // Values yields a pointer to every row of col across all chunks,
@@ -562,11 +568,6 @@ type TransformationOperatorv2 interface {
 	Transform(dataset *DataSetv2, config string, otherSets map[string]*DataSetv2) (*DataSetv2, error)
 	ValidateConfiguration(config string) (bool, error)
 }
-
-// type DataSet struct {
-// 	RawData                  [][]string
-// 	RawDataFirstLineIsHeader bool
-// }
 
 type Header struct {
 	ColumnName string

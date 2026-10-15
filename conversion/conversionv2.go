@@ -2,6 +2,8 @@ package conversion
 
 import (
 	"errors"
+	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -168,6 +170,205 @@ func appendData(b array.Builder, data string, enforceType types.CellDataType, pa
 		bb.AppendNull()
 		break
 
+	}
+	return nil
+}
+
+// MigrateToV2 rebuilds a row-oriented [types.DataSet] as a column-oriented
+// [types.DataSetv2] holding the same data. Column order follows the order the
+// columns appear in the rows, and each column gets the Arrow type matching the
+// cell type its values carry - a column whose cells are all nil falls back to
+// the type declared in the dataset headers.
+func MigrateToV2(dataset *types.DataSet) (*types.DataSetv2, error) {
+	if dataset == nil {
+		return nil, errors.New("cannot migrate a nil dataset")
+	}
+
+	names := columnOrder(dataset)
+	fields := make([]arrow.Field, len(names))
+	for i, name := range names {
+		fields[i] = arrow.Field{
+			Name:     name,
+			Type:     ArrowType(resolveColumnType(dataset, name)),
+			Nullable: true,
+		}
+	}
+
+	dataSchema := arrow.NewSchema(fields, nil)
+	rowBuilder := array.NewRecordBuilder(memory.DefaultAllocator, dataSchema)
+	defer rowBuilder.Release()
+	rowBuilder.Reserve(len(dataset.Rows))
+
+	for _, row := range dataset.Rows {
+		for ci, name := range names {
+			var cell *types.CellValue
+			if row != nil {
+				if col := row.GetColumn(name); col != nil {
+					cell = col.CellValue
+				}
+			}
+			if err := appendCellValue(rowBuilder.Field(ci), cell); err != nil {
+				return nil, fmt.Errorf("column %q: %w", name, err)
+			}
+		}
+	}
+
+	rec := rowBuilder.NewRecordBatch()
+	defer rec.Release()
+	return &types.DataSetv2{
+		Table: array.NewTableFromRecords(dataSchema, []arrow.RecordBatch{rec}),
+	}, nil
+}
+
+// columnOrder lists every column of dataset once, in the order the rows hold
+// them. Columns that only exist in the headers are appended afterwards, ordered
+// by their header order then by name so an empty dataset still migrates
+// deterministically.
+func columnOrder(dataset *types.DataSet) []string {
+	seen := make(map[string]bool, len(dataset.Headers))
+	names := make([]string, 0, len(dataset.Headers))
+	for _, row := range dataset.Rows {
+		if row == nil {
+			continue
+		}
+		for _, col := range row.Columns {
+			if col == nil || seen[col.ColumnName] {
+				continue
+			}
+			seen[col.ColumnName] = true
+			names = append(names, col.ColumnName)
+		}
+	}
+
+	headerOnly := make([]*types.Header, 0, len(dataset.Headers))
+	for name, header := range dataset.Headers {
+		if seen[name] || header == nil {
+			continue
+		}
+		headerOnly = append(headerOnly, header)
+	}
+	sort.Slice(headerOnly, func(i, j int) bool {
+		if headerOnly[i].Order != headerOnly[j].Order {
+			return headerOnly[i].Order < headerOnly[j].Order
+		}
+		return headerOnly[i].ColumnName < headerOnly[j].ColumnName
+	})
+	for _, header := range headerOnly {
+		names = append(names, header.ColumnName)
+	}
+
+	return names
+}
+
+// resolveColumnType picks the cell type that can hold every value the column
+// called name carries. Mixed numeric types widen to the widest one, any other
+// mix falls back to text, and a column without a single non-nil value takes the
+// type from the headers.
+func resolveColumnType(dataset *types.DataSet, name string) types.CellDataType {
+	resolved := types.NilType
+	for _, row := range dataset.Rows {
+		if row == nil {
+			continue
+		}
+		col := row.GetColumn(name)
+		if col == nil || col.CellValue == nil || col.CellValue.DataType == types.NilType {
+			continue
+		}
+		dataType := col.CellValue.DataType
+		if resolved == types.NilType {
+			resolved = dataType
+			continue
+		}
+		resolved = mergeCellTypes(resolved, dataType)
+		if resolved == types.StringType {
+			// text holds anything - no wider type left to look for
+			break
+		}
+	}
+
+	if resolved == types.NilType {
+		if header, ok := dataset.Headers[name]; ok && header != nil {
+			return header.DataType
+		}
+	}
+	return resolved
+}
+
+// mergeCellTypes returns a type able to hold both a and b.
+func mergeCellTypes(a types.CellDataType, b types.CellDataType) types.CellDataType {
+	if a == b {
+		return a
+	}
+	ra, rb := numericRank(a), numericRank(b)
+	if ra > 0 && rb > 0 {
+		if ra > rb {
+			return a
+		}
+		return b
+	}
+	return types.StringType
+}
+
+// numericRank orders the numeric cell types from narrowest to widest, and
+// returns 0 for everything else.
+func numericRank(t types.CellDataType) int {
+	switch t {
+	case types.IntType:
+		return 1
+	case types.LongType:
+		return 2
+	case types.DoubleType:
+		return 3
+	}
+	return 0
+}
+
+// appendCellValue writes a single v1 cell into b, encoding each type the same
+// way appendData does when it reads raw text. A nil cell - or one carrying no
+// value - becomes a null.
+func appendCellValue(b array.Builder, cell *types.CellValue) error {
+	if cell == nil || cell.DataType == types.NilType {
+		b.AppendNull()
+		return nil
+	}
+
+	switch bb := b.(type) {
+	case *array.Int32Builder:
+		if !cell.IsNumeric() {
+			return fmt.Errorf("expected a numeric value, got %s", cell.DataType)
+		}
+		bb.Append(int32(cell.GetNumericVal()))
+	case *array.Int64Builder:
+		if !cell.IsNumeric() {
+			return fmt.Errorf("expected a numeric value, got %s", cell.DataType)
+		}
+		bb.Append(int64(cell.GetNumericVal()))
+	case *array.Float64Builder:
+		if !cell.IsNumeric() {
+			return fmt.Errorf("expected a numeric value, got %s", cell.DataType)
+		}
+		bb.Append(cell.GetNumericVal())
+	case *array.BooleanBuilder:
+		if cell.DataType != types.BoolType {
+			return fmt.Errorf("expected a bool value, got %s", cell.DataType)
+		}
+		bb.Append(cell.BoolValue)
+	case *array.StringBuilder:
+		// every type has a text form, so anything can land in a string column
+		bb.Append(cell.ToString())
+	case *array.LargeStringBuilder:
+		// objects are stored as JSON text - ToString marshals them
+		bb.Append(cell.ToString())
+	case *array.TimestampBuilder:
+		bb.Append(arrow.Timestamp(cell.TimestampValue.UnixMicro()))
+	case *array.Date32Builder:
+		bb.Append(ToDate32(cell.TimestampValue))
+	case *array.Time64Builder:
+		bb.Append(ToTime64us(cell.TimestampValue))
+	case *array.NullBuilder:
+		bb.AppendNull()
+	default:
+		return fmt.Errorf("unsupported column type %T", b)
 	}
 	return nil
 }
