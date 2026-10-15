@@ -558,6 +558,11 @@ type TransformationOperator interface {
 	ValidateConfiguration(config string) (bool, error)
 }
 
+type TransformationOperatorv2 interface {
+	Transform(dataset *DataSetv2, config string, otherSets map[string]*DataSetv2) (*DataSetv2, error)
+	ValidateConfiguration(config string) (bool, error)
+}
+
 // type DataSet struct {
 // 	RawData                  [][]string
 // 	RawDataFirstLineIsHeader bool
