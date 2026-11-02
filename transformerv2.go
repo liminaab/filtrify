@@ -17,7 +17,7 @@ func getOperatorv2(step *types.TransformationStep) (types.TransformationOperator
 	case types.Filter:
 		return &operatorv2.FilterOperator{}, nil
 	case types.NewColumn:
-		return &operatorv2.NewColumnOperator{}, nil
+		return &operatorv2.NewColumnOperatorv2{}, nil
 	case types.Aggregate:
 		return &operatorv2.AggregateOperator{}, nil
 	case types.GroupBy:

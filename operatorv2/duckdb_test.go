@@ -277,7 +277,7 @@ func TestDuckFilterParity(t *testing.T) {
 	}
 }
 
-// TestDuckNewColumnParity covers the queries NewColumnOperator builds.
+// TestDuckNewColumnParity covers the queries v1's NewColumnOperator builds.
 func TestDuckNewColumnParity(t *testing.T) {
 	all := "`Instrument name`,`Quantity`,`Market Value`,`Currency`,`Active`,`Trade Date`,`Settle Time`"
 	for _, q := range []string{

@@ -261,12 +261,22 @@ func (t *ChangeColumnTypeOperator) convertColumn(col *arrow.Column, config Conve
 				return *col, err
 			}
 			convertedData, err := conversionF(sourceData, config)
-			if err != nil && (config.SkipConversionIfFails == nil || *config.SkipConversionIfFails) {
-				return arrow.Column{}, err
-			}
-			// insert the convertedData
-			if convertedData == nil || err != nil {
-				// the conversion failed but we were told to keep going - leave a null behind
+			// A cell that will not convert costs that one cell and nothing more -
+			// the operation does not fail. v1 reaches this by a longer route: its
+			// per-cell convertColumn hands the error back to TransformInternal,
+			// which answers every error by writing a nil cell. Here the column is
+			// built in one pass, so the substitution happens at the point of
+			// failure; returning the error would abandon the rest of the column.
+			//
+			// SkipConversionIfFails chooses what is left behind, and despite its
+			// name it is the *false* case that keeps a value: v1 only returns the
+			// error - and so only nulls the cell - when the flag is absent or
+			// true. Set false, it falls through to its result switch with
+			// whatever the failed conversion returned, which is the target type's
+			// zero. That is reproduced rather than corrected, since it is this
+			// operator's observable behaviour either way.
+			if convertedData == nil ||
+				(err != nil && (config.SkipConversionIfFails == nil || *config.SkipConversionIfFails)) {
 				theBuilder.AppendNull()
 				continue
 			}

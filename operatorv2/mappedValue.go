@@ -12,7 +12,13 @@ import (
 type MappedValueOperator struct {
 }
 
-const valueKey = "__mapped_value_val_col"
+// A map table is two columns under these names: the key to match the mapped
+// column against, and the value to bring over. Data embedded in the
+// configuration carries no header row, so these are prepended to it.
+const (
+	mapKeyColumn   = "Key"
+	mapValueColumn = "Value"
+)
 
 type MappedValueConfiguration struct {
 	MappedColumnName string     `json:"mappedColumnName"`
@@ -39,9 +45,9 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSetv2, config string,
 	var tds *types.DataSetv2
 	if len(typedConfig.TargetData) > 0 {
 		// let's append static headers to our data
-		typedConfig.TargetData = append([][]string{{"Key", valueKey}}, typedConfig.TargetData...)
+		typedConfig.TargetData = append([][]string{{mapKeyColumn, mapValueColumn}}, typedConfig.TargetData...)
 		// let's make sure key is always text type
-		conversionMap := conversion.ConversionMap{"Key": false}
+		conversionMap := conversion.ConversionMap{mapKeyColumn: false}
 		tds, err = conversion.ConvertToTypedDatav2(typedConfig.TargetData, true, true, conversionMap, true)
 		if err != nil {
 			return nil, err
@@ -56,12 +62,14 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSetv2, config string,
 		return dataset, nil
 	}
 
-	if tds.NumRows() != 2 {
+	// The map table has to be the two columns named above and nothing else. v1
+	// reads the width of its first row to check that; the equivalent of a row's
+	// width in a column-oriented table is the number of columns, not the number
+	// of rows - a map table has as many rows as there are mappings.
+	if tds.NumCols() != 2 {
 		return nil, errors.New("invalid map table")
 	}
-	col0 := tds.Column(0)
-	col1 := tds.Column(1)
-	if col0.Name() != "Key" || col1.Name() != valueKey {
+	if tds.Column(0).Name() != mapKeyColumn || tds.Column(1).Name() != mapValueColumn {
 		return nil, errors.New("invalid map table")
 	}
 
@@ -70,7 +78,7 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSetv2, config string,
 		Columns: []*JoinColumn{
 			{
 				Left:  typedConfig.MappedColumnName,
-				Right: "Key",
+				Right: mapKeyColumn,
 			},
 		},
 		RemoveRightMatchColumn:   true,
@@ -92,10 +100,10 @@ func (t *MappedValueOperator) Transform(dataset *types.DataSetv2, config string,
 	//estimateColumnDataType(transformedSet, typedConfig.NewColumnName)
 	// let's rename the last column
 	lastCol := transformedSet.Column(int(transformedSet.NumCols() - 1))
-	if lastCol.Name() != valueKey {
+	if lastCol.Name() != mapValueColumn {
 		return nil, errors.New("internal join error")
 	}
-	transformedSet, err = transformedSet.RenameColumn(valueKey, typedConfig.MappedColumnName)
+	transformedSet, err = transformedSet.RenameColumn(mapValueColumn, typedConfig.NewColumnName)
 	if err != nil {
 		return nil, err
 	}

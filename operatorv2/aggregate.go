@@ -26,24 +26,6 @@ type AggregateConfiguration struct {
 	GroupBy []string           `json:"groupby"`
 }
 
-func (t *AggregateOperator) hasAggCall(statement string) bool {
-	statement = strings.ToLower(statement)
-	allOps := lmnqlbridge.GetOperators()
-	for key, op := range allOps {
-		aggfn, hasAggFlag := op.(expr.AggFunc)
-		if hasAggFlag {
-			if aggfn.IsAgg() {
-				fncCallKey := key + "("
-				// let's make sure our statement contains a call to an aggregate function
-				if strings.Contains(statement, fncCallKey) {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
 func buildLiminaAggSelectStatement(selectAgg *AggregateSelect, index int) (string, error) {
 	var sb strings.Builder
 	method := strings.ToLower(selectAgg.Method)

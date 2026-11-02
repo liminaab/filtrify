@@ -5,6 +5,8 @@ import (
 	"errors"
 
 	"github.com/apache/arrow-go/v18/arrow"
+	"github.com/apache/arrow-go/v18/arrow/array"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 	_ "github.com/araddon/qlbridge/qlbdriver"
 	"github.com/liminaab/filtrify/types"
 )
@@ -29,20 +31,39 @@ func (t *CumulativeSumOperator) Transform(dataset *types.DataSetv2, config strin
 		return nil, buildColumnNotExistsError(typedConfig.Column)
 	}
 
+	// A non-numeric column has nothing to add up, so every row carries the
+	// untouched starting total - v1 reaches the same place by never finding a
+	// numeric cell to accumulate.
 	if !dataset.IsNumericType(theColumn.DataType()) {
-		dataset, err = dataset.AddConstantColumn(typedConfig.NewColumnName, 0, &arrow.Float64Type{})
-		return dataset, err
+		return dataset.AddConstantColumn(typedConfig.NewColumnName, float64(0), &arrow.Float64Type{})
 	}
+
+	// The new column is the running total *as of each row*, not the one grand
+	// total repeated - that is what makes it cumulative. A null row adds nothing
+	// but still carries the total so far, which is how v1 handles a cell that is
+	// not numeric.
+	builder := array.NewFloat64Builder(memory.DefaultAllocator)
+	defer builder.Release()
+	builder.Reserve(int(dataset.NumRows()))
 
 	var cumulativeSum float64 = 0
 	for val := range dataset.NumericValues(theColumn) {
-		if val == nil {
-			continue
+		if val != nil {
+			cumulativeSum += *val
 		}
-		cumulativeSum += *val
+		builder.Append(cumulativeSum)
 	}
-	dataset, err = dataset.AddConstantColumn(typedConfig.NewColumnName, cumulativeSum, &arrow.Float64Type{})
-	return dataset, err
+
+	arr := builder.NewArray()
+	defer arr.Release()
+
+	field := arrow.Field{Name: typedConfig.NewColumnName, Type: arrow.PrimitiveTypes.Float64, Nullable: true}
+	chunked := arrow.NewChunked(field.Type, []arrow.Array{arr}) // retains arr
+	defer chunked.Release()
+	col := arrow.NewColumn(field, chunked) // retains chunked
+	defer col.Release()
+
+	return dataset.AddColumns(col)
 }
 
 func (t *CumulativeSumOperator) buildConfiguration(config string) (*CumulativeSumConfiguration, error) {

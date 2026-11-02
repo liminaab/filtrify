@@ -90,6 +90,29 @@ var duckCompatMacros = []string{
 // private in-memory database, so there is no shared schema registry to serialise
 // against.
 func executeSQLQueryDuck(q string, dataset *types.DataSetv2, existingColumnTypeMap map[string]types.CellDataType) (*types.DataSetv2, error) {
+	return executeSQLQueryDuckWith(q, dataset, existingColumnTypeMap, duckQueryOptions{})
+}
+
+// duckQueryOptions are the per-call adjustments to the execution above that an
+// operator can ask for. The zero value is what executeSQLQueryDuck uses, so an
+// operator that needs nothing special keeps calling that.
+type duckQueryOptions struct {
+	// extraMacros are registered after duckCompatMacros, so an operator can add
+	// to - or, with CREATE OR REPLACE, override - the shared vocabulary. The
+	// NewColumn operator uses this: a NewColumn statement is written by whoever
+	// configured the transformation rather than by a query builder in this
+	// package, so it can reach any lmnqlbridge function, and several of those
+	// need a spelling that differs from the one the builders need. See
+	// newColumnv2Macros.
+	extraMacros []string
+
+	// skipTranslation runs q as given instead of putting it through
+	// translateToDuckSQL. An operator that has already translated its own
+	// statement sets this so the shared rewrites do not run over it twice.
+	skipTranslation bool
+}
+
+func executeSQLQueryDuckWith(q string, dataset *types.DataSetv2, existingColumnTypeMap map[string]types.CellDataType, opts duckQueryOptions) (*types.DataSetv2, error) {
 	if dataset == nil || dataset.Table == nil {
 		return nil, errors.New("cannot execute a query against a nil dataset")
 	}
@@ -99,9 +122,13 @@ func executeSQLQueryDuck(q string, dataset *types.DataSetv2, existingColumnTypeM
 		return nil, errors.New("cannot execute a query against a dataset with no columns")
 	}
 
-	translated, err := translateToDuckSQL(q, existingColumnTypeMap)
-	if err != nil {
-		return nil, err
+	translated := q
+	if !opts.skipTranslation {
+		var err error
+		translated, err = translateToDuckSQL(q, existingColumnTypeMap)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	connector, err := duckdb.NewConnector("", nil)
@@ -135,6 +162,11 @@ func executeSQLQueryDuck(q string, dataset *types.DataSetv2, existingColumnTypeM
 	defer releaseView()
 
 	for _, macro := range duckCompatMacros {
+		if err := duckExec(ctx, ar, macro); err != nil {
+			return nil, fmt.Errorf("could not register compatibility macro %q: %w", macro, err)
+		}
+	}
+	for _, macro := range opts.extraMacros {
 		if err := duckExec(ctx, ar, macro); err != nil {
 			return nil, fmt.Errorf("could not register compatibility macro %q: %w", macro, err)
 		}

@@ -47,7 +47,14 @@ func TestProbeConvertedColumnRefcount(t *testing.T) {
 	}
 }
 
-// Probe the error path: a column that converts fine followed by one that fails.
+// Probe the error path: a column that converts fine followed by one whose
+// conversion cannot even be attempted.
+//
+// The failure has to be a configuration one - no route from the source type to
+// the target - rather than a value that will not parse. A cell that fails to
+// convert is not an error at all: convertColumn leaves a null behind and carries
+// on, which is what v1 does by way of TransformInternal answering every per-cell
+// error with a nil cell.
 func TestProbeErrorPathRefcount(t *testing.T) {
 	rows := [][]string{{"a", "b"}, {"1", "xyz"}, {"3", "qrs"}}
 
@@ -58,15 +65,15 @@ func TestProbeErrorPathRefcount(t *testing.T) {
 	t.Logf("col a type = %v, col b type = %v", ds.Column(0).DataType(), ds.Column(1).DataType())
 
 	op := &ChangeColumnTypeOperator{}
-	// "a" (int32) converts cleanly; "b" (string) fails to parse as double
+	// "a" (int32) converts cleanly; "b" (string) has no conversion to an object
 	_, err = op.TransformInternal(ds, &ChangeColumnTypeConfiguration{
 		Columns: map[string]ConversionConfiguration{
 			"a": {TargetType: types.StringType},
-			"b": {TargetType: types.DoubleType},
+			"b": {TargetType: types.ObjectType},
 		},
 	})
 	if err == nil {
-		t.Fatalf("expected an error from the unparseable column")
+		t.Fatalf("expected an error from the column with no conversion to its target")
 	}
 	t.Logf("got expected error: %v", err)
 	ds.Release()
