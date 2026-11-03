@@ -683,6 +683,48 @@ func getStringConversionTests() []conversionTest {
 			want:   time.Date(0, 1, 1, 16, 45, 9, 0, time.UTC),
 			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimestampType, StringDate: &operator.StringDateConfiguration{DateFormat: "hh:mm:ss"}}),
 		},
+		{
+			name:   "string_to_date_double_digit_format_padded_input",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "05/03/2024"}),
+			want:   time.Date(2024, 3, 5, 0, 0, 0, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DateType, StringDate: &operator.StringDateConfiguration{DateFormat: "dd/MM/yyyy"}}),
+		},
+		{
+			name:   "string_to_date_double_digit_format_non_padded_input",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "5/3/2024"}),
+			want:   time.Date(2024, 3, 5, 0, 0, 0, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DateType, StringDate: &operator.StringDateConfiguration{DateFormat: "dd/MM/yyyy"}}),
+		},
+		{
+			name:   "string_to_date_single_digit_format_padded_input",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "05/03/2024"}),
+			want:   time.Date(2024, 3, 5, 0, 0, 0, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DateType, StringDate: &operator.StringDateConfiguration{DateFormat: "d/M/yyyy"}}),
+		},
+		{
+			name:   "string_to_date_single_digit_format_non_padded_input",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "5/3/2024"}),
+			want:   time.Date(2024, 3, 5, 0, 0, 0, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.DateType, StringDate: &operator.StringDateConfiguration{DateFormat: "d/M/yyyy"}}),
+		},
+		{
+			name:   "string_to_datetime_double_digit_format_padded_input",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "05.03.2024 09:05:07"}),
+			want:   time.Date(2024, 3, 5, 9, 5, 7, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimestampType, StringDate: &operator.StringDateConfiguration{DateFormat: "dd.MM.yyyy HH:mm:ss"}}),
+		},
+		{
+			name:   "string_to_datetime_double_digit_format_non_padded_input",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "5.3.2024 9:05:07"}),
+			want:   time.Date(2024, 3, 5, 9, 5, 7, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimestampType, StringDate: &operator.StringDateConfiguration{DateFormat: "dd.MM.yyyy HH:mm:ss"}}),
+		},
+		{
+			name:   "string_to_datetime_single_digit_format_padded_input",
+			data:   getDatasetForConversion(types.CellValue{DataType: types.StringType, StringValue: "05.03.2024 16:45:09"}),
+			want:   time.Date(2024, 3, 5, 16, 45, 9, 0, time.UTC),
+			config: getConfigForConversionColumn(operator.ConversionConfiguration{TargetType: types.TimestampType, StringDate: &operator.StringDateConfiguration{DateFormat: "d.M.yyyy H:mm:ss"}}),
+		},
 	}
 }
 
