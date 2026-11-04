@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	_ "github.com/araddon/qlbridge/qlbdriver"
 	"github.com/liminaab/filtrify/types"
@@ -348,40 +349,82 @@ func commonTimeToInt(t time.Time, config ConversionConfiguration) (int64, error)
 	return t.Unix(), nil
 }
 
-// Converts a Java-style datetime layout string to a Go-style layout string
-func convertJavaLayoutToGoLayout(javaLayout string) (string, error) {
-	// Define the Java-style layout strings and their Go-style equivalents
-	javaLayouts := [][]string{
-		{"yyyy", "2006"},
-		{"YYYY", "2006"},
-		{"yy", "06"},
-		{"MM", "01"},
-		{"M", "1"},
-		{"dd", "02"},
-		{"d", "2"},
-		{"HH", "15"},
-		{"hh", "15"},
-		{"H", "3"},
-		{"mm", "04"},
-		{"m", "4"},
-		{"ss", "05"},
-		{"s", "5"},
-		{"SSS", "000"},
-		{"Z", "Z07:00"},
-		{"ZZ", "-07:00"},
-	}
+// Java-style layout tokens and their Go-style equivalents
+// "hh" is intentionally mapped to the 24-hour clock for backwards compatibility with existing configurations
+var javaToGoLayoutTokens = map[string]string{
+	"yyyy": "2006",
+	"YYYY": "2006",
+	"yy":   "06",
+	"YY":   "06",
+	"MMMM": "January",
+	"MMM":  "Jan",
+	"MM":   "01",
+	"M":    "1",
+	"dd":   "02",
+	"d":    "2",
+	"HH":   "15",
+	"H":    "15",
+	"hh":   "15",
+	"mm":   "04",
+	"m":    "4",
+	"ss":   "05",
+	"s":    "5",
+	"SSS":  "000",
+	"Z":    "Z07:00",
+	"ZZ":   "-07:00",
+}
 
-	// Replace each Java-style layout string with its Go-style equivalent
-	goLayout := javaLayout
-	for _, layoutMap := range javaLayouts {
-		javaStr := layoutMap[0]
-		goStr := layoutMap[1]
-		if !strings.Contains(javaLayout, javaStr) {
-			continue
+// When parsing, padded and non-padded tokens are both mapped to Go's non-padded layout,
+// which accepts one or two digits. e.g. "dd/MM/yyyy" parses both "05/03/2024" and "5/3/2024"
+var javaToGoParseLayoutOverrides = map[string]string{
+	"MM": "1",
+	"M":  "1",
+	"dd": "2",
+	"d":  "2",
+	"mm": "4",
+	"m":  "4",
+	"ss": "5",
+	"s":  "5",
+}
+
+func convertJavaLayout(javaLayout string, forParsing bool) string {
+	var goLayout strings.Builder
+	runes := []rune(javaLayout)
+	for i := 0; i < len(runes); {
+		// a token is a run of the same letter, anything else is copied as is
+		j := i + 1
+		if unicode.IsLetter(runes[i]) {
+			for j < len(runes) && runes[j] == runes[i] {
+				j++
+			}
 		}
-		goLayout = strings.ReplaceAll(goLayout, javaStr, goStr)
+		token := string(runes[i:j])
+		i = j
+
+		if forParsing {
+			if goStr, ok := javaToGoParseLayoutOverrides[token]; ok {
+				goLayout.WriteString(goStr)
+				continue
+			}
+		}
+		if goStr, ok := javaToGoLayoutTokens[token]; ok {
+			goLayout.WriteString(goStr)
+		} else {
+			goLayout.WriteString(token)
+		}
 	}
-	return goLayout, nil
+	return goLayout.String()
+}
+
+// Converts a Java-style datetime layout string to a Go-style layout string for formatting
+func convertJavaLayoutToGoLayout(javaLayout string) (string, error) {
+	return convertJavaLayout(javaLayout, false), nil
+}
+
+// Converts a Java-style datetime layout string to a Go-style layout string for parsing
+// Day, month, minute and second fields accept both single and double digits
+func convertJavaLayoutToGoParseLayout(javaLayout string) (string, error) {
+	return convertJavaLayout(javaLayout, true), nil
 }
 
 // Converts an ISO 8601 layout string to a Go layout string
@@ -749,7 +792,7 @@ func stringToBool(input interface{}, config ConversionConfiguration) (interface{
 func commonStringToTime(input string, config ConversionConfiguration, defaultFormat string) (time.Time, error) {
 	format := defaultFormat
 	if config.StringDate != nil && len(config.StringDate.DateFormat) > 0 {
-		f, err := convertJavaLayoutToGoLayout(config.StringDate.DateFormat)
+		f, err := convertJavaLayoutToGoParseLayout(config.StringDate.DateFormat)
 		if err != nil {
 			fmt.Print("Unable to convert date format: " + config.StringDate.DateFormat)
 		} else {
