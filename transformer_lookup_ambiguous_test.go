@@ -17,15 +17,15 @@ func runAmbiguousLookup(t *testing.T, reject bool) *types.DataSet {
 	input, err := filtrify.ConvertToTypedData([][]string{
 		{"Entity", "Amount"},
 		{"unique", "1"},
-		{"shared", "2"},
+		{"O'Brien", "2"},
 		{"missing", "3"},
 	}, true, true, false)
 	require.NoError(t, err)
 	entities, err := filtrify.ConvertToTypedData([][]string{
 		{"id", "external_id"},
 		{"10", "unique"},
-		{"20", "shared"},
-		{"30", "shared"},
+		{"20", "O'Brien"},
+		{"30", "O'Brien"},
 	}, true, true, false)
 	require.NoError(t, err)
 
@@ -55,7 +55,7 @@ func TestLookupRejectAmbiguousMatches(t *testing.T) {
 	assert.Equal(t, types.NilType, test.GetColumn(unique, errCol).CellValue.DataType)
 
 	assert.Equal(t, types.NilType, test.GetColumn(shared, "legal_entities.id").CellValue.DataType)
-	assert.Equal(t, "'shared' matches 2 rows in legal_entities on external_id", test.GetColumn(shared, errCol).CellValue.ToString())
+	assert.Equal(t, `"O'Brien" matches 2 rows in legal_entities on external_id`, test.GetColumn(shared, errCol).CellValue.ToString())
 
 	assert.Equal(t, types.NilType, test.GetColumn(missing, "legal_entities.id").CellValue.DataType)
 	assert.Equal(t, types.NilType, test.GetColumn(missing, errCol).CellValue.DataType)

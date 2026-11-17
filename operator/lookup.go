@@ -333,9 +333,9 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 func (t *LookupOperator) ambiguousMatchMessage(leftRow map[string]*types.DataColumn, leftNames []string, rightNames []string, count int, config *LookupConfiguration) string {
 	values := make([]string, len(leftNames))
 	for i, name := range leftNames {
-		values[i] = leftRow[name].CellValue.ToString()
+		values[i] = strconv.Quote(leftRow[name].CellValue.ToString())
 	}
-	return fmt.Sprintf("'%s' matches %d rows in %s on %s", strings.Join(values, ", "), count, config.TargetDataset, strings.Join(rightNames, ", "))
+	return fmt.Sprintf("%s matches %d rows in %s on %s", strings.Join(values, ", "), count, config.TargetDataset, strings.Join(rightNames, ", "))
 }
 
 func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
