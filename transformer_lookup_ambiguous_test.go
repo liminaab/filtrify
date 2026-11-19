@@ -73,3 +73,50 @@ func TestLookupAmbiguousMatchesWithoutFlag(t *testing.T) {
 		assert.Nil(t, test.GetColumn(r, operator.LookupErrorColumnPrefix+"Entity"))
 	}
 }
+
+func TestLookupSelectingMissingColumnThenRename(t *testing.T) {
+	t.Parallel()
+	input, err := filtrify.ConvertToTypedData([][]string{
+		{"Entity"},
+		{"unique"},
+		{"shared"},
+	}, true, true, false)
+	require.NoError(t, err)
+	entities, err := filtrify.ConvertToTypedData([][]string{
+		{"id", "external_id"},
+		{"10", "unique"},
+		{"20", "shared"},
+		{"30", "shared"},
+	}, true, true, false)
+	require.NoError(t, err)
+
+	lookupConf, err := json.Marshal(&operator.LookupConfiguration{
+		TargetDataset:          "legal_entities",
+		Columns:                []*operator.JoinColumn{{Left: "Entity", Right: "external_id"}},
+		SelectedColumns:        []string{"id", "no_such_column"},
+		RejectAmbiguousMatches: true,
+	})
+	require.NoError(t, err)
+	renameConf, err := json.Marshal(&operator.RenameColumnConfiguration{
+		Columns: map[string]string{"legal_entities.id": "Id"},
+	})
+	require.NoError(t, err)
+	steps := []*types.TransformationStep{
+		{Operator: types.Lookup, Configuration: string(lookupConf)},
+		{Operator: types.RenameColumn, Configuration: string(renameConf)},
+	}
+
+	out, err := filtrify.Transform(input, steps, map[string]*types.DataSet{"legal_entities": entities})
+	require.NoError(t, err)
+	require.Len(t, out.Rows, 2)
+	errCol := operator.LookupErrorColumnPrefix + "Entity"
+	unique, shared := out.Rows[0], out.Rows[1]
+
+	require.NotNil(t, test.GetColumn(unique, "Id"), "one match keeps its id column")
+	assert.Equal(t, "10", test.GetColumn(unique, "Id").CellValue.ToString())
+
+	require.NotNil(t, test.GetColumn(shared, "Id"), "ambiguous match keeps its id column")
+	assert.Equal(t, types.NilType, test.GetColumn(shared, "Id").CellValue.DataType, "ambiguous match leaves the id unset")
+	require.NotNil(t, test.GetColumn(shared, errCol), "ambiguous match keeps its error column")
+	assert.Equal(t, `"shared" matches 2 rows in legal_entities on external_id`, test.GetColumn(shared, errCol).CellValue.ToString())
+}

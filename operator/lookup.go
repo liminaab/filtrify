@@ -227,6 +227,16 @@ func (t *LookupOperator) mergeNilRow(orgDataset *types.DataSet, left *types.Data
 		colCounter++
 	}
 
+	// a selected column missing from the target leaves its slot empty - fill it as mergeRows does
+	for i := range newRow.Columns {
+		if newRow.Columns[i] == nil {
+			newRow.Columns[i] = &types.DataColumn{
+				ColumnName: fmt.Sprintf("column_%d", i),
+				CellValue:  &types.CellValue{DataType: types.NilType},
+			}
+		}
+	}
+
 	return newRow
 }
 
