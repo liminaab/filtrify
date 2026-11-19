@@ -32,7 +32,15 @@ type LookupConfiguration struct {
 	RemoveRightDatasetPrefix bool                    `json:"removeRightDatasetPrefix"`
 	SelectedColumns          []string                `json:"selectedColumns"`
 	TargetDatasetFilters     map[string]LookupFilter `json:"targetDatasetFilters"`
+	// RejectAmbiguousMatches leaves a row unmatched when its key matches more than one
+	// target row, instead of taking the first match, and adds a LookupErrorColumnPrefix
+	// column to every row holding the reason (empty when the row was not ambiguous).
+	RejectAmbiguousMatches bool `json:"rejectAmbiguousMatches"`
 }
+
+// LookupErrorColumnPrefix prefixes the column RejectAmbiguousMatches adds; the rest of
+// the name is the lookup's left join columns, comma separated.
+const LookupErrorColumnPrefix = "__lookup_error."
 
 func (t *LookupOperator) GetColumn(r *types.DataRow, col string) *types.DataColumn {
 	for _, c := range r.Columns {
@@ -219,6 +227,16 @@ func (t *LookupOperator) mergeNilRow(orgDataset *types.DataSet, left *types.Data
 		colCounter++
 	}
 
+	// a selected column missing from the target leaves its slot empty - fill it as mergeRows does
+	for i := range newRow.Columns {
+		if newRow.Columns[i] == nil {
+			newRow.Columns[i] = &types.DataColumn{
+				ColumnName: fmt.Sprintf("column_%d", i),
+				CellValue:  &types.CellValue{DataType: types.NilType},
+			}
+		}
+	}
+
 	return newRow
 }
 
@@ -281,21 +299,30 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 	// this is what turns the join from O(len(left)*len(right)) into O(len(left)+len(right)).
 	// Only the first row per key is kept, matching the original loop's "first match wins" order.
 	rightByKey := make(map[string]*types.DataRow, len(right.Rows))
+	matchCount := make(map[string]int, len(right.Rows))
 	for _, rr := range right.Rows {
 		key, ok := t.joinKeyOf(rightIndex[rr], rightNames)
 		if !ok {
 			continue
 		}
+		matchCount[key]++
 		if _, exists := rightByKey[key]; !exists {
 			rightByKey[key] = rr
 		}
 	}
 
 	refRow := right.Rows[0]
+	errorColumnName := LookupErrorColumnPrefix + strings.Join(leftNames, ",")
 	for li, lr := range left.Rows {
 		var matchRow *types.DataRow = nil
+		var lookupError *string
 		if key, ok := t.joinKeyOf(leftIndex[lr], leftNames); ok {
 			matchRow = rightByKey[key]
+			if config.RejectAmbiguousMatches && matchCount[key] > 1 {
+				matchRow = nil
+				msg := t.ambiguousMatchMessage(leftIndex[lr], leftNames, rightNames, matchCount[key], config)
+				lookupError = &msg
+			}
 		}
 		var newRow *types.DataRow = nil
 		if matchRow != nil {
@@ -304,10 +331,21 @@ func (t *LookupOperator) mergeSets(left *types.DataSet, right *types.DataSet, co
 			// we need to do a nil merge
 			newRow = t.mergeNilRow(left, lr, refRow, config)
 		}
+		if config.RejectAmbiguousMatches {
+			newRow.Columns = append(newRow.Columns, types.NewStringDataColumn(lookupError, errorColumnName))
+		}
 		mergedSet.Rows[li] = newRow
 
 	}
 	return mergedSet
+}
+
+func (t *LookupOperator) ambiguousMatchMessage(leftRow map[string]*types.DataColumn, leftNames []string, rightNames []string, count int, config *LookupConfiguration) string {
+	values := make([]string, len(leftNames))
+	for i, name := range leftNames {
+		values[i] = strconv.Quote(leftRow[name].CellValue.ToString())
+	}
+	return fmt.Sprintf("%s matches %d rows in %s on %s", strings.Join(values, ", "), count, config.TargetDataset, strings.Join(rightNames, ", "))
 }
 
 func (t *LookupOperator) Transform(dataset *types.DataSet, config string, otherSets map[string]*types.DataSet) (*types.DataSet, error) {
